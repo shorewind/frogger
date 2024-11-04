@@ -28,7 +28,8 @@ private:
     QGraphicsScene *scene;
 
     Player *player; // Player instance
-    Obstacle *log;  // Moving log obstacle
+    Obstacle *log1;  // Moving log obstacle
+    Obstacle *log2;  // Moving log obstacle
 
     // Constants for scene dimensions
     static constexpr int SCENE_WIDTH = 800;   // Width of the game scene
