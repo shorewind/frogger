@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         dialog.cpp \
+        obstacles.cpp \
         player.cpp
 
 HEADERS += \
         defs.h \
         dialog.h \
+        obstacles.h \
         player.h
 
 FORMS += \

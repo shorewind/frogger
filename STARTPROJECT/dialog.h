@@ -4,18 +4,9 @@
 #include <QDialog>
 #include <QGraphicsView>
 #include <QGraphicsScene>
-#include <QTimer>
 #include <QKeyEvent>
-#include <QGraphicsRectItem>
-#include <QGraphicsLineItem>
-#include <QGraphicsEllipseItem>
-#include <QGraphicsPixmapItem>
-#include <QPixmap>
-#include <QtGlobal>
-#include <QtDebug>
-#include "player.h"
-#include "defs.h"
-
+#include "player.h" // Include the Player class
+#include "obstacles.h" // Include the Obstacle class
 
 namespace Ui {
 class Dialog;
@@ -34,34 +25,17 @@ protected:
 
 private:
     Ui::Dialog *ui;
+    QGraphicsScene *scene;
 
-    QGraphicsScene* scene = nullptr;
+    Player *player; // Player instance
+    Obstacle *log;  // Moving log obstacle
 
-    Player* player = nullptr;
+    // Constants for scene dimensions
+    static constexpr int SCENE_WIDTH = 800;   // Width of the game scene
+    static constexpr int SCENE_HEIGHT = 600;  // Height of the game scene
 
-    QPixmap backgroundPixmap;
-    qreal backgroundYPosition;
-
-    QList<QGraphicsPixmapItem*> obstacles;
-
-
-    QGraphicsTextItem *header,*display;     // Score header and display object ptrs
-    int score = 0;                          // Current score
-
-
-    // support functions
-    void drawScoreDisplay();
+    // Support functions
     void spawnPlayer();
-    void addObstacle(int startX, int startY, int velocity);
-
-    static constexpr int MOVE_STEP = 10;          // Amount player moves per key press
-    static constexpr int SCENE_WIDTH = 800;       // Width of the game scene
-    static constexpr int SCENE_HEIGHT = 600;      // Height of the game scene
-
-private slots:
-
-    // Executes in response to player-puck collision
-//    void puckCollision();
 };
 
 #endif // DIALOG_H
