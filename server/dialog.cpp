@@ -69,6 +69,13 @@ void Dialog::rx()
                 clientPorts.append(senderPort);
             }
 
+            // Notify the new client about existing clients
+            for (const auto& key : clientIdMap.keys()) {
+                int existingClientId = clientIdMap[key];
+                QByteArray clientInfoMsg = QString("Client %1").arg(existingClientId).toUtf8();
+                socket->writeDatagram(clientInfoMsg, senderAddress, senderPort);
+            }
+
             // Display a connection message in the server UI
             ui->textBrowser->append(QString("New client connected: Client %1 (%2:%3)")
                                      .arg(clientId)

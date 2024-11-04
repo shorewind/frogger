@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include "ui_dialog.h"
+#include "graphicsdialog.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -9,6 +10,7 @@ Dialog::Dialog(QWidget *parent) :
 
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
 }
+
 
 void Dialog::connectToServer()
 {
@@ -34,16 +36,27 @@ void Dialog::connectToServer()
         socket->writeDatagram(initialMsg, QHostAddress(ip), port);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
+
+        // Show graphics dialog after successful connection
+        graphicsDialog = new GraphicsDialog(this);
+        graphicsDialog->show();
+        connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::disconnectFromServer);
     }
 }
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
+    disconnectFromServer();
+    event->accept();
+}
+
+void Dialog::disconnectFromServer()
+{
     QByteArray disconnectMsg = "DISCONNECT";
     socket->writeDatagram(disconnectMsg, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
     socket->disconnectFromHost();
     delete socket;
-    event->accept();
+    close();
 }
 
 void Dialog::sendMsg()
@@ -65,10 +78,35 @@ void Dialog::processMsg()
 
         socket->readDatagram(ba.data(), ba.size(), &sender, &senderPort);
 
-        QString s(ba);
-        ui->textBrowser->append("Server: " + s);
+        QString msg(ba);
+        ui->textBrowser->append("Server: " + msg);
+
+        if (msg.startsWith("Client")) {
+            int clientId = parseClientIdFromMsg(msg);
+            if (clientId != -1) {
+                QColor color = generateColorForClient(clientId);
+                graphicsDialog->addPlayer(clientId, color);
+            }
+        }
     }
 }
+
+int Dialog::parseClientIdFromMsg(const QString &msg) {
+    QRegExp regex("Client (\\d+)");
+    if (regex.indexIn(msg) != -1) {
+        return regex.cap(1).toInt();
+    }
+    return -1;  // Return -1 if parsing fails
+}
+
+QColor Dialog::generateColorForClient(int clientId) {
+    static QList<QColor> colors = {
+        QColor("red"), QColor("green"), QColor("blue"),
+        QColor("yellow")
+    };
+    return colors[clientId % colors.size()];  // Cycle through colors based on clientId
+}
+
 
 Dialog::~Dialog()
 {

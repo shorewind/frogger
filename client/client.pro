@@ -25,11 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        graphicsdialog.cpp \
         main.cpp \
-        dialog.cpp
+        dialog.cpp \
+        player.cpp
 
 HEADERS += \
-        dialog.h
+        defs.h \
+        dialog.h \
+        graphicsdialog.h \
+        player.h
 
 FORMS += \
         dialog.ui
@@ -38,3 +43,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc
