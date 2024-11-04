@@ -66,7 +66,7 @@ QRectF Player::boundingRect() const
 QPainterPath Player::shape() const  //collision detection
 {
     QPainterPath path;
-    path.addRect(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT);
+    path.addRect(boundingRect());
 
 
     //WRONG COLLISIONS WILL NOT REGISTER, COLLISION DETECTION DOES NOT WORK

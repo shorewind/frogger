@@ -7,35 +7,33 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Allocate and configure scene
-    // makes the center of the scene 0,0
-    scene = new QGraphicsScene(-SCENE_WIDTH/2, -SCENE_HEIGHT/2,
-                               SCENE_WIDTH, SCENE_HEIGHT);
-    // always turn on NoIndex and Antialiasing
-    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    scene->setBackgroundBrush(Qt::black);
+        // Allocate and configure scene
+        scene = new QGraphicsScene(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+        scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+        scene->setBackgroundBrush(Qt::black);
 
-    // Make scene object the data source for the view object
-    ui->graphicsView->setScene(scene);
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+        QPixmap background(":/images/background.png");
+        background = background.scaled(SCENE_WIDTH, SCENE_HEIGHT, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        QGraphicsPixmapItem* backgroundItem = new QGraphicsPixmapItem(background);
+        backgroundItem->setPos(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2);
+        backgroundItem->setZValue(-1);
+        scene->addItem(backgroundItem);
 
+        // Set the scene for graphicsView and resize it
+        ui->graphicsView->setScene(scene);
+        ui->graphicsView->setRenderHint(QPainter::Antialiasing);
 
-    // Add score header and display text items
-//    drawScoreDisplay();
+        // Set fixed size to fit the scene dimensions
+        ui->graphicsView->setFixedSize(SCENE_WIDTH, SCENE_HEIGHT);
+        this->setFixedSize(SCENE_WIDTH, SCENE_HEIGHT);
 
-    // Create a player object and add it to the scene object
-    spawnPlayer();
+        // Add player, timer, and other game elements here
+        spawnPlayer();
 
-
-    // Configure timer object to drive animation
-    QTimer* timer = new QTimer;
-    timer->setInterval(24);
-
-    // advance function, everytime the timer went off, run the dialog class advance method.
-    // tells the scene object for all ofthe items in the scene run their personal advance method
-    connect(timer, &QTimer::timeout, scene, &QGraphicsScene::advance);
-    // need to start QTimer object
-    timer->start();
+        QTimer* timer = new QTimer;
+        timer->setInterval(24);
+        connect(timer, &QTimer::timeout, scene, &QGraphicsScene::advance);
+        timer->start();
 }
 
 Dialog::~Dialog()

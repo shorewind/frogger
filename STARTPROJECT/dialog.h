@@ -39,6 +39,11 @@ private:
 
     Player* player = nullptr;
 
+    QPixmap backgroundPixmap;
+    qreal backgroundYPosition;
+
+    QList<QGraphicsPixmapItem*> obstacles;
+
 
     QGraphicsTextItem *header,*display;     // Score header and display object ptrs
     int score = 0;                          // Current score
@@ -47,7 +52,11 @@ private:
     // support functions
     void drawScoreDisplay();
     void spawnPlayer();
+    void addObstacle(int startX, int startY, int velocity);
 
+    static constexpr int MOVE_STEP = 10;          // Amount player moves per key press
+    static constexpr int SCENE_WIDTH = 800;       // Width of the game scene
+    static constexpr int SCENE_HEIGHT = 600;      // Height of the game scene
 
 private slots:
 
