@@ -16,8 +16,8 @@ void Dialog::connectToServer()
 {
     socket = new QUdpSocket(this);
 
-    QString ip = ui->ipEdit->text();
-    quint16 port = ui->portEdit->text().toUInt();
+    ip = ui->ipEdit->text();
+    port = ui->portEdit->text().toUInt();
 
     socket->connectToHost(QHostAddress(ip), port);
     connect(socket, &QUdpSocket::readyRead, this, &Dialog::processMsg);
@@ -32,12 +32,18 @@ void Dialog::connectToServer()
         ui->connectButton->setEnabled(false);
 
         // Send the initial message
-        QByteArray initialMsg = "CONNECT";
-        socket->writeDatagram(initialMsg, QHostAddress(ip), port);
+//        QByteArray initialMsg = "CONNECT";
+//        socket->writeDatagram(initialMsg, QHostAddress(ip), port);
+
+        // Send initial JSON "CONNECT" message
+        QJsonObject connectMessage;
+        connectMessage["type"] = "CONNECT";
+//        connectMessage["message"] = "New Client Connected";
+
+        sendJson(connectMessage);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
 
-        // Show graphics dialog after successful connection
         graphicsDialog = new GraphicsDialog(this);
         graphicsDialog->show();
         connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::disconnectFromServer);
@@ -52,8 +58,12 @@ void Dialog::closeEvent(QCloseEvent *event)
 
 void Dialog::disconnectFromServer()
 {
-    QByteArray disconnectMsg = "DISCONNECT";
-    socket->writeDatagram(disconnectMsg, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
+    QJsonObject disconnectMessage;
+
+    disconnectMessage["type"] = "DISCONNECT";
+    sendJson(disconnectMessage);
+//    QByteArray disconnectMsg = "DISCONNECT";
+//    socket->writeDatagram(disconnectMsg, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
     socket->disconnectFromHost();
     delete socket;
     close();
@@ -62,14 +72,27 @@ void Dialog::disconnectFromServer()
 void Dialog::sendMsg()
 {
     QString msg = ui->messageEdit->text();
-    QByteArray data = msg.toUtf8();
+//    QByteArray data = msg.toUtf8();
 
-    socket->writeDatagram(data, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
+//    socket->writeDatagram(data, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
+    QJsonObject jsonMessage;
+    jsonMessage["type"] = "MESSAGE";
+    jsonMessage["message"] = msg;
+    sendJson(jsonMessage);
     ui->messageEdit->clear();
+}
+
+void Dialog::sendJson(QJsonObject data)
+{
+    QJsonDocument doc(data);
+    QByteArray ba = doc.toJson();
+
+    socket->writeDatagram(ba, QHostAddress(ip), port);
 }
 
 void Dialog::processMsg()
 {
+    qDebug() << "processing message";
     while (socket->hasPendingDatagrams()) {
         QByteArray ba;
         ba.resize(socket->pendingDatagramSize());
@@ -78,21 +101,32 @@ void Dialog::processMsg()
 
         socket->readDatagram(ba.data(), ba.size(), &sender, &senderPort);
 
-        QString msg(ba);
-        ui->textBrowser->append("Server: " + msg);
+        QJsonDocument doc = QJsonDocument::fromJson(ba);
+        if (!doc.isObject()) return;
 
-        if (msg.startsWith("Client")) {
-            int clientId = parseClientIdFromMsg(msg);
+        QJsonObject jsonObj = doc.object();
+        QString type = jsonObj["type"].toString();
+        QString message = jsonObj["message"].toString();
+
+        ui->textBrowser->append("Server: " + message);
+
+        if (type == "WELCOME")
+        {
+            int clientId = parseClientIdFromMsg(message);
             if (clientId != -1) {
                 QColor color = generateColorForClient(clientId);
                 graphicsDialog->addPlayer(clientId, color);
             }
         }
+        else if (type == "MESSAGE")
+        {
+        }
     }
 }
 
+
 int Dialog::parseClientIdFromMsg(const QString &msg) {
-    QRegExp regex("Client (\\d+)");
+    QRegExp regex("You are Client (\\d+)");
     if (regex.indexIn(msg) != -1) {
         return regex.cap(1).toInt();
     }
@@ -106,6 +140,20 @@ QColor Dialog::generateColorForClient(int clientId) {
     };
     return colors[clientId % colors.size()];  // Cycle through colors based on clientId
 }
+
+//void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y) {
+//    QJsonObject json;
+//    json["clientId"] = clientId;
+//    json["x"] = x;
+//    json["y"] = y;
+
+//    QJsonDocument doc(json);
+//    QByteArray data = doc.toJson();
+
+//    QString ip = ui->ipEdit->text();
+//    quint16 port = ui->portEdit->text().toUInt();
+//    socket->writeDatagram(data, QHostAddress(ip), port);
+//}
 
 
 Dialog::~Dialog()

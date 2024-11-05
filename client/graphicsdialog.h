@@ -34,9 +34,11 @@ private:
 public slots:
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
+//    void sendPlayerPosition(int clientId, qreal x, qreal y);
 
 signals:
     void requestClose();
+//    void playerPositionChanged(int clientId, qreal x, qreal y);
 };
 
 

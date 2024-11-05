@@ -22,6 +22,9 @@ public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
+signals:
+//    void positionChanged(int clientId, int x, int y);
+
 private:
     static const int SPEED = 10; // Movement speed
     int clientId; // Unique ID for each player

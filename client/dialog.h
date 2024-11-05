@@ -9,6 +9,8 @@
 #include <QColor>
 #include <QRegExp>
 #include <QList>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 class GraphicsDialog;
 
@@ -32,6 +34,8 @@ private:
 
     QUdpSocket* socket;
     GraphicsDialog *graphicsDialog;
+    QString ip;
+    quint16 port;
 
 private slots:
     void connectToServer();
@@ -39,8 +43,11 @@ private slots:
     void processMsg();
     void sendMsg();
 
+    void sendJson(QJsonObject data);
+
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);
+//    void sendPlayerPosition(int clientId, qreal x, qreal y);
 };
 
 #endif // DIALOG_H

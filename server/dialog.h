@@ -7,6 +7,8 @@
 #include <QtDebug>
 #include <QList>
 #include <QHostAddress>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 namespace Ui {
 class Dialog;
@@ -32,7 +34,7 @@ private:
 
 private slots:
     void rx();  // receive
-    void tx(QByteArray& message);  // transmit
+    void tx(QJsonObject message);  // transmit
     void configureServer();
     void removeClient(QString& clientKey);
 };

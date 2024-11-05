@@ -29,6 +29,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(view);
     setLayout(layout);
+
+//    connect(player, &Player::positionChanged, this, &GraphicsDialog::sendPlayerPosition);
 }
 
 GraphicsDialog::~GraphicsDialog() {
@@ -37,7 +39,7 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
-//    qDebug() << player;
+//    qDebug() << player->getClientId();
     switch (e->key())
     {
         case Qt::Key_A: player->goLeft(); break;
@@ -55,7 +57,10 @@ void GraphicsDialog::closeEvent(QCloseEvent *event) {
 }
 
 void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
-    if (clientPlayers.contains(clientId)) return;
+    if (clientPlayers.contains(clientId))
+    {
+        return;
+    }
 
     player = new Player(clientId, color);
     player->setPos(clientId * 40, 40); // Adjust position as needed

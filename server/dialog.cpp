@@ -55,12 +55,19 @@ void Dialog::rx()
 
         QString clientKey = QString("%1:%2").arg(clientIP).arg(senderPort);
 
-        if (incomingMsg == "DISCONNECT") {
-            removeClient(clientKey); // Handle the client disconnection
+        QJsonDocument doc = QJsonDocument::fromJson(incomingMsg);
+        if (!doc.isObject()) return; // Check if the received data is a valid JSON object
+
+        QJsonObject jsonObj = doc.object();
+        QString type = jsonObj["type"].toString();
+        QString message = jsonObj["message"].toString();
+
+        if (type == "DISCONNECT") {
+            removeClient(clientKey);
             return;
         }
-
-        if (incomingMsg == "CONNECT") {
+        else if (type == "CONNECT") {
+            // Handle new connections
             int clientId = -1;
             if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty()) {
                 clientId = availableIds.takeFirst();
@@ -69,49 +76,54 @@ void Dialog::rx()
                 clientPorts.append(senderPort);
             }
 
-            // Notify the new client about existing clients
-            for (const auto& key : clientIdMap.keys()) {
-                int existingClientId = clientIdMap[key];
-                QByteArray clientInfoMsg = QString("Client %1").arg(existingClientId).toUtf8();
-                socket->writeDatagram(clientInfoMsg, senderAddress, senderPort);
-            }
+            // Notify the new client
+            QJsonObject welcomeMessage;
+            welcomeMessage["type"] = "WELCOME";
+            welcomeMessage["message"] = "Welcome to the server! You are Client " + QString::number(clientId);
+            QJsonDocument welcomeDoc(welcomeMessage);
+            socket->writeDatagram(welcomeDoc.toJson(), senderAddress, senderPort);
 
-            // Display a connection message in the server UI
-            ui->textBrowser->append(QString("New client connected: Client %1 (%2:%3)")
-                                     .arg(clientId)
-                                     .arg(clientIP)
-                                     .arg(senderPort));
-
-            QByteArray welcomeMsg = "Welcome to the server! You are Client " + QByteArray::number(clientId);
-            socket->writeDatagram(welcomeMsg, senderAddress, senderPort);
-
-            QByteArray broadcastMsg = "Client " + QByteArray::number(clientId) + " has joined the server.";
-            tx(broadcastMsg); // Use tx to broadcast to all clients
-
-            return;
+            // Broadcast new connection
+            QJsonObject broadcastMessage;
+            broadcastMessage["type"] = "MESSAGE";
+            broadcastMessage["message"] = QString("Client %1 (%2:%3) has joined the server.")
+                    .arg(clientId)
+                    .arg(clientIP)
+                    .arg(senderPort);
+            ui->textBrowser->append(broadcastMessage["message"].toString());
+            tx(broadcastMessage);
         }
+        else if (type == "MESSAGE") {
+            // Handle incoming messages from clients
+            if (clientIdMap.contains(clientKey) && !message.isEmpty()) {
+                int clientId = clientIdMap[clientKey];
+                ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
+                                         .arg(clientId)
+                                         .arg(clientIP)
+                                         .arg(senderPort)
+                                         .arg(message));
 
-        if (clientIdMap.contains(clientKey)) {
-            int clientId = clientIdMap[clientKey];
-
-            ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
-                                     .arg(clientId)
-                                     .arg(clientIP)
-                                     .arg(senderPort)
-                                     .arg(QString::fromUtf8(incomingMsg)));
-
-            QByteArray outgoingMsg = "Client " + QByteArray::number(clientId) + " (" + clientIP.toUtf8()
-                                     + ":" + QByteArray::number(senderPort) + ") > " + incomingMsg;
-
-            if (!incomingMsg.isEmpty()) {
-                tx(outgoingMsg); // Use tx to broadcast to all clients
+                QJsonObject outgoingMessage;
+                outgoingMessage["type"] = "MESSAGE";
+                outgoingMessage["message"] = QString("Client %1 (%2:%3)> %4")
+                        .arg(clientId)
+                        .arg(clientIP)
+                        .arg(senderPort)
+                        .arg(message);
+                tx(outgoingMessage);
             }
+        }
+        else if (type == "POSITION") {
+            // Handle position messages if needed
         }
     }
 }
 
+
+
 void Dialog::removeClient(QString &clientKey)
 {
+    qDebug() << "disconnecting " << clientKey;
     if (clientIdMap.contains(clientKey)) {
         int clientId = clientIdMap[clientKey];
         clientIdMap.remove(clientKey);
@@ -121,7 +133,7 @@ void Dialog::removeClient(QString &clientKey)
             QHostAddress address = QHostAddress(parts[0]);
             quint16 port = static_cast<quint16>(parts[1].toUInt());
 
-            int index = clientAddresses.indexOf(address);
+            int index = clientPorts.indexOf(port);
             if (index != -1) {
                 clientAddresses.removeAt(index);
                 clientPorts.removeAt(index);
@@ -129,21 +141,36 @@ void Dialog::removeClient(QString &clientKey)
                 std::sort(availableIds.begin(), availableIds.end());
             }
 
-            ui->textBrowser->append(QString("Client %1 has disconnected.").arg(clientId));
+            // Create a disconnection message to broadcast
+            QJsonObject disconnectionMsg;
+            disconnectionMsg["type"] = "MESSAGE";
+            disconnectionMsg["message"] = QString("Client %1 (%2:%3) has disconnected.")
+                                             .arg(clientId)
+                                             .arg(address.toString())
+                                             .arg(port);
 
-            QByteArray disconnectionMsg = "Client " + QByteArray::number(clientId) + " has disconnected.";
-            tx(disconnectionMsg);
+            ui->textBrowser->append(disconnectionMsg["message"].toString());
+            tx(disconnectionMsg); // Broadcast the disconnection message
         }
     }
 }
 
 
-void Dialog::tx(QByteArray &message)
+
+void Dialog::tx(QJsonObject jsonObject)
 {
+    qDebug() << "transmitting message";
+    // Convert JSON object to QByteArray
+    QJsonDocument doc(jsonObject);
+    QByteArray message = doc.toJson();
+
+    // Broadcast the message to all connected clients
     for (int i = 0; i < clientAddresses.size(); ++i) {
+        qDebug() << clientPorts[i];
         socket->writeDatagram(message, clientAddresses[i], clientPorts[i]);
     }
 }
+
 
 
 Dialog::~Dialog()
