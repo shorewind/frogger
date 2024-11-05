@@ -1,6 +1,7 @@
 #include "graphicsdialog.h"
 #include "defs.h"
 #include "obstacles.h"
+#include <QTimer>
 
 GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QDialog(parent),
@@ -42,6 +43,14 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
      obstacleList.append(car1);
      scene->addItem(car1);
      car1->startMoving();
+
+     QTimer *collisionTimer = new QTimer(this);
+         connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
+         collisionTimer->start(50);
+}
+
+void GraphicsDialog::checkCollisions() {
+    player->checkCollisionWithObstacles(obstacleList);
 }
 
 GraphicsDialog::~GraphicsDialog() {
@@ -87,7 +96,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) return;
 
     player = new Player(clientId, color);
-    player->setPos(clientId * 40, 40); // Adjust position as needed
+    player->setPos(clientId * 40, 250); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
 }

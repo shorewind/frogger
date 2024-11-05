@@ -32,6 +32,7 @@ private:
     QString serverIp;
     quint16 serverPort;
     QList<QGraphicsItem *> obstacleList;
+    void checkCollisions();
 
     Obstacle *log1;  // Moving log obstacle
     Obstacle *log2;  // Moving log obstacle
