@@ -10,6 +10,8 @@
 #include <QRegExp>
 #include <QList>
 
+
+
 class GraphicsDialog;
 
 namespace Ui {
@@ -32,6 +34,10 @@ private:
 
     QUdpSocket* socket;
     GraphicsDialog *graphicsDialog;
+
+
+
+
 
 private slots:
     void connectToServer();

@@ -11,6 +11,7 @@
 #include <QCloseEvent>
 #include <QUdpSocket>
 #include "player.h"
+#include "obstacles.h" // Include the Obstacle clas
 
 class GraphicsDialog : public QDialog {
     Q_OBJECT
@@ -30,6 +31,10 @@ private:
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
+
+    Obstacle *log1;  // Moving log obstacle
+    Obstacle *log2;  // Moving log obstacle
+    Obstacle *car1;
 
 public slots:
     void addPlayer(int clientId, const QColor &color);

@@ -29,6 +29,19 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(view);
     setLayout(layout);
+
+    // Create and add the log as an Obstacle object
+     log1 = new Obstacle(50, 20, -SCENE_WIDTH / 2, -50, 5); // Width 50, height 20, starting position, and speed
+     log2 = new Obstacle(50, 20, -SCENE_WIDTH / 2 - 200, -50, 5); // Second log, slightly offset
+     scene->addItem(log1);
+     scene->addItem(log2);
+     log1->startMoving();
+     log2->startMoving();
+//     car1 = new Car(50, 25, 0, 100, 5); // Second log, slightly offset
+//     scene->addItem(car1);
+//     car1->startMoving();
+
+
 }
 
 GraphicsDialog::~GraphicsDialog() {

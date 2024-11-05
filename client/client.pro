@@ -28,12 +28,14 @@ SOURCES += \
         graphicsdialog.cpp \
         main.cpp \
         dialog.cpp \
+        obstacles.cpp \
         player.cpp
 
 HEADERS += \
         defs.h \
         dialog.h \
         graphicsdialog.h \
+        obstacles.h \
         player.h
 
 FORMS += \
