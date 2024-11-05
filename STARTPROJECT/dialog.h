@@ -27,9 +27,17 @@ private:
     Ui::Dialog *ui;
     QGraphicsScene *scene;
 
-    Player *player; // Player instance
+   /* Player *player; // Player instance
     Obstacle *log1;  // Moving log obstacle
-    Obstacle *log2;  // Moving log obstacle
+    Obstacle *log2;  // Moving log obstacle */
+
+    Player *player;
+        Obstacle *log1;  // Now a Charger
+        Obstacle *log2;  // Now a Charger
+        Obstacle *supra1;
+        Obstacle *supra2;
+        Obstacle *skyline1;
+        Obstacle *skyline2;
 
     // Constants for scene dimensions
     static constexpr int SCENE_WIDTH = 800;   // Width of the game scene
