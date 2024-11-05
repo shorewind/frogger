@@ -37,9 +37,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
      scene->addItem(log2);
      log1->startMoving();
      log2->startMoving();
-//     car1 = new Car(50, 25, 0, 100, 5); // Second log, slightly offset
-//     scene->addItem(car1);
-//     car1->startMoving();
+     car1 = new Car(50, 25, -SCENE_WIDTH / 2, 120, 5); // Second log, slightly offset
+     scene->addItem(car1);
+     car1->startMoving();
 
 
 }

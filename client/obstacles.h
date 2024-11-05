@@ -29,5 +29,12 @@ private:
     QTimer *movementTimer; // Timer to control movement
 };
 
+// Car class as a type of Obstacle
+class Car : public Obstacle
+{
+public:
+    Car(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent = nullptr);
+};
+
 #endif // OBSTACLE_H
 

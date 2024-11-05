@@ -34,7 +34,7 @@ private:
 
     Obstacle *log1;  // Moving log obstacle
     Obstacle *log2;  // Moving log obstacle
-    Obstacle *car1;
+    Obstacle *car1;  // moving car obstacle
 
 public slots:
     void addPlayer(int clientId, const QColor &color);

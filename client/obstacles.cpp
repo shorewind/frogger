@@ -16,11 +16,11 @@ Obstacle::Obstacle(int width, int height, int startX, int startY, int speed, QGr
 }
 
 // Car class implementation
-//Car::Car(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent)
-//    : Obstacle(width, height, startX, startY, speed, parent)
-//{
-//    setBrush(Qt::red); // Set the car color to red
-//}
+Car::Car(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent)
+    : Obstacle(width, height, startX, startY, speed, parent)
+{
+    setBrush(Qt::red); // Set the car color to red
+}
 
 void Obstacle::startMoving()
 {
