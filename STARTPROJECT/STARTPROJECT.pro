@@ -30,11 +30,13 @@ SOURCES += \
         obstacles.cpp \
         player.cpp
 
+
 HEADERS += \
         defs.h \
         dialog.h \
         obstacles.h \
         player.h
+
 
 FORMS += \
         dialog.ui
@@ -46,4 +48,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     blah.qrc \
-    froggies.qrc
+    charger.qrc \
+    froggies.qrc \
+    skyline.qrc \
+    supra.qrc
