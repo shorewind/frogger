@@ -1,31 +1,40 @@
 #ifndef OBSTACLE_H
 #define OBSTACLE_H
 
-#include <QGraphicsRectItem>
-#include <QObject>
-#include <QTimer>
-#include <QBrush>
+#include <QGraphicsItem>
 #include <QColor>
+#include <QPainter>
+#include <QRect>
+#include <QPointF>
 
 
 
-class Obstacle : public QObject, public QGraphicsRectItem
+class Obstacle : public QGraphicsItem
 {
-    Q_OBJECT
-
 public:
-    explicit Obstacle(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent = nullptr);
+    explicit Obstacle();
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
+               QWidget* widget);
 
     void startMoving(); // Starts the obstacle movement
 
-private slots:
-    void move(); // Slot to handle continuous movement
+
+protected:
+    void advance(int step);
 
 private:
-    int speed; // Speed of movement
-    int startX; // Starting x-position
-    int startY; // Starting y-position
-    QTimer *movementTimer; // Timer to control movement
+//    int speed; // Speed of movement
+//    int startX; // Starting x-position
+//    int startY; // Starting y-position
+//    QTimer *movementTimer; // Timer to control movement
+    QPixmap log;
+    qreal dx, dy;
+    qreal width, height;
+
+private slots:
+    void move(); // Slot to handle continuous movement
 };
 
 #endif // OBSTACLE_H

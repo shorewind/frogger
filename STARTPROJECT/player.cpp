@@ -11,25 +11,25 @@ Player::Player(int sceneWidth, int sceneHeight, QGraphicsItem *parent)
 void Player::goLeft()
 {
     if (x() - 10 > -sceneWidth / 2) // Check left boundary
-        setPos(x() - 10, y());
+        setPos(x() - dx, y());
 }
 
 void Player::goRight()
 {
     if (x() + 10 < sceneWidth / 2) // Check right boundary
-        setPos(x() + 10, y());
+        setPos(x() + dx, y());
 }
 
 void Player::goUp()
 {
     if (y() - 10 > -sceneHeight / 2) // Check top boundary
-        setPos(x(), y() - 10);
+        setPos(x(), y() - dy);
 }
 
 void Player::goDown()
 {
     if (y() + 10 < sceneHeight / 2) // Check bottom boundary
-        setPos(x(), y() + 10);
+        setPos(x(), y() + dy);
 }
 
 void Player::stop()

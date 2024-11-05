@@ -28,8 +28,8 @@ Dialog::Dialog(QWidget *parent) :
     spawnPlayer();
 
     // Create and add the log as an Obstacle object
-    log1 = new Obstacle(50, 20, -SCENE_WIDTH / 2, -50, 5); // Width 50, height 20, starting position, and speed
-    log2 = new Obstacle(50, 20, -SCENE_WIDTH / 2 - 200, -50, 5); // Second log, slightly offset
+    log1 = new Obstacle(80, 40, (-SCENE_WIDTH / 2)-50, -50, 5); // Width 50, height 20, starting position, and speed
+    log2 = new Obstacle(80, 40, -SCENE_WIDTH / 2 - 250, -50, 5); // Second log, slightly offset
     scene->addItem(log1);
     scene->addItem(log2);
     log1->startMoving();

@@ -3,6 +3,9 @@
 
 #include <QGraphicsRectItem>
 
+const qreal dx = 20;
+const qreal dy = 20;
+
 class Player : public QGraphicsRectItem
 {
 public:
