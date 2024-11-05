@@ -21,7 +21,7 @@ public:
     // Override necessary methods from QGraphicsItem
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
+    void checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles);
 private:
     static const int SPEED = 10; // Movement speed
     int clientId; // Unique ID for each player

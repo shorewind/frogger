@@ -1,5 +1,6 @@
 #include "graphicsdialog.h"
 #include "defs.h"
+#include "obstacles.h"
 
 GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QDialog(parent),
@@ -38,10 +39,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
      log1->startMoving();
      log2->startMoving();
      car1 = new Car(50, 25, -SCENE_WIDTH / 2, 120, 5); // Second log, slightly offset
+     obstacleList.append(car1);
      scene->addItem(car1);
      car1->startMoving();
-
-
 }
 
 GraphicsDialog::~GraphicsDialog() {
@@ -50,17 +50,33 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
-//    qDebug() << player;
+    // Assuming obstacleList is a QList<QGraphicsItem *> containing the car obstacles
     switch (e->key())
     {
-        case Qt::Key_A: player->goLeft(); break;
-        case Qt::Key_D: player->goRight(); break;
-        case Qt::Key_W: player->goUp(); break;
-        case Qt::Key_S: player->goDown(); break;
-        default: player->stop(); break;
+        case Qt::Key_A:
+            player->goLeft();
+            player->checkCollisionWithObstacles(obstacleList);
+            break;
+        case Qt::Key_D:
+            player->goRight();
+            player->checkCollisionWithObstacles(obstacleList);
+            break;
+        case Qt::Key_W:
+            player->goUp();
+            player->checkCollisionWithObstacles(obstacleList);
+            break;
+        case Qt::Key_S:
+            player->goDown();
+            player->checkCollisionWithObstacles(obstacleList);
+            break;
+        default:
+            player->stop();
+            break;
     }
-    QDialog::keyPressEvent(e);
+
+    QDialog::keyPressEvent(e); // Pass event to the base class
 }
+
 
 void GraphicsDialog::closeEvent(QCloseEvent *event) {
     emit requestClose();

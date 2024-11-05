@@ -51,3 +51,13 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     painter->setBrush(color); // Set the color
     painter->drawRect(-15, -15, 30, 30); // Draw the rectangle for the player centered at (0,0)
 }
+
+void Player::checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles) {
+    for (auto obstacle : obstacles) {
+        if (this->collidesWithItem(obstacle)) {
+            // Reset the player to the starting position upon collision
+            setPos(0, 0); // Assuming (0, 0) is the starting point; adjust if needed
+            break;
+        }
+    }
+}

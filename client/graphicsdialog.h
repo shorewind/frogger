@@ -31,6 +31,7 @@ private:
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
+    QList<QGraphicsItem *> obstacleList;
 
     Obstacle *log1;  // Moving log obstacle
     Obstacle *log2;  // Moving log obstacle
