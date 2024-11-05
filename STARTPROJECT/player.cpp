@@ -4,7 +4,7 @@ Player::Player(QGraphicsItem *parent)  //: QGraphicsItem(parent)
 {
     for(int k = 0; k < NUM_IMAGES; k++)
     {
-        QString s = ":/images/tile0" + QString::number(k) + QString(".png");
+        QString s = ":/actual-images/tile0" + QString::number(k) + QString(".png");
         images[k] = QPixmap(s);
         images[k] = images[k].scaled(PLAYER_WIDTH, PLAYER_HEIGHT);
     }
@@ -12,7 +12,7 @@ Player::Player(QGraphicsItem *parent)  //: QGraphicsItem(parent)
     // Start at first image of walking towards viewer pixmaps
     index = 0;
     // image walking toward you, down the screen
-    offset = 18;
+    offset = 28;
 }
 
 Player::~Player()
@@ -24,21 +24,21 @@ void Player::goLeft()
 {
     dx = -player_dx;
     dy = 0.0;       // only going left no change in y coordinate
-    offset = 12;     // right subset of images to go left
+    offset = 8;     // right subset of images to go left
 }
 
 void Player::goRight()
 {
     dx = player_dx;
     dy = 0.0;
-    offset = 24;
+    offset = 16;
 }
 
 void Player::goUp()
 {
     dx = 0.0;
     dy = -player_dy;
-    offset = 36;
+    offset = 24;
 }
 
 void Player::goDown()

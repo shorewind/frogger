@@ -14,8 +14,8 @@
 #include "defs.h"
 
 // for all images imported
-const int NUM_IMAGES = 38;
-const int NUM_FRAMES = 2;
+const int NUM_IMAGES = 32;
+const int NUM_FRAMES = 8;
 
 // no siginal slot capabilities
 class Player : public QGraphicsItem
