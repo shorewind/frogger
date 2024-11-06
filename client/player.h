@@ -3,10 +3,16 @@
 
 #include <QGraphicsItem>
 #include <QPainter>
+#include <QObject>
 
-class Player : public QGraphicsItem {
+class Player : public QObject, public QGraphicsItem {
+    Q_OBJECT
 public:
     Player(int id, QColor color, QGraphicsItem *parent = nullptr);
+
+    int clientId;
+    QColor color;
+    qreal x, y;
 
     void goLeft();
     void goRight();
@@ -16,20 +22,13 @@ public:
 
     void setPos(qreal x, qreal y);
 
-    int getClientId() const { return clientId; }
-
-    // Override necessary methods from QGraphicsItem
+    // override necessary methods from QGraphicsItem
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 signals:
-//    void positionChanged(int clientId, int x, int y);
+    void positionChanged();
 
-private:
-    static const int SPEED = 10; // Movement speed
-    int clientId; // Unique ID for each player
-    QColor color; // Color of the player
-    qreal x, y; // Position of the player
 };
 
 #endif // PLAYER_H

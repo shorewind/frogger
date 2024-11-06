@@ -26,6 +26,10 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
+public slots:
+    void sendJson(QJsonObject data);
+    void sendPlayerPosition(int clientId, qreal x, qreal y);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 
@@ -34,6 +38,7 @@ private:
 
     QUdpSocket* socket;
     GraphicsDialog *graphicsDialog;
+    int activeClientId;
     QString ip;
     quint16 port;
 
@@ -43,11 +48,9 @@ private slots:
     void processMsg();
     void sendMsg();
 
-    void sendJson(QJsonObject data);
 
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);
-//    void sendPlayerPosition(int clientId, qreal x, qreal y);
 };
 
 #endif // DIALOG_H

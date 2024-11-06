@@ -84,6 +84,7 @@ void Dialog::sendMsg()
 
 void Dialog::sendJson(QJsonObject data)
 {
+    qDebug() << data;
     QJsonDocument doc(data);
     QByteArray ba = doc.toJson();
 
@@ -108,18 +109,38 @@ void Dialog::processMsg()
         QString type = jsonObj["type"].toString();
         QString message = jsonObj["message"].toString();
 
-        ui->textBrowser->append("Server: " + message);
-
         if (type == "WELCOME")
         {
             int clientId = parseClientIdFromMsg(message);
             if (clientId != -1) {
                 QColor color = generateColorForClient(clientId);
-                graphicsDialog->addPlayer(clientId, color);
+                qDebug() << "add player " << clientId;
+                graphicsDialog->addActivePlayer(clientId, color);
             }
+            ui->textBrowser->append("Server: " + message);
         }
-        else if (type == "MESSAGE")
+        else if (type == "ACTIVE_CLIENTS")
         {
+           // Process the list of active client IDs received from the server
+           QJsonArray clientIdsArray = jsonObj["clientIds"].toArray();
+           for (const QJsonValue &value : clientIdsArray) {
+               int clientId = value.toInt();
+               QColor color = generateColorForClient(clientId);
+               qDebug() << "add active player " << clientId;
+               // Add player for each active client ID
+               graphicsDialog->addPlayer(clientId, color);
+           }
+           ui->textBrowser->append("Server: Active clients updated.");
+        }
+        else if (type == "POSITION")
+        {
+            qDebug() << "processing position";
+            QJsonArray playersArray = jsonObj["players"].toArray();
+            graphicsDialog->updatePlayerPositions(playersArray);
+        }
+        else
+        {
+            ui->textBrowser->append("Server: " + message);
         }
     }
 }
@@ -141,19 +162,24 @@ QColor Dialog::generateColorForClient(int clientId) {
     return colors[clientId % colors.size()];  // Cycle through colors based on clientId
 }
 
-//void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y) {
-//    QJsonObject json;
-//    json["clientId"] = clientId;
-//    json["x"] = x;
-//    json["y"] = y;
+void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
+{
+    qDebug() << "sending player position";
 
-//    QJsonDocument doc(json);
-//    QByteArray data = doc.toJson();
+    QJsonObject message;
+    message["type"] = "POSITION";
+    QJsonArray playerPosArray;
 
-//    QString ip = ui->ipEdit->text();
-//    quint16 port = ui->portEdit->text().toUInt();
-//    socket->writeDatagram(data, QHostAddress(ip), port);
-//}
+    QJsonObject playerPosData;
+    playerPosData["clientId"] = clientId;
+    playerPosData["x"] = x;
+    playerPosData["y"] = y;
+
+    playerPosArray.append(playerPosData);
+    message["players"] = playerPosArray;
+
+    sendJson(message);
+}
 
 
 Dialog::~Dialog()

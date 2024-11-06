@@ -10,7 +10,11 @@
 #include <QKeyEvent>
 #include <QCloseEvent>
 #include <QUdpSocket>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 #include "player.h"
+#include "dialog.h"
 
 class GraphicsDialog : public QDialog {
     Q_OBJECT
@@ -25,20 +29,21 @@ protected:
 
 private:
     QGraphicsScene *scene;
-    Player *player;
+    Player *activePlayer;
     QMap<int, Player*> clientPlayers;
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
 
 public slots:
+    void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
-//    void sendPlayerPosition(int clientId, qreal x, qreal y);
+//    void sendPlayerPosition();
+    void updatePlayerPositions(QJsonArray &playersArray);
 
 signals:
     void requestClose();
-//    void playerPositionChanged(int clientId, qreal x, qreal y);
 };
 
 

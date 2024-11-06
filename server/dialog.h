@@ -9,6 +9,9 @@
 #include <QHostAddress>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QMap>
+#include <QPoint>
 
 namespace Ui {
 class Dialog;
@@ -31,12 +34,16 @@ private:
     QList<quint16> clientPorts;
     QList<int> availableIds;
     QMap<QString, int> clientIdMap; // Use a QString key
+    QMap<int, QPoint> playerPositions;
 
 private slots:
     void rx();  // receive
     void tx(QJsonObject message);  // transmit
     void configureServer();
     void removeClient(QString& clientKey);
+    void updatePlayerPositions(const QJsonArray &playersArray);  // Update server's player positions
+    void broadcastPlayerPositions();  // Broadcast player positions to all clients
+    void broadcastActiveClients();
 };
 
 #endif // DIALOG_H

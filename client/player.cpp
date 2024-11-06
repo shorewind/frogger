@@ -38,7 +38,7 @@ void Player::setPos(qreal newX, qreal newY) {
     // Use the base class setPos to move the item
     QGraphicsItem::setPos(x, y);
     update(); // Request a repaint
-//    emit positionChanged(clientId, x, y);
+    emit positionChanged();
 }
 
 QRectF Player::boundingRect() const {
