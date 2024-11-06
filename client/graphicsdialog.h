@@ -34,9 +34,8 @@ private:
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
 
-    Obstacle *log1;  // Moving log obstacle
-    Obstacle *log2;  // Moving log obstacle
-    Obstacle *car1;  // Moving car obstacle
+    Obstacle *charger1;  // Moving charger car obstacle
+    Obstacle *charger2;  // Moving charger obstacle
     Obstacle *supra1; // Moving supra car obstacle
     Obstacle *supra2; // Moving supra car obstacle
     Obstacle *skyline1; // Moving skyline car obstacle

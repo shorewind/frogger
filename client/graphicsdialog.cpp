@@ -32,34 +32,40 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     layout->addWidget(view);
     setLayout(layout);
 
-    // Initialize obstacles
-    log1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2, -100, -4, true);
-    log2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 200, -100, -4, true);
-    // Add some Supras going left (negative speed)
-    supra1 = new Obstacle(Obstacle::Supra, SCENE_WIDTH / 2, 0, -4, true);
-    supra2 = new Obstacle(Obstacle::Supra, SCENE_WIDTH / 2 + 200, 0, -4, true);
+    // Initialize obstacles in right lanes
+    // Row 1 - Skylines (blue cars) - both moving left
+    skyline1 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true); // Left-moving car
+    skyline2 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true); // Left-moving car
 
-    // Add some Skylines going right
-    skyline1 = new Obstacle(Obstacle::Skyline, -SCENE_WIDTH / 2, 50, 6);
-    skyline2 = new Obstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 - 200, 50, 6);
+    // Row 2 - Supras (orange cars) - both moving right
+    supra1 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4); // Right-moving car
+    supra2 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4); // Right-moving car
+
+    // Row 3 - Chargers (grey cars) - both moving left
+    charger1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true); // Left-moving car
+    charger2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true); // Left-moving car
+
+
 
     // Add all cars to scene
-    scene->addItem(log1);  // These are now Chargers
-    scene->addItem(log2);
+    scene->addItem(charger1);  // These are now Chargers
+    scene->addItem(charger2);
     scene->addItem(supra1);
     scene->addItem(supra2);
     scene->addItem(skyline1);
     scene->addItem(skyline2);
 
     //obstacle list
+    obstacleList.append(charger1);
+    obstacleList.append(charger2);
     obstacleList.append(supra1);
     obstacleList.append(supra2);
     obstacleList.append(skyline1);
     obstacleList.append(skyline2);
 
     // Start moving all cars
-    log1->startMoving();
-    log2->startMoving();
+    charger1->startMoving();
+    charger2->startMoving();
     supra1->startMoving();
     supra2->startMoving();
     skyline1->startMoving();
