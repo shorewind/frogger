@@ -2,20 +2,21 @@
 #define OBSTACLE_H
 
 #include <QGraphicsRectItem>
+#include <QGraphicsPixmapItem>
 #include <QObject>
 #include <QTimer>
-#include <QBrush>
-#include <QColor>
 
-
-
-class Obstacle : public QObject, public QGraphicsRectItem
-{
+class Obstacle : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 
 public:
+    enum CarType { Charger, Supra, Skyline };
+
+    // Constructor for a basic rectangular obstacle
     explicit Obstacle(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent = nullptr);
 
+    // Constructor for a car-type obstacle
+    explicit Obstacle(CarType type, int startX, int startY, int speed, bool facingLeft = false, QGraphicsItem *parent = nullptr);
 
     void startMoving(); // Starts the obstacle movement
 
@@ -23,18 +24,14 @@ private slots:
     void move(); // Slot to handle continuous movement
 
 private:
-    int speed; // Speed of movement
-    int startX; // Starting x-position
-    int startY; // Starting y-position
-    QTimer *movementTimer; // Timer to control movement
-};
+    void initializeCar(CarType type, bool facingLeft);
 
-// Car class as a type of Obstacle
-class Car : public Obstacle
-{
-public:
-    Car(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent = nullptr);
+    int speed;
+    int startX;
+    int startY;
+    QTimer *movementTimer;
+    static const int CAR_WIDTH = 100;
+    static const int CAR_HEIGHT = 50;
 };
 
 #endif // OBSTACLE_H
-

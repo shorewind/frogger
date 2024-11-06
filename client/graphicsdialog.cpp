@@ -32,17 +32,40 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     layout->addWidget(view);
     setLayout(layout);
 
-    // Create and add the log as an Obstacle object
-     log1 = new Obstacle(50, 20, -SCENE_WIDTH / 2, -50, 5); // Width 50, height 20, starting position, and speed
-     log2 = new Obstacle(50, 20, -SCENE_WIDTH / 2 - 200, -50, 5); // Second log, slightly offset
-     scene->addItem(log1);
-     scene->addItem(log2);
-     log1->startMoving();
-     log2->startMoving();
-     car1 = new Car(50, 25, -SCENE_WIDTH / 2, 120, 5); // Second log, slightly offset
-     obstacleList.append(car1);
-     scene->addItem(car1);
-     car1->startMoving();
+    // Initialize obstacles
+    log1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2, -100, -4, true);
+    log2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 200, -100, -4, true);
+    // Add some Supras going left (negative speed)
+    supra1 = new Obstacle(Obstacle::Supra, SCENE_WIDTH / 2, 0, -4, true);
+    supra2 = new Obstacle(Obstacle::Supra, SCENE_WIDTH / 2 + 200, 0, -4, true);
+
+    // Add some Skylines going right
+    skyline1 = new Obstacle(Obstacle::Skyline, -SCENE_WIDTH / 2, 50, 6);
+    skyline2 = new Obstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 - 200, 50, 6);
+
+    // Add all cars to scene
+    scene->addItem(log1);  // These are now Chargers
+    scene->addItem(log2);
+    scene->addItem(supra1);
+    scene->addItem(supra2);
+    scene->addItem(skyline1);
+    scene->addItem(skyline2);
+
+    //obstacle list
+    obstacleList.append(supra1);
+    obstacleList.append(supra2);
+    obstacleList.append(skyline1);
+    obstacleList.append(skyline2);
+
+    // Start moving all cars
+    log1->startMoving();
+    log2->startMoving();
+    supra1->startMoving();
+    supra2->startMoving();
+    skyline1->startMoving();
+    skyline2->startMoving();
+
+
 
      QTimer *collisionTimer = new QTimer(this);
          connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
@@ -50,8 +73,20 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
 }
 
 void GraphicsDialog::checkCollisions() {
-    player->checkCollisionWithObstacles(obstacleList);
+    for (int clientId : clientPlayers.keys()) {
+        Player *player = clientPlayers[clientId];
+        if (!player) continue; // Ensure the player is valid
+
+        for (QGraphicsItem *obstacle : obstacleList) {
+            if (player->collidesWithItem(obstacle)) {
+                // Handle collision - reset player position based on client ID
+                player->setPos(clientId * 40, 250); // Adjust to your desired reset position
+                break; // Exit the loop after handling one collision for this player
+            }
+        }
+    }
 }
+
 
 GraphicsDialog::~GraphicsDialog() {
     delete scene; // Clean up the scene
