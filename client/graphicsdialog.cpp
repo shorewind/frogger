@@ -8,12 +8,12 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     activePlayer(nullptr),
     socket(socket) // Initialize the socket
 {
-    // Set up the scene dimensions
+    // set up the scene dimensions
     scene->setSceneRect(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     scene->setBackgroundBrush(Qt::black);
 
-    // Load and set the background image
+    // load and set the background image
     QPixmap background(":/images/background.png");
     background = background.scaled(SCENE_WIDTH, SCENE_HEIGHT, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(background);
@@ -21,25 +21,25 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     backgroundItem->setZValue(-1);
     scene->addItem(backgroundItem);
 
-    // Create a QGraphicsView and set it to use the scene
+    // create a QGraphicsView and set it to use the scene
     QGraphicsView *view = new QGraphicsView(scene, this);
     view->setRenderHint(QPainter::Antialiasing);
     view->setFixedSize(SCENE_WIDTH, SCENE_HEIGHT);
 
-    // Set layout for the dialog
+    // set layout for the dialog
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(view);
     setLayout(layout);
 }
 
 GraphicsDialog::~GraphicsDialog() {
-    delete scene; // Clean up the scene
+    delete scene;
 }
 
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
     if (!activePlayer) {
-        return;  // If no active player, just return (do nothing)
+        return;
     }
 
     qDebug() << activePlayer->clientId;
@@ -55,35 +55,6 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e);
 }
 
-//void GraphicsDialog::sendPlayerPosition() {
-//    qDebug() << "sending player position";
-
-//    QJsonObject message;
-//    message["type"] = "POSITION";
-//    QJsonArray playerPosArray;
-
-//    QJsonObject playerPosData;
-//    playerPosData["clientId"] = activePlayer->clientId;
-//    playerPosData["x"] = activePlayer->x;
-//    playerPosData["y"] = activePlayer->x;
-
-//    playerPosArray.append(playerPosData);
-//    message["players"] = playerPosArray;
-
-//    QJsonDocument doc(message);
-//    QByteArray data = doc.toJson();
-//    qDebug() << message;
-//    if (socket->state() != QAbstractSocket::BoundState) {
-//        qDebug() << "Socket is not bound!";
-
-//    }
-
-//    if (!socket->writeDatagram(data, QHostAddress(serverIp), serverPort))
-//    {
-//        qDebug() << "Error sending datagram: " << socket->errorString();
-//    }
-//}
-
 void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
     for (const QJsonValue &value : playersArray) {
         QJsonObject playerData = value.toObject();
@@ -96,7 +67,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
             continue;
         }
 
-        // Update position if the player exists
+        // update position if the player exists
         if (clientPlayers.contains(clientId)) {
             clientPlayers[clientId]->setPos(x, y);
             qDebug() << "client Id " << clientId << " " << x << ", " << y;
@@ -113,7 +84,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(clientId * 40, 40); // Adjust position as needed
+    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
@@ -131,7 +102,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     Player *player = new Player(clientId, color);
-    player->setPos(clientId * 40, 40); // Adjust position as needed
+    player->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
@@ -140,6 +111,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
 
 void GraphicsDialog::removePlayer(int clientId) {
     if (clientPlayers.contains(clientId)) {
+        qDebug() << "removing player " << clientId;
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);

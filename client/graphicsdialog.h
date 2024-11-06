@@ -39,7 +39,6 @@ public slots:
     void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
-//    void sendPlayerPosition();
     void updatePlayerPositions(QJsonArray &playersArray);
 
 signals:

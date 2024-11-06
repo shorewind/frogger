@@ -33,16 +33,17 @@ private:
     QList<QHostAddress> clientAddresses;
     QList<quint16> clientPorts;
     QList<int> availableIds;
-    QMap<QString, int> clientIdMap; // Use a QString key
+    QMap<QString, int> clientIdMap;
     QMap<int, QPoint> playerPositions;
+    QJsonArray playersArray;
 
 private slots:
     void rx();  // receive
     void tx(QJsonObject message);  // transmit
     void configureServer();
     void removeClient(QString& clientKey);
-    void updatePlayerPositions(const QJsonArray &playersArray);  // Update server's player positions
-    void broadcastPlayerPositions();  // Broadcast player positions to all clients
+    void updatePlayerPositions(QJsonArray playersArray);
+    void broadcastPlayerPositions();
     void broadcastActiveClients();
 };
 

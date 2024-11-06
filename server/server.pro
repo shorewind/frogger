@@ -29,6 +29,7 @@ SOURCES += \
         dialog.cpp
 
 HEADERS += \
+        defs.h \
         dialog.h
 
 FORMS += \

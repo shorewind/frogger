@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include "ui_dialog.h"
+#include "defs.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -55,7 +56,6 @@ void Dialog::rx()
         QHostAddress senderAddress = msg.senderAddress();
 
         QString clientKey = QString("%1:%2").arg(clientIP).arg(senderPort);
-        //    socket->writeDatagram(data, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
 
         QJsonDocument doc = QJsonDocument::fromJson(incomingMsg);
         if (!doc.isObject()) return;  // check if the received data is a valid JSON object
@@ -73,7 +73,7 @@ void Dialog::rx()
         }
         else if (type == "CONNECT")
         {
-            // Handle new connections
+            // handle new connections
             int clientId = -1;
             if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty()) {
                 clientId = availableIds.takeFirst();
@@ -82,14 +82,14 @@ void Dialog::rx()
                 clientPorts.append(senderPort);
             }
 
-            // Notify the new client
+            // notify the new client
             QJsonObject welcomeMessage;
             welcomeMessage["type"] = "WELCOME";
             welcomeMessage["message"] = "Welcome to the server! You are Client " + QString::number(clientId);
             QJsonDocument welcomeDoc(welcomeMessage);
             socket->writeDatagram(welcomeDoc.toJson(), senderAddress, senderPort);
 
-            // Broadcast new connection
+            // broadcast new connection
             QJsonObject broadcastMessage;
             broadcastMessage["type"] = "JOINED";
             broadcastMessage["message"] = QString("Client %1 (%2:%3) has joined the server.")
@@ -100,9 +100,10 @@ void Dialog::rx()
             tx(broadcastMessage);
 
             broadcastActiveClients();
+            broadcastPlayerPositions();
         }
         else if (type == "MESSAGE") {
-            // Handle incoming messages from clients
+            // handle incoming messages from clients
             QString message = jsonObj["message"].toString();
 
             if (clientIdMap.contains(clientKey) && !message.isEmpty()) {
@@ -125,45 +126,37 @@ void Dialog::rx()
         }
         else if (type == "POSITION")
         {
-            qDebug() << "POSITION received";
-            // Handle position updates from the client
-            QJsonArray playersArray = jsonObj["players"].toArray();
+            // handle position updates from the client
+            playersArray = jsonObj["players"].toArray();
 
-            // Update player positions
             updatePlayerPositions(playersArray);
-
-            // After updating the positions, broadcast all player positions to all clients
             broadcastPlayerPositions();
         }
     }
 }
 
-void Dialog::updatePlayerPositions(const QJsonArray &playersArray)
+void Dialog::updatePlayerPositions(QJsonArray playersArray)
 {
-    // Iterate over all player positions received in the "players" array
     for (const QJsonValue &value : playersArray) {
         QJsonObject playerData = value.toObject();
         int clientId = playerData["clientId"].toInt();
         int x = playerData["x"].toInt();
         int y = playerData["y"].toInt();
 
-        // Store or update the player position in the map
         playerPositions[clientId] = QPoint(x, y);
 
-        qDebug() << "Updated position for client " << clientId << ": (" << x << ", " << y << ")";
+//        qDebug() << "Updated position for client " << clientId << ": (" << x << ", " << y << ")";
     }
 }
 
 void Dialog::broadcastPlayerPositions()
 {
-    qDebug() << "broadcasting player positions";
+//    qDebug() << "broadcasting player positions";
     QJsonObject positionUpdateMessage;
     positionUpdateMessage["type"] = "POSITION";
 
-    // Create a JSON array to store player position data
     QJsonArray playersArray;
 
-    // Iterate through all stored player positions and add them to the array
     for (auto it = playerPositions.constBegin(); it != playerPositions.constEnd(); ++it) {
         QJsonObject playerData;
         playerData["clientId"] = it.key();
@@ -175,28 +168,22 @@ void Dialog::broadcastPlayerPositions()
 
     positionUpdateMessage["players"] = playersArray;
 
-    // Broadcast the position update to all clients
     tx(positionUpdateMessage);
 }
 
 void Dialog::broadcastActiveClients()
 {
-    // Create a JSON object to send the active client IDs
     QJsonObject activeClientsMessage;
     activeClientsMessage["type"] = "ACTIVE_CLIENTS";
 
-    // Create a JSON array to store client IDs
     QJsonArray activeClientsArray;
 
-    // Fill the array with the active client IDs
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it) {
         activeClientsArray.append(it.value());  // Append the clientId
     }
 
-    // Add the client IDs array to the message
     activeClientsMessage["clientIds"] = activeClientsArray;
 
-    // Broadcast the message to all connected clients
     tx(activeClientsMessage);
 }
 
@@ -204,10 +191,13 @@ void Dialog::broadcastActiveClients()
 
 void Dialog::removeClient(QString &clientKey)
 {
-    qDebug() << "disconnecting " << clientKey;
+//    qDebug() << "disconnecting " << clientKey;
     if (clientIdMap.contains(clientKey)) {
         int clientId = clientIdMap[clientKey];
         clientIdMap.remove(clientKey);
+
+        // WIP: Reset the player position to default value
+        playerPositions[clientId] = QPoint(clientId*150 - SCENE_WIDTH/2, SCENE_HEIGHT/2 - 55);
 
         QStringList parts = clientKey.split(':');
         if (parts.size() == 2) {
@@ -222,7 +212,7 @@ void Dialog::removeClient(QString &clientKey)
                 std::sort(availableIds.begin(), availableIds.end());
             }
 
-            // Create a disconnection message to broadcast
+            // create a disconnection message to broadcast
             QJsonObject disconnectionMsg;
             disconnectionMsg["type"] = "MESSAGE";
             disconnectionMsg["message"] = QString("Client %1 (%2:%3) has disconnected.")
@@ -231,7 +221,7 @@ void Dialog::removeClient(QString &clientKey)
                                              .arg(port);
 
             ui->textBrowser->append(disconnectionMsg["message"].toString());
-            tx(disconnectionMsg); // Broadcast the disconnection message
+            tx(disconnectionMsg);
         }
     }
 }
@@ -242,13 +232,11 @@ void Dialog::tx(QJsonObject jsonObject)
 {
     qDebug() << "tx";
     qDebug() << jsonObject;
-    // Convert JSON object to QByteArray
+
     QJsonDocument doc(jsonObject);
     QByteArray message = doc.toJson();
 
-    // Broadcast the message to all connected clients
     for (int i = 0; i < clientAddresses.size(); ++i) {
-//        qDebug() << clientPorts[i];
         socket->writeDatagram(message, clientAddresses[i], clientPorts[i]);
     }
 }

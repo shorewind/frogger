@@ -1,6 +1,7 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "graphicsdialog.h"
+#include "defs.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -31,14 +32,9 @@ void Dialog::connectToServer()
         ui->sendButton->setEnabled(true);
         ui->connectButton->setEnabled(false);
 
-        // Send the initial message
-//        QByteArray initialMsg = "CONNECT";
-//        socket->writeDatagram(initialMsg, QHostAddress(ip), port);
-
         // Send initial JSON "CONNECT" message
         QJsonObject connectMessage;
         connectMessage["type"] = "CONNECT";
-//        connectMessage["message"] = "New Client Connected";
 
         sendJson(connectMessage);
 
@@ -60,10 +56,10 @@ void Dialog::disconnectFromServer()
 {
     QJsonObject disconnectMessage;
 
+    graphicsDialog->removePlayer(activeClientId);
     disconnectMessage["type"] = "DISCONNECT";
     sendJson(disconnectMessage);
-//    QByteArray disconnectMsg = "DISCONNECT";
-//    socket->writeDatagram(disconnectMsg, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
+
     socket->disconnectFromHost();
     delete socket;
     close();
@@ -72,9 +68,6 @@ void Dialog::disconnectFromServer()
 void Dialog::sendMsg()
 {
     QString msg = ui->messageEdit->text();
-//    QByteArray data = msg.toUtf8();
-
-//    socket->writeDatagram(data, QHostAddress(ui->ipEdit->text()), ui->portEdit->text().toUInt());
     QJsonObject jsonMessage;
     jsonMessage["type"] = "MESSAGE";
     jsonMessage["message"] = msg;
@@ -121,16 +114,34 @@ void Dialog::processMsg()
         }
         else if (type == "ACTIVE_CLIENTS")
         {
-           // Process the list of active client IDs received from the server
-           QJsonArray clientIdsArray = jsonObj["clientIds"].toArray();
-           for (const QJsonValue &value : clientIdsArray) {
-               int clientId = value.toInt();
-               QColor color = generateColorForClient(clientId);
-               qDebug() << "add active player " << clientId;
-               // Add player for each active client ID
-               graphicsDialog->addPlayer(clientId, color);
-           }
-           ui->textBrowser->append("Server: Active clients updated.");
+            // process the list of active client IDs received from the server
+            QJsonArray clientIdsArray = jsonObj["clientIds"].toArray();
+
+            // set of current active client IDs received from the server
+            QSet<int> newActiveClients;
+            for (const QJsonValue &value : clientIdsArray) {
+                int clientId = value.toInt();
+                newActiveClients.insert(clientId);
+                QColor color = generateColorForClient(clientId);
+                qDebug() << "add active player " << clientId;
+
+                // add player if not already in the graphics dialog
+                if (!activeClients.contains(clientId)) {
+                    graphicsDialog->addPlayer(clientId, color);
+                }
+            }
+
+            // check for players that are no longer active
+            for (int clientId : activeClients) {
+                if (!newActiveClients.contains(clientId)) {
+                    qDebug() << "remove active player " << clientId;
+                    graphicsDialog->removePlayer(clientId);
+                }
+            }
+
+            activeClients = newActiveClients;
+
+            ui->textBrowser->append("Server: Active clients updated.");
         }
         else if (type == "POSITION")
         {
@@ -151,7 +162,7 @@ int Dialog::parseClientIdFromMsg(const QString &msg) {
     if (regex.indexIn(msg) != -1) {
         return regex.cap(1).toInt();
     }
-    return -1;  // Return -1 if parsing fails
+    return -1;
 }
 
 QColor Dialog::generateColorForClient(int clientId) {
@@ -159,7 +170,7 @@ QColor Dialog::generateColorForClient(int clientId) {
         QColor("red"), QColor("green"), QColor("blue"),
         QColor("yellow")
     };
-    return colors[clientId % colors.size()];  // Cycle through colors based on clientId
+    return colors[clientId % colors.size()];
 }
 
 void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)

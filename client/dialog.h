@@ -41,6 +41,8 @@ private:
     int activeClientId;
     QString ip;
     quint16 port;
+    QSet<int> activeClients;
+
 
 private slots:
     void connectToServer();
