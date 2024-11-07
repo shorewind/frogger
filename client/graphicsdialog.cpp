@@ -3,6 +3,17 @@
 #include "obstacles.h"
 #include <QTimer>
 #include "dialog.h"
+//286
+
+// 116 for each hole and a half
+// therefore 805 total length
+// half of 116 is 58
+// 174 correct for hole 2
+// 40 fro left side
+// a box is 38
+static float position_width = 174;
+static float position_height = 335;
+
 
 GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QDialog(parent),
@@ -163,7 +174,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
+    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - 55); // Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
@@ -181,7 +192,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     Player *player = new Player(clientId, color);
-    player->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
+    player->setPos(-SCENE_WIDTH/2 + clientId * 335, SCENE_HEIGHT/2 - 55); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
