@@ -72,7 +72,7 @@ Obstacle::Obstacle(int length, int startX, int startY, int speed, bool facingLef
     setPos(startX, startY);
 
     // start movement timer
-    logTimer = new QTimer(this);
+    movementTimer = new QTimer(this);
     connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 

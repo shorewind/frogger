@@ -46,6 +46,7 @@ private:
     Obstacle *skyline2; // Moving skyline car obstacle
 
     Obstacle *log1;
+    Obstacle *log2;
 
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
