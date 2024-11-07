@@ -8,22 +8,22 @@ Player::Player(int id, QColor color, QGraphicsItem *parent)
 
 void Player::goLeft() {
     if (x - 30 > -SCENE_WIDTH / 2) // check left boundary
-        setPos(x - 40, y);
+        setPos(x - 38, y);
 }
 
 void Player::goRight() {
     if (x + 30 < SCENE_WIDTH / 2) // check right boundary
-        setPos(x + 40, y);
+        setPos(x + 38, y);
 }
 
 void Player::goUp() {
     if (y - 30 > -SCENE_HEIGHT / 2) // check top boundary
-        setPos(x, y - 40);
+        setPos(x, y - 38);
 }
 
 void Player::goDown() {
     if (y + 30 < SCENE_HEIGHT / 2) // check bottom boundary
-        setPos(x, y + 40);
+        setPos(x, y + 38);
 }
 
 void Player::stop() {
@@ -55,7 +55,7 @@ void Player::checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles
     for (auto obstacle : obstacles) {
         if (this->collidesWithItem(obstacle)) {
             // Reset the player to the starting position upon collision
-            setPos(clientId * 40, 250); // Assuming (0, 0) is the starting point; adjust if needed
+            setPos(clientId * 2, 245); // Assuming (0, 0) is the starting point; adjust if needed
             return;
         }
     }
