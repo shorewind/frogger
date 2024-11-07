@@ -33,6 +33,8 @@ Obstacle::Obstacle(CarType type, int startX, int startY, int speed, bool facingL
 // Initializes the car appearance based on the CarType
 void Obstacle::initializeCar(CarType type, bool facingLeft) {
     QString imagePath;
+// Added the Images of sall three PNGs for  use int the main program, however this will
+    //not merge properly
 
     switch(type) {
         case Charger:
