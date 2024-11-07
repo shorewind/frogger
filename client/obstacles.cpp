@@ -41,6 +41,31 @@ Obstacle::Obstacle(LogType type, int startX, int startY, int speed, bool facingL
     connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
+void Obstacle::initializeLog(LogType type, bool facingLeft)
+{
+    QString imagePath;
+
+    // switch case for selecting either a long log or a short log
+
+    QPixmap logImage(imagePath);
+    if(logImage.isNull() && type == LongLog)
+    {
+        // error default case handling, insert a blank log
+        logImage = QPixmap(LOG_L_WIDTH, LOG_L_HEIGHT);
+        logImage.fill(Qt::white);
+    }
+    else if (logImage.isNull() && type == shortLog)
+    {
+        // error default case handling, insert a blank log
+        logImage = QPixmap(LOG_S_WIDTH, LOG_S_HEIGHT);
+        logImage.fill(Qt::white);
+    }
+
+    // Scale the image to log size
+
+
+}
+
 
 // Initializes the car appearance based on the CarType
 void Obstacle::initializeCar(CarType type, bool facingLeft) {
