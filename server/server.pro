@@ -1,14 +1,14 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2024-11-03T13:08:38
+# Project created by QtCreator 2024-10-31T16:27:38
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = STARTPROJECT
+TARGET = server
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -29,6 +29,7 @@ SOURCES += \
         dialog.cpp
 
 HEADERS += \
+        defs.h \
         dialog.h
 
 FORMS += \

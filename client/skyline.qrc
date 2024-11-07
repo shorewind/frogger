@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/Skyline.png</file>
+    </qresource>
+</RCC>
