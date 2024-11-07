@@ -30,43 +30,6 @@ Obstacle::Obstacle(CarType type, int startX, int startY, int speed, bool facingL
     connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
-Obstacle::Obstacle(LogType type, int startX, int startY, int speed, bool facingLeft, QGraphicsItem* parent)
-    : QGraphicsPixmapItem (parent), speed(speed), startX(startX), startY(startY)
-{
-    initializeLog(type, facingLeft);    // instantiate orientation
-    setPos(startX, startY);
-
-    // start movement timer
-    logTimer = new QTimer(this);
-    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
-}
-
-void Obstacle::initializeLog(LogType type, bool facingLeft)
-{
-    QString imagePath;
-
-    // switch case for selecting either a long log or a short log
-
-    QPixmap logImage(imagePath);
-    if(logImage.isNull() && type == LongLog)
-    {
-        // error default case handling, insert a blank log
-        logImage = QPixmap(LOG_L_WIDTH, LOG_L_HEIGHT);
-        logImage.fill(Qt::white);
-    }
-    else if (logImage.isNull() && type == shortLog)
-    {
-        // error default case handling, insert a blank log
-        logImage = QPixmap(LOG_S_WIDTH, LOG_S_HEIGHT);
-        logImage.fill(Qt::white);
-    }
-
-    // Scale the image to log size
-
-
-}
-
-
 // Initializes the car appearance based on the CarType
 void Obstacle::initializeCar(CarType type, bool facingLeft) {
     QString imagePath;
@@ -99,6 +62,43 @@ void Obstacle::initializeCar(CarType type, bool facingLeft) {
     }
 
     setPixmap(carImage);
+}
+
+// Constructor for a log obstacle
+Obstacle::Obstacle(int length, int startX, int startY, int speed, bool facingLeft, QGraphicsItem* parent)
+    : QGraphicsPixmapItem (parent), speed(speed), startX(startX), startY(startY)
+{
+    initializeLog(length, facingLeft);    // instantiate orientation
+    setPos(startX, startY);
+
+    // start movement timer
+    logTimer = new QTimer(this);
+    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
+}
+
+// initialize either a long or short log
+void Obstacle::initializeLog(int length, bool facingLeft)
+{
+    QString imagePath = ":/images/Log.png";
+
+    QPixmap logImage(imagePath);
+    if (logImage.isNull())
+    {
+        // Default case draws a rectangle if image fails
+        logImage = QPixmap(length, LOGH);
+        logImage.fill(Qt::magenta);
+    }
+
+    // Scale the image to the specified size
+    logImage = logImage.scaled(length, LOGH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // Flip log (not absolutely necesary)
+    if (facingLeft)
+    {
+        logImage = logImage.transformed(QTransform().scale(-1, 1));
+    }
+
+    setPixmap(logImage);
 }
 
 // Starts the obstacle's movement

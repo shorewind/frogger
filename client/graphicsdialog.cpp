@@ -72,6 +72,13 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     skyline1->startMoving();
     skyline2->startMoving();
 
+    // Spawn logs
+    // Row 1: short long short moving left
+    log1 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 150, 250, -4, false);
+
+    scene->addItem(log1);
+    obstacleList.append(log1);
+    log1->startMoving();
 
 
      QTimer *collisionTimer = new QTimer(this);
