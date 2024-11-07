@@ -3,6 +3,20 @@
 #include "obstacles.h"
 #include <QTimer>
 #include "dialog.h"
+//286
+
+// 116 for each hole and a half
+// therefore 805 total length
+// half of 116 is 58
+// 174 correct for hole 2
+// 40 fro left side
+// a box is 38
+
+// correct vertical start 55
+// bottom of line is 38
+static float position_width = 174;
+static float position_height = 55;
+
 
 GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QDialog(parent),
@@ -87,7 +101,7 @@ void GraphicsDialog::checkCollisions() {
         for (QGraphicsItem *obstacle : obstacleList) {
             if (player->collidesWithItem(obstacle)) {
                 // Handle collision - reset player position based on client ID
-                player->setPos(clientId * 40, 250); // Adjust to your desired reset position
+                player->setPos(clientId * 2, 245); // Adjust to your desired reset position
                 break; // Exit the loop after handling one collision for this player
             }
         }
@@ -163,7 +177,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
+    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
@@ -181,7 +195,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     Player *player = new Player(clientId, color);
-    player->setPos(-SCENE_WIDTH/2 + clientId * 150, SCENE_HEIGHT/2 - 55); // Adjust position as needed
+    player->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
