@@ -28,12 +28,14 @@ SOURCES += \
         graphicsdialog.cpp \
         main.cpp \
         dialog.cpp \
+        obstacles.cpp \
         player.cpp
 
 HEADERS += \
         defs.h \
         dialog.h \
         graphicsdialog.h \
+        obstacles.h \
         player.h
 
 FORMS += \
@@ -45,4 +47,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    resources.qrc
+    charger.qrc \
+    resources.qrc \
+    skyline.qrc \
+    supra.qrc
+
+DISTFILES +=

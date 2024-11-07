@@ -15,6 +15,7 @@
 #include <QJsonArray>
 #include "player.h"
 #include "dialog.h"
+#include "obstacles.h" // Include the Obstacle class
 
 class GraphicsDialog : public QDialog {
     Q_OBJECT
@@ -34,6 +35,15 @@ private:
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
+    QList<QGraphicsItem *> obstacleList;
+    void checkCollisions();
+
+    Obstacle *charger1;  // Moving charger car obstacle
+    Obstacle *charger2;  // Moving charger obstacle
+    Obstacle *supra1; // Moving supra car obstacle
+    Obstacle *supra2; // Moving supra car obstacle
+    Obstacle *skyline1; // Moving skyline car obstacle
+    Obstacle *skyline2; // Moving skyline car obstacle
 
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
@@ -44,6 +54,5 @@ public slots:
 signals:
     void requestClose();
 };
-
 
 #endif // GRAPHICS_H

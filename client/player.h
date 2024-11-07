@@ -24,7 +24,7 @@ public:
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
+    void checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles);
 signals:
     void positionChanged();
 

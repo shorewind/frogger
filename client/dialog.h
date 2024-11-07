@@ -12,6 +12,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+
+
 class GraphicsDialog;
 
 namespace Ui {
@@ -42,6 +44,10 @@ private:
     QString ip;
     quint16 port;
     QSet<int> activeClients;
+
+
+
+
 
 
 private slots:
