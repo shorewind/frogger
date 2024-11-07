@@ -20,39 +20,86 @@ Player::~Player()
 
 }
 
+//void Player::goLeft()
+//{
+//    dx = -player_dx;
+//    dy = 0.0;       // only going left no change in y coordinate
+//    offset = 8;     // right subset of images to go left
+//}
+
+//void Player::goRight()
+//{
+//    dx = player_dx;
+//    dy = 0.0;
+//    offset = 16;
+//}
+
+//void Player::goUp()
+//{
+//    dx = 0.0;
+//    dy = -player_dy;
+//    offset = 24;
+//}
+
+//void Player::goDown()
+//{
+//    dx = 0.0;
+//    dy = player_dy;
+//    offset = 0;
+//}
+
+//void Player::stop()
+//{
+//    dx = 0.0;
+//    dy = 0.0;
+//}
+
+
 void Player::goLeft()
 {
-    dx = -player_dx;
-    dy = 0.0;       // only going left no change in y coordinate
-    offset = 8;     // right subset of images to go left
+    if (x() - 10 > -sceneWidth / 2){ // Check left boundary
+        setPos(x() - 10, y());
+    }
+    else{
+        setPos(x() - 10, y());
+    }
 }
 
 void Player::goRight()
 {
-    dx = player_dx;
-    dy = 0.0;
-    offset = 16;
+    if (x() + 10 < sceneWidth / 2){ // Check right boundary
+        setPos(x() + 10, y());
+    }
+    else{
+        setPos(x() + 10, y());
+    }
 }
 
 void Player::goUp()
 {
-    dx = 0.0;
-    dy = -player_dy;
-    offset = 24;
+    if (y() - 10 > -sceneHeight / 2){ // Check top boundary
+        setPos(x(), y() - 10);
+    }
+    else{
+        setPos(x(), y() - 10);
+    }
 }
 
 void Player::goDown()
 {
-    dx = 0.0;
-    dy = player_dy;
-    offset = 0;
+    if (y() + 10 < sceneHeight / 2){ // Check bottom boundary
+        setPos(x(), y() + 10);
+    }
+    else{
+        setPos(x(), y() + 10);
+    }
 }
 
 void Player::stop()
 {
-    dx = 0.0;
-    dy = 0.0;
+    // No action needed for stop, but the function exists for key event handling
 }
+
 
 QRectF Player::boundingRect() const
 {
@@ -81,8 +128,10 @@ void Player::paint(QPainter *painter,
 {
 
     // draws the images, player character
-    index = (index + 1) % NUM_FRAMES;
-    painter->drawPixmap(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, images[offset + index]);
+//    for(int k = 0; k < NUM_FRAMES; k++){
+        index = (index + 1) % NUM_FRAMES;
+        painter->drawPixmap(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, images[offset + index]);
+//    }
 
     // redraw the parts that have changed
     painter->setPen(QPen(Qt::white));
@@ -99,34 +148,34 @@ void Player::advance(int phase)
     }
 
 
-    // Compute new coordinates
-    qreal x = this->pos().rx();
-    qreal y = this->pos().ry();
-    x = x + dx;
-    y = y + dy;
+//    // Compute new coordinates
+//    qreal x = this->pos().rx();
+//    qreal y = this->pos().ry();
+//    x = x + dx;
+//    y = y + dy;
 
     // sets the boundaries
     // Force new coordinates to remain within scene bounds
-    if (x < -SCENE_WIDTH/2 + PLAYER_WIDTH/2)
-    {
-        x = -SCENE_WIDTH/2 + PLAYER_WIDTH/2;
-    }
-    else if (x > SCENE_WIDTH/2 - PLAYER_WIDTH/2)
-    {
-        x = SCENE_WIDTH/2 - PLAYER_WIDTH/2;
-    }
+//    if (x < -SCENE_WIDTH/2 + PLAYER_WIDTH/2)
+//    {
+//        x = -SCENE_WIDTH/2 + PLAYER_WIDTH/2;
+//    }
+//    else if (x > SCENE_WIDTH/2 - PLAYER_WIDTH/2)
+//    {
+//        x = SCENE_WIDTH/2 - PLAYER_WIDTH/2;
+//    }
 
-    if (y < -SCENE_HEIGHT/2 + PLAYER_HEIGHT/2)
-    {
-        y = -SCENE_HEIGHT/2 + PLAYER_HEIGHT/2;
-    }
-    else if (y > SCENE_HEIGHT/2 - PLAYER_HEIGHT/2)
-    {
-        y = SCENE_HEIGHT/2 - PLAYER_HEIGHT/2;
-    }
+//    if (y < -SCENE_HEIGHT/2 + PLAYER_HEIGHT/2)
+//    {
+//        y = -SCENE_HEIGHT/2 + PLAYER_HEIGHT/2;
+//    }
+//    else if (y > SCENE_HEIGHT/2 - PLAYER_HEIGHT/2)
+//    {
+//        y = SCENE_HEIGHT/2 - PLAYER_HEIGHT/2;
+//    }
 
-    // Move player to new coordinates
-    this->setPos(x, y);
+//    // Move player to new coordinates
+//    this->setPos(x, y);
 
     // Detect any collisions
     QList<QGraphicsItem*> list = collidingItems();

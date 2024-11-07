@@ -28,6 +28,8 @@ public:
     // if collision boundaries
      QRectF boundingRect() const override;
 
+     explicit Player(int sceneWidth, int sceneHeight, QGraphicsItem *parent = nullptr);
+
      // actual collision detection
      QPainterPath shape() const override;
 
@@ -47,6 +49,9 @@ public:
 
 private:
 
+     int sceneWidth;
+     int sceneHeight;
+
      // array for the pixmaps, images
      QPixmap images[NUM_IMAGES];    // Animation sprites
 
@@ -54,16 +59,16 @@ private:
      int index;                     // Index within an image subset
      int offset;                    // Offset within images for direction of travel
 
-     qreal x = 0.0;                 // Current player position (x,y)
-     qreal y = 0.0;
+//     qreal x = 0.0;                 // Current player position (x,y)
+//     qreal y = 0.0;
 
-     // travels at 4.5 speed
-     qreal player_dx = 4.5;         // Fixed increment of travel (player_dx, player_dy);
-     qreal player_dy = 4.5;         // velocity vector
+//     // travels at 4.5 speed
+//     qreal player_dx = 4.5;         // Fixed increment of travel (player_dx, player_dy);
+//     qreal player_dy = 4.5;         // velocity vector
 
-     // direction of travel
-     qreal dx = 0.0;                // Desired direction of travel
-     qreal dy = 0.0;
+//     // direction of travel
+//     qreal dx = 0.0;                // Desired direction of travel
+//     qreal dy = 0.0;
 };
 
 #endif // PLAYER_H

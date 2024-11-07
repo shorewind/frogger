@@ -45,33 +45,33 @@ Dialog::~Dialog()
 
 void Dialog::keyPressEvent(QKeyEvent *e)
 {
-    if (e)
-    {
+//    if (e)
+//    {
         //int counter = 0;
         switch (e->key())
         {
             case Qt::Key_A:
             case Qt::Key_J:
-            case Qt::Key_Right:
+            case Qt::Key_Left:
                                     player->goLeft();
             //player->stop();
                                     break;
 
             case Qt::Key_D:
             case Qt::Key_L:
-            case Qt::Key_Left:
+            case Qt::Key_Right:
                                     player->goRight();
                                     break;
 
             case Qt::Key_W:
             case Qt::Key_I:
-            case Qt::Key_Down:
+            case Qt::Key_Up:
                                     player->goUp();
                                     break;
 
             case Qt::Key_S:
             case Qt::Key_K:
-            case Qt::Key_Up:
+            case Qt::Key_Down:
                                     player->goDown();
                                     break;
 
@@ -82,7 +82,7 @@ void Dialog::keyPressEvent(QKeyEvent *e)
             default:                player->stop();
                                     break;
         }
-    }
+    //}
 
     //
     QDialog::keyPressEvent(e);
