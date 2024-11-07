@@ -101,7 +101,7 @@ void GraphicsDialog::checkCollisions() {
         for (QGraphicsItem *obstacle : obstacleList) {
             if (player->collidesWithItem(obstacle)) {
                 // Handle collision - reset player position based on client ID
-                player->setPos(clientId * 40, 250); // Adjust to your desired reset position
+                player->setPos(clientId * 2, 245); // Adjust to your desired reset position
                 break; // Exit the loop after handling one collision for this player
             }
         }

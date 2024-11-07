@@ -31,7 +31,7 @@ private:
     int startY;
     QTimer *movementTimer;
     static const int CAR_WIDTH = 100;
-    static const int CAR_HEIGHT = 50;
+    static const int CAR_HEIGHT = 45;
 };
 
 #endif // OBSTACLE_H

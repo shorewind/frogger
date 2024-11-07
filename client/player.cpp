@@ -55,7 +55,7 @@ void Player::checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles
     for (auto obstacle : obstacles) {
         if (this->collidesWithItem(obstacle)) {
             // Reset the player to the starting position upon collision
-            setPos(clientId * 40, 250); // Assuming (0, 0) is the starting point; adjust if needed
+            setPos(clientId * 2, 245); // Assuming (0, 0) is the starting point; adjust if needed
             return;
         }
     }
