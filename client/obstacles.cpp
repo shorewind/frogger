@@ -14,8 +14,8 @@ Obstacle::Obstacle(int width, int height, int startX, int startY, int speed, QGr
     setPos(startX, startY); // Set the initial position
 
     // Initialize the movement timer
-    movementTimer = new QTimer(this);
-    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
+    carTimer = new QTimer(this);
+    connect(carTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
 // Constructor for a car-type obstacle
@@ -62,6 +62,43 @@ void Obstacle::initializeCar(CarType type, bool facingLeft) {
     }
 
     setPixmap(carImage);
+}
+
+// Constructor for a log obstacle
+Obstacle::Obstacle(int length, int startX, int startY, int speed, bool facingLeft, QGraphicsItem* parent)
+    : QGraphicsPixmapItem (parent), speed(speed), startX(startX), startY(startY)
+{
+    initializeLog(length, facingLeft);    // instantiate orientation
+    setPos(startX, startY);
+
+    // start movement timer
+    movementTimer = new QTimer(this);
+    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
+}
+
+// initialize either a long or short log
+void Obstacle::initializeLog(int length, bool facingLeft)
+{
+    QString imagePath = ":/images/Log.png";
+
+    QPixmap logImage(imagePath);
+    if (logImage.isNull())
+    {
+        // Default case draws a rectangle if image fails
+        logImage = QPixmap(length, LOGH);
+        logImage.fill(Qt::magenta);
+    }
+
+    // Scale the image to the specified size
+    logImage = logImage.scaled(length, LOGH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // Flip log (not absolutely necesary)
+    if (facingLeft)
+    {
+        logImage = logImage.transformed(QTransform().scale(-1, 1));
+    }
+
+    setPixmap(logImage);
 }
 
 // Starts the obstacle's movement
