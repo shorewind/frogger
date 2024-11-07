@@ -14,8 +14,8 @@ Obstacle::Obstacle(int width, int height, int startX, int startY, int speed, QGr
     setPos(startX, startY); // Set the initial position
 
     // Initialize the movement timer
-    movementTimer = new QTimer(this);
-    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
+    carTimer = new QTimer(this);
+    connect(carTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
 // Constructor for a car-type obstacle
@@ -29,6 +29,18 @@ Obstacle::Obstacle(CarType type, int startX, int startY, int speed, bool facingL
     movementTimer = new QTimer(this);
     connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
+
+Obstacle::Obstacle(LogType type, int startX, int startY, int speed, bool facingLeft, QGraphicsItem* parent)
+    : QGraphicsPixmapItem (parent), speed(speed), startX(startX), startY(startY)
+{
+    initializeLog(type, facingLeft);    // instantiate orientation
+    setPos(startX, startY);
+
+    // start movement timer
+    logTimer = new QTimer(this);
+    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
+}
+
 
 // Initializes the car appearance based on the CarType
 void Obstacle::initializeCar(CarType type, bool facingLeft) {
