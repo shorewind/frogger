@@ -23,7 +23,7 @@ Obstacle::Obstacle(CarType type, int startX, int startY, int speed, bool facingL
     : QGraphicsPixmapItem(parent), speed(speed), startX(startX), startY(startY)
 {
     initializeCar(type, facingLeft); // Set up the car image and orientation
-    setPos(startX, startY);
+    setPos(startX, startY + 10);
 
     // Initialize the movement timer
     movementTimer = new QTimer(this);
