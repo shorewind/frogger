@@ -59,12 +59,18 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // Row 3 - Chargers (grey cars) - both moving left
     charger1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true); // Left-moving car
     charger2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true); // Left-moving car
+    charger3 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true); // Left-moving car
+    charger4 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true); // Left-moving car
 
+    // calls function to draw score display
+    drawScoreDisplay();
 
 
     // Add all cars to scene
     scene->addItem(charger1);  // These are now Chargers
     scene->addItem(charger2);
+    scene->addItem(charger3);
+    scene->addItem(charger4);
     scene->addItem(supra1);
     scene->addItem(supra2);
     scene->addItem(skyline1);
@@ -73,6 +79,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     //obstacle list
     obstacleList.append(charger1);
     obstacleList.append(charger2);
+    obstacleList.append(charger3);
+    obstacleList.append(charger4);
     obstacleList.append(supra1);
     obstacleList.append(supra2);
     obstacleList.append(skyline1);
@@ -81,6 +89,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // Start moving all cars
     charger1->startMoving();
     charger2->startMoving();
+    charger3->startMoving();
+    charger4->startMoving();
     supra1->startMoving();
     supra2->startMoving();
     skyline1->startMoving();
@@ -177,7 +187,31 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
             clientPlayers[clientId]->setPos(x, y);
             qDebug() << "client Id " << clientId << " " << x << ", " << y;
         }
+
     }
+}
+
+void GraphicsDialog::drawScoreDisplay()
+{
+    // Adds SCORE header and display in top left corner
+    // outside scene perimeter
+    QFont scoreFont("Georgia",18, QFont::Bold);
+
+    // Show score header
+    header = new QGraphicsTextItem("SCORE");
+    header->setDefaultTextColor(Qt::yellow);
+    header->setFont(scoreFont);
+    header->setPos(-260, -286);
+    // adds the header to scene
+    scene->addItem(header);
+
+    // Show score display
+    //positions the Score variable just under the position of the word SCORE
+    display = new QGraphicsTextItem(QString::number(score));
+    display->setDefaultTextColor(Qt::yellow);
+    display->setFont(scoreFont);
+    display->setPos(-155, -286);
+    scene->addItem(display);
 }
 
 void GraphicsDialog::closeEvent(QCloseEvent *event) {
@@ -189,7 +223,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // Adjust position as needed
+    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // DONE, Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 

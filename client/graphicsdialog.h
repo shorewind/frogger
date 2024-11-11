@@ -40,6 +40,8 @@ private:
 
     Obstacle *charger1;  // Moving charger car obstacle
     Obstacle *charger2;  // Moving charger obstacle
+    Obstacle *charger3;  // Moving charger obstacle
+    Obstacle *charger4;  // Moving charger obstacle
     Obstacle *supra1; // Moving supra car obstacle
     Obstacle *supra2; // Moving supra car obstacle
     Obstacle *skyline1; // Moving skyline car obstacle
@@ -48,11 +50,16 @@ private:
     Obstacle *log1;
     Obstacle *log2;
 
+    QGraphicsTextItem *header,*display;     // Score header and display object ptrs
+    int score = 0;                          // Current score
+
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
+    void drawScoreDisplay();
+
 
 signals:
     void requestClose();
