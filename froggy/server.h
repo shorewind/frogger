@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include <QDialog>
 #include <QUdpSocket>
@@ -13,21 +13,21 @@
 #include <QMap>
 #include <QPoint>
 #include <QNetworkInterface>
+#include <QTextBrowser>
+#include <QLineEdit>
 
-namespace Ui {
 class Dialog;
-}
 
-class Dialog : public QDialog
+class Server : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit Dialog(QWidget *parent = nullptr);
-    ~Dialog();
+    explicit Server(Dialog *parent = nullptr);
+    void configureServer();
 
 private:
-    Ui::Dialog *ui;
+    Dialog* mainDialog;
 
     QUdpSocket* socket;
     QNetworkDatagram msg;
@@ -42,7 +42,6 @@ private:
 private slots:
     void rx();  // receive
     void tx(QJsonObject message);  // transmit
-    void configureServer();
     void removeClient(QString& clientKey);
     void updatePlayerPositions(QJsonArray playersArray);
     void broadcastPlayerPositions();
@@ -52,4 +51,4 @@ private slots:
     void setLocalIpAddress();
 };
 
-#endif // DIALOG_H
+#endif // SERVER_H

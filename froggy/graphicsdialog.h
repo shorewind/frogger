@@ -14,7 +14,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include "player.h"
-#include "dialog.h"
+#include "client.h"
 #include "obstacles.h" // Include the Obstacle class
 
 class GraphicsDialog : public QDialog {

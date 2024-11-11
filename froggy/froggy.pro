@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2024-10-31T16:27:38
+# Project created by QtCreator 2024-10-31T16:55:28
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = server
+TARGET = froggy
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -25,17 +25,38 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        client.cpp \
+        dialog.cpp \
+        graphicsdialog.cpp \
         main.cpp \
-        dialog.cpp
+        obstacles.cpp \
+        player.cpp \
+        server.cpp
 
 HEADERS += \
+        client.h \
         defs.h \
-        dialog.h
+        dialog.h \
+        graphicsdialog.h \
+        obstacles.h \
+        player.h \
+        server.h
 
 FORMS += \
-        dialog.ui
+    client.ui \
+    dialog.ui \
+    dialogcombined.ui \
+    server.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    charger.qrc \
+    resources.qrc \
+    skyline.qrc \
+    supra.qrc
+
+DISTFILES +=

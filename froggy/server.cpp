@@ -1,56 +1,53 @@
+#include "server.h"
 #include "dialog.h"
-#include "ui_dialog.h"
 #include "defs.h"
 
-Dialog::Dialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::Dialog)
+Server::Server(Dialog *parent) :
+    QDialog(parent)
 {
-    ui->setupUi(this);
+    mainDialog = parent;
 
     setLocalIpAddress();
-    ui->portEdit->setText(QString::number(5678));
-
-    connect(ui->configureButton, SIGNAL(clicked()), this, SLOT(configureServer()));
+    mainDialog->serverPortEdit->setText(QString::number(5678));
 
     for (int i = 1; i <= 4; ++i) {
         availableIds.append(i);
     }
 }
 
-void Dialog::configureServer()
+void Server::configureServer()
 {
     socket = new QUdpSocket(this);
 
-    QString ip = ui->ipEdit->text();
-    quint16 port = ui->portEdit->text().toUInt();
+    QString ip = mainDialog->serverIpEdit->text();
+    quint16 port = mainDialog->serverPortEdit->text().toUInt();
 
     // bind the socket to the specified IP and port
     bool success = socket->bind(QHostAddress(ip), port);
     if (!success) {
-        ui->textBrowser->append("Failed to bind server socket: " + socket->errorString());
+        mainDialog->serverBrowser->append("Failed to bind server socket: " + socket->errorString());
         return;
     }
 
-    connect(socket, &QUdpSocket::readyRead, this, &Dialog::rx);
+    connect(socket, &QUdpSocket::readyRead, this, &Server::rx);
 
-    ui->ipEdit->clear();
-    ui->portEdit->clear();
+    mainDialog->serverIpEdit->clear();
+    mainDialog->serverPortEdit->clear();
 
     if (socket->isValid())
     {
-        ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
-        ui->textBrowser->append("Connect by typing in terminal: nc -u " + ip + " " + QString::number(port));
-        ui->configureButton->setEnabled(false);
+        mainDialog->serverBrowser->append("Server Active: " + ip + ":" + QString::number(port));
+        mainDialog->serverBrowser->append("Connect by typing in terminal: nc -u " + ip + " " + QString::number(port));
+        mainDialog->configureButton->setEnabled(false);
     }
 }
 
 
-void Dialog::rx()
+void Server::rx()
 {
     while (socket->hasPendingDatagrams())
     {
-        qDebug() << "rx";
+//        qDebug() << "rx";
         msg = socket->receiveDatagram();
 
         QString clientIP = msg.senderAddress().toString();
@@ -66,8 +63,8 @@ void Dialog::rx()
         QJsonObject jsonObj = doc.object();
         QString type = jsonObj["type"].toString();
 
-        qDebug() << senderAddress;
-        qDebug() << type;
+//        qDebug() << senderAddress;
+//        qDebug() << type;
 
         if (type == "DISCONNECT") {
             removeClient(clientKey);
@@ -99,7 +96,7 @@ void Dialog::rx()
                     .arg(clientId)
                     .arg(clientIP)
                     .arg(senderPort);
-            ui->textBrowser->append(broadcastMessage["message"].toString());
+            mainDialog->serverBrowser->append(broadcastMessage["message"].toString());
             tx(broadcastMessage);
 
             broadcastActiveClients();
@@ -112,7 +109,7 @@ void Dialog::rx()
 
             if (clientIdMap.contains(clientKey) && !message.isEmpty()) {
                 int clientId = clientIdMap[clientKey];
-                ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
+                mainDialog->serverBrowser->append(QString("Client %1 (%2:%3): %4")
                                          .arg(clientId)
                                          .arg(clientIP)
                                          .arg(senderPort)
@@ -144,7 +141,7 @@ void Dialog::rx()
     }
 }
 
-void Dialog::updatePlayerPositions(QJsonArray playersArray)
+void Server::updatePlayerPositions(QJsonArray playersArray)
 {
     for (const QJsonValue &value : playersArray) {
         QJsonObject playerData = value.toObject();
@@ -158,7 +155,7 @@ void Dialog::updatePlayerPositions(QJsonArray playersArray)
     }
 }
 
-void Dialog::broadcastPlayerPositions()
+void Server::broadcastPlayerPositions()
 {
 //    qDebug() << "broadcasting player positions";
     QJsonObject positionUpdateMessage;
@@ -181,7 +178,7 @@ void Dialog::broadcastPlayerPositions()
     tx(positionUpdateMessage);
 }
 
-void Dialog::broadcastObstaclePositions()
+void Server::broadcastObstaclePositions()
 {
     QJsonObject obstaclePositionMessage;
     obstaclePositionMessage["type"] = "OBSTACLE_POSITION";
@@ -189,7 +186,7 @@ void Dialog::broadcastObstaclePositions()
     tx(obstaclePositionMessage);
 }
 
-void Dialog::broadcastActiveClients()
+void Server::broadcastActiveClients()
 {
     QJsonObject activeClientsMessage;
     activeClientsMessage["type"] = "ACTIVE_CLIENTS";
@@ -207,7 +204,7 @@ void Dialog::broadcastActiveClients()
 }
 
 
-void Dialog::removeClient(QString &clientKey)
+void Server::removeClient(QString &clientKey)
 {
 //    qDebug() << "disconnecting " << clientKey;
     if (clientIdMap.contains(clientKey))
@@ -242,16 +239,16 @@ void Dialog::removeClient(QString &clientKey)
                                              .arg(address.toString())
                                              .arg(port);
 
-            ui->textBrowser->append(disconnectionMsg["message"].toString());
+            mainDialog->serverBrowser->append(disconnectionMsg["message"].toString());
             tx(disconnectionMsg);
         }
     }
 }
 
-void Dialog::tx(QJsonObject jsonObject)
+void Server::tx(QJsonObject jsonObject)
 {
-    qDebug() << "tx";
-    qDebug() << jsonObject;
+//    qDebug() << "tx";
+//    qDebug() << jsonObject;
 
     QJsonDocument doc(jsonObject);
     QByteArray message = doc.toJson();
@@ -262,7 +259,7 @@ void Dialog::tx(QJsonObject jsonObject)
     }
 }
 
-QString Dialog::getLocalIpAddress()
+QString Server::getLocalIpAddress()
 {
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
 
@@ -284,17 +281,11 @@ QString Dialog::getLocalIpAddress()
     return QString();
 }
 
-void Dialog::setLocalIpAddress()
+void Server::setLocalIpAddress()
 {
     QString localIp = getLocalIpAddress();
     if (!localIp.isEmpty())
     {
-        ui->ipEdit->setText(localIp);
+        mainDialog->serverIpEdit->setText(localIp);
     }
-}
-
-
-Dialog::~Dialog()
-{
-    delete ui;
 }

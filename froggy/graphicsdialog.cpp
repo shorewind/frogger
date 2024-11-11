@@ -2,7 +2,7 @@
 #include "defs.h"
 #include "obstacles.h"
 #include <QTimer>
-#include "dialog.h"
+#include "client.h"
 //286
 
 // 116 for each hole and a half
@@ -216,7 +216,7 @@ void GraphicsDialog::sendObstaclePositions()
 
      message["obstacles"] = obstaclePosArray;
 
-     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+     Client *parentDialog = qobject_cast<Client*>(parent());
      if (parentDialog)
      {
          parentDialog->sendJson(message);
@@ -225,6 +225,7 @@ void GraphicsDialog::sendObstaclePositions()
 
 void GraphicsDialog::closeEvent(QCloseEvent *event)
 {
+    qDebug() << "emitting close event";
     emit requestClose();
     event->accept();
 }
@@ -242,7 +243,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     connect(activePlayer, &Player::positionChanged, this, [this]()
         {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
-        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+        Client *parentDialog = qobject_cast<Client*>(parent());
         if (parentDialog) {
             parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
         }
