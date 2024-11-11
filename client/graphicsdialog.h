@@ -38,7 +38,13 @@ private:
     QMap<int, Obstacle*> obstacles;
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
+    QList<QGraphicsPixmapItem*> hearts;  // List to store heart icons
+    int numLives = 3;
+    void initializeHearts();  // Function to initialize the heart icons
+    void removeHeart();       // Function to remove a heart icon
     int obstacleId = 0;
+
+    bool activeGameState=true;
 
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
