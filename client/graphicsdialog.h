@@ -37,6 +37,10 @@ private:
     quint16 serverPort;
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
+    QList<QGraphicsPixmapItem*> hearts;  // List to store heart icons
+    int numLives = 3;
+    void initializeHearts();  // Function to initialize the heart icons
+    void removeHeart();       // Function to remove a heart icon
 
     Obstacle *charger1;  // Moving charger car obstacle
     Obstacle *charger2;  // Moving charger obstacle
