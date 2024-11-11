@@ -36,6 +36,7 @@ private:
     QMap<QString, int> clientIdMap;
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
+    QJsonArray obstaclesArray;
 
 private slots:
     void rx();  // receive
@@ -45,6 +46,7 @@ private slots:
     void updatePlayerPositions(QJsonArray playersArray);
     void broadcastPlayerPositions();
     void broadcastActiveClients();
+    void broadcastObstaclePositions();
 };
 
 #endif // DIALOG_H

@@ -11,23 +11,19 @@ class Obstacle : public QObject, public QGraphicsPixmapItem {
 
 public:
     enum ObstacleType { Rectangle, Charger, Supra, Skyline, ShortLog, LongLog};
-//    enum LogType { LongLog, shortLog };  // I think this is a less-optimal way...
 
-    // Constructor for a basic rectangular obstacle
-//    explicit Obstacle(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent = nullptr);
-
-    // Constructor for a car-type obstacle
     explicit Obstacle(ObstacleType type, int startX, int startY, int speed, bool facingLeft = false, QGraphicsItem *parent = nullptr);
 
-    // Constructor for a Log obstacle
-//    explicit Obstacle(int length, int startX, int startY, int speed, bool facingLeft = false, QGraphicsItem* parent = nullptr);
+    void startMoving();
+    int getId() const { return id; }
+    int getType() const { return type; }
+    int getSpeed() const { return speed; }
 
-    void startMoving(); // Starts the obstacle movement
-
-    // Constants for log dimensions
     static const int LONGW = 200;
     static const int SHORTW = 100;
     static const int LOGH = 50;
+    int id;        // Unique identifier for each obstacle
+    int type;      // Type of obstacle (Charger, Supra, etc.)
 
 private slots:
     void move(); // Slot to handle continuous movement
@@ -36,8 +32,7 @@ private:
     void initializeCar(ObstacleType type, bool facingLeft);
     void initializeLog(int length, bool facingLeft);
     void initializeRectangle(int width, int height);
-
-    int speed;
+    int speed;     // Speed of the obstacle
     int startX;
     int startY;
     QTimer *movementTimer;

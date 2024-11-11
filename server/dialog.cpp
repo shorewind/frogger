@@ -101,6 +101,7 @@ void Dialog::rx()
 
             broadcastActiveClients();
             broadcastPlayerPositions();
+            broadcastObstaclePositions();
         }
         else if (type == "MESSAGE") {
             // handle incoming messages from clients
@@ -131,6 +132,11 @@ void Dialog::rx()
 
             updatePlayerPositions(playersArray);
             broadcastPlayerPositions();
+        }
+        else if (type == "OBSTACLE_POSITION")
+        {
+            obstaclesArray = jsonObj["obstacles"].toArray();
+            broadcastObstaclePositions();
         }
     }
 }
@@ -171,6 +177,14 @@ void Dialog::broadcastPlayerPositions()
     tx(positionUpdateMessage);
 }
 
+void Dialog::broadcastObstaclePositions()
+{
+    QJsonObject obstaclePositionMessage;
+    obstaclePositionMessage["type"] = "OBSTACLE_POSITION";
+    obstaclePositionMessage["obstacles"] = obstaclesArray;
+    tx(obstaclePositionMessage);
+}
+
 void Dialog::broadcastActiveClients()
 {
     QJsonObject activeClientsMessage;
@@ -186,7 +200,6 @@ void Dialog::broadcastActiveClients()
 
     tx(activeClientsMessage);
 }
-
 
 
 void Dialog::removeClient(QString &clientKey)

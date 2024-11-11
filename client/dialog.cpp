@@ -148,6 +148,11 @@ void Dialog::processMsg()
             QJsonArray playersArray = jsonObj["players"].toArray();
             graphicsDialog->updatePlayerPositions(playersArray);
         }
+        else if (type == "OBSTACLE_POSITION")
+        {
+            QJsonArray obstaclesArray = jsonObj["obstacles"].toArray();
+            graphicsDialog->updateObstaclePositions(obstaclesArray);
+        }
         else
         {
             ui->textBrowser->append("Server: " + message);
@@ -191,26 +196,26 @@ void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
     sendJson(message);
 }
 
-void Dialog::sendObstaclePosition(int obstacleId, int obstacleType, int x, int y, int speed)
-{
-    qDebug() << "sending obstacle position";
-    QJsonObject message;
-    message["type"] = "OBSTACLE_POSITION";
-    QJsonArray obstaclePosArray;
+//void Dialog::sendObstaclePosition(int obstacleId, int obstacleType, int x, int y, int speed)
+//{
+//    qDebug() << "sending obstacle position";
+//    QJsonObject message;
+//    message["type"] = "OBSTACLE_POSITION";
+//    QJsonArray obstaclePosArray;
 
-    QJsonObject obstaclePosData;
-    obstaclePosData["obstacleId"] = obstacleId;
-    obstaclePosData["obstacleType"] = obstacleType;
-    obstaclePosData["x"] = x;
-    obstaclePosData["y"] = y;
-    obstaclePosData["speed"] = speed;
+//    QJsonObject obstaclePosData;
+//    obstaclePosData["obstacleId"] = obstacleId;
+//    obstaclePosData["obstacleType"] = obstacleType;
+//    obstaclePosData["x"] = x;
+//    obstaclePosData["y"] = y;
+//    obstaclePosData["speed"] = speed;
 
-    obstaclePosArray.append(obstaclePosData);
-    message["obstacles"] = obstaclePosArray;
+//    obstaclePosArray.append(obstaclePosData);
+//    message["obstacles"] = obstaclePosArray;
 
-    sendJson(message);
+//    sendJson(message);
 
-}
+//}
 
 
 Dialog::~Dialog()

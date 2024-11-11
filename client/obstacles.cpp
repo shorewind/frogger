@@ -121,4 +121,3 @@ void Obstacle::move() {
         setPos(-SCENE_WIDTH / 2 - boundingRect().width(), y()); // Reset to the left side
     }
 }
-
