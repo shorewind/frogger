@@ -52,6 +52,8 @@ private:
     Obstacle *log1;
     Obstacle *log2;
 
+    bool activeGameState=true;
+
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);

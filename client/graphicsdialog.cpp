@@ -106,23 +106,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
      QTimer *collisionTimer = new QTimer(this);
          connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
          collisionTimer->start(50);
-
-     // Scale the heart image to a smaller size
-     QPixmap heartPixmap(":/images/heart.png");
-     QPixmap scaledHeartPixmap = heartPixmap.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);  // Adjust size to 20x20 pixels
-
-     // Create and position the heart icon in the top-left corner of the scene
-     QGraphicsPixmapItem *testHeart = new QGraphicsPixmapItem(scaledHeartPixmap);
-     testHeart->setPos(-SCENE_WIDTH / 2 + 10, -SCENE_HEIGHT / 2 + 10);  // Adjust position to top-left corner
-     scene->addItem(testHeart);
-
-     if (testHeart->pixmap().isNull()) {
-         qDebug() << "Failed to load heart image from path:/images/heart.png.";
-     } else {
-         qDebug() << "Heart image loaded successfully in main setup.";
-     }
-
-
 }
 
 void GraphicsDialog::initializeHearts() {
@@ -163,6 +146,9 @@ void GraphicsDialog::checkCollisions() {
 
                 // Check if game over after removing the heart
                 if (numLives == 0 && hearts.isEmpty()) {
+                    player->setPos(clientId * 2, 245); // Reset player position
+                    removePlayer(clientId);
+                    activeGameState=false;
                     qDebug() << "Game Over!";
                     // Additional game-over logic here if needed
                 }
@@ -173,8 +159,6 @@ void GraphicsDialog::checkCollisions() {
 }
 
 
-
-
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
@@ -182,7 +166,7 @@ GraphicsDialog::~GraphicsDialog() {
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
     // Assuming obstacleList is a QList<QGraphicsItem *> containing the car obstacles
-    if (!activePlayer) {
+    if (!activePlayer || !activeGameState) {
         return;
     }
 
