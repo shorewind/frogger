@@ -12,6 +12,7 @@
 #include <QJsonArray>
 #include <QMap>
 #include <QPoint>
+#include <QNetworkInterface>
 
 namespace Ui {
 class Dialog;
@@ -47,6 +48,8 @@ private slots:
     void broadcastPlayerPositions();
     void broadcastActiveClients();
     void broadcastObstaclePositions();
+    QString getLocalIpAddress();
+    void setLocalIpAddress();
 };
 
 #endif // DIALOG_H

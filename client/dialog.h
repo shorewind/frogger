@@ -11,8 +11,7 @@
 #include <QList>
 #include <QJsonObject>
 #include <QJsonDocument>
-
-
+#include <QNetworkInterface>
 
 class GraphicsDialog;
 
@@ -31,7 +30,6 @@ public:
 public slots:
     void sendJson(QJsonObject data);
     void sendPlayerPosition(int clientId, qreal x, qreal y);
-//    void sendObstaclePosition(int obstacleId, int obstacleType, int x, int y, int speed);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -51,6 +49,8 @@ private slots:
     void disconnectFromServer();
     void processMsg();
     void sendMsg();
+    QString getLocalIpAddress();
+    void setLocalIpAddress();
 
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);

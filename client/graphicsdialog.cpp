@@ -65,16 +65,18 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 110, -50, -2, false);
 
-    for (auto &obstacle : obstacles) {
+    for (auto &obstacle : obstacles)
+    {
         obstacle->startMoving();
     }
 
      QTimer *collisionTimer = new QTimer(this);
-         connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
-         collisionTimer->start(10);
+     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
+     collisionTimer->start(10);
 }
 
-void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft) {
+void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
+{
     Obstacle* newObstacle = new Obstacle(type, x, y, speed, facingLeft);
     newObstacle->id = obstacleId++;
     newObstacle->type = type;
@@ -84,15 +86,19 @@ void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, i
     newObstacle->startMoving();
 }
 
-void GraphicsDialog::checkCollisions() {
-    for (int clientId : clientPlayers.keys()) {
+void GraphicsDialog::checkCollisions()
+{
+    for (int clientId : clientPlayers.keys())
+    {
         Player *player = clientPlayers[clientId];
         if (!player) continue; // Ensure the player is valid
 
         // Loop through obstacles stored in the QMap
-        for (auto &obstacle : obstacles) {
+        for (auto &obstacle : obstacles)
+        {
             sendObstaclePositions();
-            if (player->collidesWithItem(obstacle)) {
+            if (player->collidesWithItem(obstacle))
+            {
                 // Handle collision - reset player position based on client ID
                 player->setPos(clientId * 2, 245); // Adjust to your desired reset position
                 break;
@@ -107,7 +113,8 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
-    if (!activePlayer) {
+    if (!activePlayer)
+    {
         return;
     }
     switch (e->key())
@@ -136,8 +143,10 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e); // Pass event to the base class
 }
 
-void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
-    for (const QJsonValue &value : playersArray) {
+void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
+{
+    for (const QJsonValue &value : playersArray)
+    {
         QJsonObject playerData = value.toObject();
         int clientId = playerData["clientId"].toInt();
         int x = playerData["x"].toInt();
@@ -149,14 +158,17 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
         }
 
         // update position if the player exists
-        if (clientPlayers.contains(clientId)) {
+        if (clientPlayers.contains(clientId))
+        {
             clientPlayers[clientId]->setPos(x, y);
         }
     }
 }
 
-void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray) {
-    for (const QJsonValue &value : obstaclesArray) {
+void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
+{
+    for (const QJsonValue &value : obstaclesArray)
+    {
         QJsonObject obstacleData = value.toObject();
 
         int obstacleId = obstacleData["obstacleId"].toInt();
@@ -164,10 +176,10 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray) {
         int y = obstacleData["y"].toInt();
 
         // Check if the obstacle exists in the obstacles QMap
-        if (obstacles.contains(obstacleId)) {
+        if (obstacles.contains(obstacleId))
+        {
             // Get the obstacle object from the QMap using its ID
             Obstacle* obstacle = obstacles[obstacleId];
-
             obstacle->setPos(x, y);
 
 //            qDebug() << "Updated obstacle " << obstacleId << " to position: (" << x << ", " << y << ")";
@@ -178,7 +190,8 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray) {
 }
 
 
-void GraphicsDialog::sendObstaclePositions() {
+void GraphicsDialog::sendObstaclePositions()
+{
 //    qDebug() << "sending all obstacle positions";
 
      QJsonObject message;
@@ -187,7 +200,8 @@ void GraphicsDialog::sendObstaclePositions() {
      QJsonArray obstaclePosArray;
 
      // Iterate through all obstacles in the QMap
-     for (auto obstaclePair : obstacles) {
+     for (auto obstaclePair : obstacles)
+     {
          Obstacle* obstacle = obstaclePair;
 
          QJsonObject obstaclePosData;
@@ -203,17 +217,20 @@ void GraphicsDialog::sendObstaclePositions() {
      message["obstacles"] = obstaclePosArray;
 
      Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-     if (parentDialog) {
+     if (parentDialog)
+     {
          parentDialog->sendJson(message);
      }
 }
 
-void GraphicsDialog::closeEvent(QCloseEvent *event) {
+void GraphicsDialog::closeEvent(QCloseEvent *event)
+{
     emit requestClose();
     event->accept();
 }
 
-void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
+void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
+{
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
@@ -222,7 +239,8 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     clientPlayers[clientId] = activePlayer;
 
     qDebug() << "added player " << clientId;
-    connect(activePlayer, &Player::positionChanged, this, [this]() {
+    connect(activePlayer, &Player::positionChanged, this, [this]()
+        {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
         if (parentDialog) {
@@ -231,7 +249,8 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color) {
     });
 }
 
-void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
+void GraphicsDialog::addPlayer(int clientId, const QColor &color)
+{
     if (clientPlayers.contains(clientId)) { return; }
 
     Player *player = new Player(clientId, color);
@@ -242,8 +261,10 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color) {
     qDebug() << "added player " << clientId;
 }
 
-void GraphicsDialog::removePlayer(int clientId) {
-    if (clientPlayers.contains(clientId)) {
+void GraphicsDialog::removePlayer(int clientId)
+{
+    if (clientPlayers.contains(clientId))
+    {
         qDebug() << "removing player " << clientId;
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
