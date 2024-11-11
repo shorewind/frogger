@@ -65,14 +65,13 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 110, -50, -2, false);
 
-    // Start moving all obstacles
     for (auto &obstacle : obstacles) {
         obstacle->startMoving();
     }
 
      QTimer *collisionTimer = new QTimer(this);
          connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
-         collisionTimer->start(50);
+         collisionTimer->start(10);
 }
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft) {
@@ -96,7 +95,7 @@ void GraphicsDialog::checkCollisions() {
             if (player->collidesWithItem(obstacle)) {
                 // Handle collision - reset player position based on client ID
                 player->setPos(clientId * 2, 245); // Adjust to your desired reset position
-                break; // Exit the loop after handling one collision for this player
+                break;
             }
         }
     }
@@ -108,7 +107,6 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
-    // Assuming obstacleList is a QList<QGraphicsItem *> containing the car obstacles
     if (!activePlayer) {
         return;
     }
@@ -158,11 +156,9 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
 }
 
 void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray) {
-    // Iterate through the array of obstacles provided in the JSON
     for (const QJsonValue &value : obstaclesArray) {
         QJsonObject obstacleData = value.toObject();
 
-        // Extract the obstacle ID, x, and y coordinates from the JSON object
         int obstacleId = obstacleData["obstacleId"].toInt();
         int x = obstacleData["x"].toInt();
         int y = obstacleData["y"].toInt();
@@ -172,48 +168,40 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray) {
             // Get the obstacle object from the QMap using its ID
             Obstacle* obstacle = obstacles[obstacleId];
 
-            // Update the position of the obstacle in the scene
             obstacle->setPos(x, y);
 
-            // Optional: Log the updated position for debugging
-            qDebug() << "Updated obstacle " << obstacleId << " to position: (" << x << ", " << y << ")";
+//            qDebug() << "Updated obstacle " << obstacleId << " to position: (" << x << ", " << y << ")";
         } else {
-            // If the obstacle with this ID doesn't exist, you might want to log or handle it
-            qDebug() << "Obstacle with ID " << obstacleId << " not found!";
+//            qDebug() << "Obstacle with ID " << obstacleId << " not found!";
         }
     }
 }
 
 
 void GraphicsDialog::sendObstaclePositions() {
-    qDebug() << "sending all obstacle positions";
+//    qDebug() << "sending all obstacle positions";
 
-     // Create a JSON object to hold the message
      QJsonObject message;
      message["type"] = "OBSTACLE_POSITION";
 
-     // Create a JSON array to store the obstacles' position data
      QJsonArray obstaclePosArray;
 
      // Iterate through all obstacles in the QMap
      for (auto obstaclePair : obstacles) {
          Obstacle* obstacle = obstaclePair;
 
-         // Create a JSON object for each obstacle's data
          QJsonObject obstaclePosData;
-         obstaclePosData["obstacleId"] = obstacle->getId();  // Assuming you have a getter for the obstacle ID
-         obstaclePosData["obstacleType"] = obstacle->getType();  // Assuming you have a getter for obstacle type
+         obstaclePosData["obstacleId"] = obstacle->getId();
+         obstaclePosData["obstacleType"] = obstacle->getType();
          obstaclePosData["x"] = obstacle->x();
          obstaclePosData["y"] = obstacle->y();
-         obstaclePosData["speed"] = obstacle->getSpeed();  // Assuming you have a getter for speed
+         obstaclePosData["speed"] = obstacle->getSpeed();
 
-         // Add the obstacle data to the array
          obstaclePosArray.append(obstaclePosData);
      }
 
-     // Add the array of obstacle data to the message
      message["obstacles"] = obstaclePosArray;
-         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
+
      Dialog *parentDialog = qobject_cast<Dialog*>(parent());
      if (parentDialog) {
          parentDialog->sendJson(message);

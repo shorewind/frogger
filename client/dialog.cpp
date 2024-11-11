@@ -196,27 +196,6 @@ void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
     sendJson(message);
 }
 
-//void Dialog::sendObstaclePosition(int obstacleId, int obstacleType, int x, int y, int speed)
-//{
-//    qDebug() << "sending obstacle position";
-//    QJsonObject message;
-//    message["type"] = "OBSTACLE_POSITION";
-//    QJsonArray obstaclePosArray;
-
-//    QJsonObject obstaclePosData;
-//    obstaclePosData["obstacleId"] = obstacleId;
-//    obstaclePosData["obstacleType"] = obstacleType;
-//    obstaclePosData["x"] = x;
-//    obstaclePosData["y"] = y;
-//    obstaclePosData["speed"] = speed;
-
-//    obstaclePosArray.append(obstaclePosData);
-//    message["obstacles"] = obstaclePosArray;
-
-//    sendJson(message);
-
-//}
-
 
 Dialog::~Dialog()
 {
