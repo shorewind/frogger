@@ -35,24 +35,26 @@ private:
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
+    QMap<int, Obstacle*> obstacles;
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
 
-    Obstacle *charger1;  // Moving charger car obstacle
-    Obstacle *charger2;  // Moving charger obstacle
-    Obstacle *supra1; // Moving supra car obstacle
-    Obstacle *supra2; // Moving supra car obstacle
-    Obstacle *skyline1; // Moving skyline car obstacle
-    Obstacle *skyline2; // Moving skyline car obstacle
+//    Obstacle *charger1;  // Moving charger car obstacle
+//    Obstacle *charger2;  // Moving charger obstacle
+//    Obstacle *supra1; // Moving supra car obstacle
+//    Obstacle *supra2; // Moving supra car obstacle
+//    Obstacle *skyline1; // Moving skyline car obstacle
+//    Obstacle *skyline2; // Moving skyline car obstacle
 
-    Obstacle *log1;
-    Obstacle *log2;
+//    Obstacle *log1;
+//    Obstacle *log2;
 
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
+//    void updateObstaclePositions(QJsonArray &obstaclesArray);
 
 signals:
     void requestClose();

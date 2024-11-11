@@ -47,58 +47,51 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     layout->addWidget(view);
     setLayout(layout);
 
-    // Initialize obstacles in right lanes
+    // Initialize obstacles using the QMap and generate unique IDs
+    int obstacleId = 1;
+
     // Row 1 - Skylines (blue cars) - both moving left
-    skyline1 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true); // Left-moving car
-    skyline2 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true); // Left-moving car
-
-    // Row 2 - Supras (orange cars) - both moving right
-    supra1 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4); // Right-moving car
-    supra2 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4); // Right-moving car
-
-    // Row 3 - Chargers (grey cars) - both moving left
-    charger1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true); // Left-moving car
-    charger2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true); // Left-moving car
-
-
-
-    // Add all cars to scene
-    scene->addItem(charger1);  // These are now Chargers
-    scene->addItem(charger2);
-    scene->addItem(supra1);
-    scene->addItem(supra2);
+    Obstacle *skyline1 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true);
+    obstacles.insert(obstacleId++, skyline1);
     scene->addItem(skyline1);
+
+    Obstacle *skyline2 = new Obstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true);
+    obstacles.insert(obstacleId++, skyline2);
     scene->addItem(skyline2);
 
-    //obstacle list
-    obstacleList.append(charger1);
-    obstacleList.append(charger2);
-    obstacleList.append(supra1);
-    obstacleList.append(supra2);
-    obstacleList.append(skyline1);
-    obstacleList.append(skyline2);
+    // Row 2 - Supras (orange cars) - both moving right
+    Obstacle *supra1 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4);
+    obstacles.insert(obstacleId++, supra1);
+    scene->addItem(supra1);
 
-    // Start moving all cars
-    charger1->startMoving();
-    charger2->startMoving();
-    supra1->startMoving();
-    supra2->startMoving();
-    skyline1->startMoving();
-    skyline2->startMoving();
+    Obstacle *supra2 = new Obstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4);
+    obstacles.insert(obstacleId++, supra2);
+    scene->addItem(supra2);
 
-    // Spawn logs
-    // Row 1: short long short moving left
-    log1 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 100, -50, -2, false);
-    log2 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 110, -50, -2, false);
+    // Row 3 - Chargers (grey cars) - both moving left
+    Obstacle *charger1 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true);
+    obstacles.insert(obstacleId++, charger1);
+    scene->addItem(charger1);
 
+    Obstacle *charger2 = new Obstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
+    obstacles.insert(obstacleId++, charger2);
+    scene->addItem(charger2);
+
+    // Add other obstacles to the QMap dynamically
+    Obstacle *log1 = new Obstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
+    obstacles.insert(obstacleId++, log1);
     scene->addItem(log1);
-    obstacleList.append(log1);
     log1->startMoving();
 
+    Obstacle *log2 = new Obstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 110, -50, -2, false);
+    obstacles.insert(obstacleId++, log2);
     scene->addItem(log2);
-    obstacleList.append(log2);
     log2->startMoving();
 
+    // Start moving all obstacles
+    for (auto &obstacle : obstacles) {
+        obstacle->startMoving();
+    }
 
      QTimer *collisionTimer = new QTimer(this);
          connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
@@ -110,7 +103,8 @@ void GraphicsDialog::checkCollisions() {
         Player *player = clientPlayers[clientId];
         if (!player) continue; // Ensure the player is valid
 
-        for (QGraphicsItem *obstacle : obstacleList) {
+        // Loop through obstacles stored in the QMap
+        for (auto &obstacle : obstacles) {
             if (player->collidesWithItem(obstacle)) {
                 // Handle collision - reset player position based on client ID
                 player->setPos(clientId * 2, 245); // Adjust to your desired reset position
@@ -119,7 +113,6 @@ void GraphicsDialog::checkCollisions() {
         }
     }
 }
-
 
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
@@ -131,9 +124,6 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
     if (!activePlayer) {
         return;
     }
-
-    qDebug() << activePlayer->clientId;
-
     switch (e->key())
     {
         case Qt::Key_A:
@@ -175,7 +165,6 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray) {
         // update position if the player exists
         if (clientPlayers.contains(clientId)) {
             clientPlayers[clientId]->setPos(x, y);
-            qDebug() << "client Id " << clientId << " " << x << ", " << y;
         }
     }
 }

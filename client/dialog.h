@@ -31,6 +31,7 @@ public:
 public slots:
     void sendJson(QJsonObject data);
     void sendPlayerPosition(int clientId, qreal x, qreal y);
+    void sendObstaclePosition(int obstacleId, int obstacleType, int x, int y, int speed);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
