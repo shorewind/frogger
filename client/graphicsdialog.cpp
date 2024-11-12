@@ -71,12 +71,22 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     }
     initializeHearts();
 
-
-
      QTimer *collisionTimer = new QTimer(this);
          connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
          collisionTimer->start(50);
 }
+
+void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
+{
+    Obstacle* newObstacle = new Obstacle(type, x, y, speed, facingLeft);
+    newObstacle->id = obstacleId++;
+    newObstacle->type = type;
+    obstacles.insert(newObstacle->id, newObstacle);
+    scene->addItem(newObstacle);
+
+    newObstacle->startMoving();
+}
+
 
 void GraphicsDialog::initializeHearts() {
     QPixmap heartPixmap(":/images/heart.png");
