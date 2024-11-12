@@ -47,6 +47,17 @@ private:
 
     Obstacle *log1;
     Obstacle *log2;
+    Obstacle *log3;
+    Obstacle *log4;
+    Obstacle *log5;
+    Obstacle *log6;
+    Obstacle *log7;
+    Obstacle *log8;
+    Obstacle *log9;
+    Obstacle *log10;
+    Obstacle *log11;
+    Obstacle *log12;
+    Obstacle *log13;
 
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
