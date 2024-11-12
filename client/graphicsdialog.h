@@ -35,20 +35,16 @@ private:
     QUdpSocket *socket;
     QString serverIp;
     quint16 serverPort;
+    QMap<int, Obstacle*> obstacles;
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
+    QList<QGraphicsPixmapItem*> hearts;  // List to store heart icons
+    int numLives = 3;
+    void initializeHearts();  // Function to initialize the heart icons
+    void removeHeart();       // Function to remove a heart icon
+    int obstacleId = 0;
 
-    Obstacle *charger1;  // Moving charger car obstacle
-    Obstacle *charger2;  // Moving charger obstacle
-    Obstacle *charger3;  // Moving charger obstacle
-    Obstacle *charger4;  // Moving charger obstacle
-    Obstacle *supra1; // Moving supra car obstacle
-    Obstacle *supra2; // Moving supra car obstacle
-    Obstacle *skyline1; // Moving skyline car obstacle
-    Obstacle *skyline2; // Moving skyline car obstacle
-
-    Obstacle *log1;
-    Obstacle *log2;
+    bool activeGameState=true;
 
     QGraphicsTextItem *header,*display;     // Score header and display object ptrs
     int score = 0;                          // Current score
@@ -58,6 +54,9 @@ public slots:
     void addPlayer(int clientId, const QColor &color);
     void removePlayer(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
+    void updateObstaclePositions(QJsonArray &obstaclesArray);
+    void sendObstaclePositions();
+    void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
 
 

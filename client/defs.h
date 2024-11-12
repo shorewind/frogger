@@ -16,7 +16,7 @@ const int PLAYER_HEIGHT = 30;
 const int FRAME_RATE = 24;
 //const int FRAME_RATE = 100;
 
-const QString SERVER_IP = "172.21.216.11";
-const quint16 PORT = 5678;
+const int DEFAULT_PORT = 5678;
+
 
 #endif // DEFS_H

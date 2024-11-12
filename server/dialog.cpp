@@ -8,6 +8,9 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setLocalIpAddress();
+    ui->portEdit->setText(QString::number(5678));
+
     connect(ui->configureButton, SIGNAL(clicked()), this, SLOT(configureServer()));
 
     for (int i = 1; i <= 4; ++i) {
@@ -101,6 +104,7 @@ void Dialog::rx()
 
             broadcastActiveClients();
             broadcastPlayerPositions();
+            broadcastObstaclePositions();
         }
         else if (type == "MESSAGE") {
             // handle incoming messages from clients
@@ -132,6 +136,11 @@ void Dialog::rx()
             updatePlayerPositions(playersArray);
             broadcastPlayerPositions();
         }
+        else if (type == "OBSTACLE_POSITION")
+        {
+            obstaclesArray = jsonObj["obstacles"].toArray();
+            broadcastObstaclePositions();
+        }
     }
 }
 
@@ -157,7 +166,8 @@ void Dialog::broadcastPlayerPositions()
 
     QJsonArray playersArray;
 
-    for (auto it = playerPositions.constBegin(); it != playerPositions.constEnd(); ++it) {
+    for (auto it = playerPositions.constBegin(); it != playerPositions.constEnd(); ++it)
+    {
         QJsonObject playerData;
         playerData["clientId"] = it.key();
         playerData["x"] = it.value().x();
@@ -171,6 +181,14 @@ void Dialog::broadcastPlayerPositions()
     tx(positionUpdateMessage);
 }
 
+void Dialog::broadcastObstaclePositions()
+{
+    QJsonObject obstaclePositionMessage;
+    obstaclePositionMessage["type"] = "OBSTACLE_POSITION";
+    obstaclePositionMessage["obstacles"] = obstaclesArray;
+    tx(obstaclePositionMessage);
+}
+
 void Dialog::broadcastActiveClients()
 {
     QJsonObject activeClientsMessage;
@@ -178,8 +196,9 @@ void Dialog::broadcastActiveClients()
 
     QJsonArray activeClientsArray;
 
-    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it) {
-        activeClientsArray.append(it.value());  // Append the clientId
+    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
+    {
+        activeClientsArray.append(it.value());
     }
 
     activeClientsMessage["clientIds"] = activeClientsArray;
@@ -188,11 +207,11 @@ void Dialog::broadcastActiveClients()
 }
 
 
-
 void Dialog::removeClient(QString &clientKey)
 {
 //    qDebug() << "disconnecting " << clientKey;
-    if (clientIdMap.contains(clientKey)) {
+    if (clientIdMap.contains(clientKey))
+    {
         int clientId = clientIdMap[clientKey];
         clientIdMap.remove(clientKey);
 
@@ -200,12 +219,15 @@ void Dialog::removeClient(QString &clientKey)
         playerPositions[clientId] = QPoint(clientId*150 - SCENE_WIDTH/2, SCENE_HEIGHT/2 - 55);
 
         QStringList parts = clientKey.split(':');
-        if (parts.size() == 2) {
+
+        if (parts.size() == 2)
+        {
             QHostAddress address = QHostAddress(parts[0]);
             quint16 port = static_cast<quint16>(parts[1].toUInt());
 
             int index = clientPorts.indexOf(port);
-            if (index != -1) {
+            if (index != -1)
+            {
                 clientAddresses.removeAt(index);
                 clientPorts.removeAt(index);
                 availableIds.append(clientId);
@@ -226,8 +248,6 @@ void Dialog::removeClient(QString &clientKey)
     }
 }
 
-
-
 void Dialog::tx(QJsonObject jsonObject)
 {
     qDebug() << "tx";
@@ -236,11 +256,42 @@ void Dialog::tx(QJsonObject jsonObject)
     QJsonDocument doc(jsonObject);
     QByteArray message = doc.toJson();
 
-    for (int i = 0; i < clientAddresses.size(); ++i) {
+    for (int i = 0; i < clientAddresses.size(); ++i)
+    {
         socket->writeDatagram(message, clientAddresses[i], clientPorts[i]);
     }
 }
 
+QString Dialog::getLocalIpAddress()
+{
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+
+    for (const QNetworkInterface &interface : interfaces)
+    {
+        if (interface.flags() & QNetworkInterface::IsUp)
+        {
+            QList<QNetworkAddressEntry> entries = interface.addressEntries();
+            for (const QNetworkAddressEntry &entry : entries)
+            {
+                QHostAddress ip = entry.ip();
+                if (ip.protocol() == QAbstractSocket::IPv4Protocol && ip != QHostAddress("127.0.0.1"))
+                {
+                    return ip.toString();
+                }
+            }
+        }
+    }
+    return QString();
+}
+
+void Dialog::setLocalIpAddress()
+{
+    QString localIp = getLocalIpAddress();
+    if (!localIp.isEmpty())
+    {
+        ui->ipEdit->setText(localIp);
+    }
+}
 
 
 Dialog::~Dialog()

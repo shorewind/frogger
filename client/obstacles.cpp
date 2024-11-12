@@ -2,36 +2,47 @@
 #include <QPainter>
 #include "defs.h"
 
-// Constructor for a basic rectangular obstacle, using a pixmap with solid color
-Obstacle::Obstacle(int width, int height, int startX, int startY, int speed, QGraphicsItem *parent)
+// Combined constructor for all obstacle types
+Obstacle::Obstacle(ObstacleType type, int startX, int startY, int speed, bool facingLeft, QGraphicsItem *parent)
     : QGraphicsPixmapItem(parent), speed(speed), startX(startX), startY(startY)
 {
-    // Create a solid color pixmap for the rectangle
-    QPixmap rectanglePixmap(width, height);
-    rectanglePixmap.fill(Qt::white); // Set color for visibility
+    // Handle different obstacle types
+    switch (type) {
+        case Rectangle:
+            // Simple rectangular obstacle
+            initializeRectangle(Obstacle::SHORTW, 40);  // Use the same dimension for both width and height
+            break;
+        case Charger:
+        case Supra:
+        case Skyline:
+            initializeCar(type, facingLeft);
+            break;
+        case ShortLog:
+            initializeLog(Obstacle::SHORTW, facingLeft);
+            break;
+        case LongLog:
+            // Initialize log-type obstacles with the provided length
+            initializeLog(Obstacle::LONGW, facingLeft);
+            break;
+    }
 
-    setPixmap(rectanglePixmap); // Set as pixmap
-    setPos(startX, startY); // Set the initial position
+    // Set the initial position
+    setPos(startX, startY);
 
-    // Initialize the movement timer
-    carTimer = new QTimer(this);
-    connect(carTimer, &QTimer::timeout, this, &Obstacle::move);
-}
-
-// Constructor for a car-type obstacle
-Obstacle::Obstacle(CarType type, int startX, int startY, int speed, bool facingLeft, QGraphicsItem *parent)
-    : QGraphicsPixmapItem(parent), speed(speed), startX(startX), startY(startY)
-{
-    initializeCar(type, facingLeft); // Set up the car image and orientation
-    setPos(startX, startY + 10);
-
-    // Initialize the movement timer
+    // Start the movement timer
     movementTimer = new QTimer(this);
     connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
+// Initialize a basic rectangular obstacle (used for the Rectangle type)
+void Obstacle::initializeRectangle(int width, int height) {
+    QPixmap rectanglePixmap(width, height);
+    rectanglePixmap.fill(Qt::white);  // Fill with white for visibility
+    setPixmap(rectanglePixmap);
+}
+
 // Initializes the car appearance based on the CarType
-void Obstacle::initializeCar(CarType type, bool facingLeft) {
+void Obstacle::initializeCar(ObstacleType type, bool facingLeft) {
     QString imagePath;
 // Added the Images of sall three PNGs for  use int the main program, however this will
     //not merge properly
@@ -64,18 +75,6 @@ void Obstacle::initializeCar(CarType type, bool facingLeft) {
     }
 
     setPixmap(carImage);
-}
-
-// Constructor for a log obstacle
-Obstacle::Obstacle(int length, int startX, int startY, int speed, bool facingLeft, QGraphicsItem* parent)
-    : QGraphicsPixmapItem (parent), speed(speed), startX(startX), startY(startY)
-{
-    initializeLog(length, facingLeft);    // instantiate orientation
-    setPos(startX, startY);
-
-    // start movement timer
-    movementTimer = new QTimer(this);
-    connect(movementTimer, &QTimer::timeout, this, &Obstacle::move);
 }
 
 // initialize either a long or short log
@@ -122,4 +121,3 @@ void Obstacle::move() {
         setPos(-SCENE_WIDTH / 2 - boundingRect().width(), y()); // Reset to the left side
     }
 }
-

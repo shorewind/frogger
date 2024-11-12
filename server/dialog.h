@@ -12,6 +12,7 @@
 #include <QJsonArray>
 #include <QMap>
 #include <QPoint>
+#include <QNetworkInterface>
 
 namespace Ui {
 class Dialog;
@@ -36,6 +37,7 @@ private:
     QMap<QString, int> clientIdMap;
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
+    QJsonArray obstaclesArray;
 
 private slots:
     void rx();  // receive
@@ -45,6 +47,9 @@ private slots:
     void updatePlayerPositions(QJsonArray playersArray);
     void broadcastPlayerPositions();
     void broadcastActiveClients();
+    void broadcastObstaclePositions();
+    QString getLocalIpAddress();
+    void setLocalIpAddress();
 };
 
 #endif // DIALOG_H

@@ -1,10 +1,14 @@
 #include "player.h"
 #include "defs.h"
 #include <QDebug>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 
 Player::Player(int id, QColor color, QGraphicsItem *parent)
     : QGraphicsItem(parent), clientId(id), color(color), x(0), y(0) {
 }
+
+
 
 void Player::goLeft() {
     if (x - 30 > -SCENE_WIDTH / 2) // check left boundary
@@ -54,13 +58,12 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 void Player::checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles) {
     for (auto obstacle : obstacles) {
         if (this->collidesWithItem(obstacle)) {
-            // Reset the player to the starting position upon collision
-            setPos(clientId * 2, 245); // Assuming (0, 0) is the starting point; adjust if needed
+           // decreaseLife();  // Reduce lives on collision
+            if (lives > 0) {
+                setPos(clientId * 2, 245); // Adjust position if player still has lives
+            }
             return;
         }
     }
 }
-
-
-
 

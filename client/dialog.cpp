@@ -9,6 +9,9 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setLocalIpAddress();
+    ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
+
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
 }
 
@@ -145,9 +148,13 @@ void Dialog::processMsg()
         }
         else if (type == "POSITION")
         {
-            qDebug() << "processing position";
             QJsonArray playersArray = jsonObj["players"].toArray();
             graphicsDialog->updatePlayerPositions(playersArray);
+        }
+        else if (type == "OBSTACLE_POSITION")
+        {
+            QJsonArray obstaclesArray = jsonObj["obstacles"].toArray();
+            graphicsDialog->updateObstaclePositions(obstaclesArray);
         }
         else
         {
@@ -192,6 +199,31 @@ void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
     sendJson(message);
 }
 
+QString Dialog::getLocalIpAddress() {
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+
+    for (const QNetworkInterface &interface : interfaces) {
+        if (interface.flags() & QNetworkInterface::IsUp) {
+            QList<QNetworkAddressEntry> entries = interface.addressEntries();
+
+            for (const QNetworkAddressEntry &entry : entries) {
+                QHostAddress ip = entry.ip();
+
+                if (ip.protocol() == QAbstractSocket::IPv4Protocol && ip != QHostAddress("127.0.0.1")) {
+                    return ip.toString();
+                }
+            }
+        }
+    }
+    return QString();
+}
+
+void Dialog::setLocalIpAddress() {
+    QString localIp = getLocalIpAddress();
+    if (!localIp.isEmpty()) {
+        ui->ipEdit->setText(localIp);
+    }
+}
 
 Dialog::~Dialog()
 {
