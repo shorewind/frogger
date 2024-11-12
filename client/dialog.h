@@ -11,8 +11,7 @@
 #include <QList>
 #include <QJsonObject>
 #include <QJsonDocument>
-
-
+#include <QNetworkInterface>
 
 class GraphicsDialog;
 
@@ -45,17 +44,13 @@ private:
     quint16 port;
     QSet<int> activeClients;
 
-
-
-
-
-
 private slots:
     void connectToServer();
     void disconnectFromServer();
     void processMsg();
     void sendMsg();
-
+    QString getLocalIpAddress();
+    void setLocalIpAddress();
 
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);
