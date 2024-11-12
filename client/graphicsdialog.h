@@ -38,6 +38,8 @@ private:
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
 
+    QList<QGraphicsItem *> logList;
+
     Obstacle *charger1;  // Moving charger car obstacle
     Obstacle *charger2;  // Moving charger obstacle
     Obstacle *supra1; // Moving supra car obstacle

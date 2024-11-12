@@ -89,7 +89,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // Spawn logs
     // Row 1: short long short moving left
     log1 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 150, -35, -2, false);
-    log2 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 150, -35, -2, false);
+    log2 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 200, -35, -2, false);
+    log3 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 150, -73, -2, true);
 //    log3 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 300, -35, -2, false);
 
     scene->addItem(log1);
