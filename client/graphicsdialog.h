@@ -46,6 +46,9 @@ private:
 
     bool activeGameState=true;
 
+    QGraphicsTextItem *header,*display;     // Score header and display object ptrs
+    int score = 0;                          // Current score
+
 public slots:
     void addActivePlayer(int clientId, const QColor &color);
     void addPlayer(int clientId, const QColor &color);
@@ -54,6 +57,8 @@ public slots:
     void updateObstaclePositions(QJsonArray &obstaclesArray);
     void sendObstaclePositions();
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
+    void drawScoreDisplay();
+
 
 signals:
     void requestClose();

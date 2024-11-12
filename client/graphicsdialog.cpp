@@ -225,6 +225,29 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
 }
 
 
+void GraphicsDialog::drawScoreDisplay()
+{
+    // Adds SCORE header and display in top left corner
+    // outside scene perimeter
+    QFont scoreFont("Georgia",18, QFont::Bold);
+
+    // Show score header
+    header = new QGraphicsTextItem("SCORE");
+    header->setDefaultTextColor(Qt::yellow);
+    header->setFont(scoreFont);
+    header->setPos(-260, -286);
+    // adds the header to scene
+    scene->addItem(header);
+
+    // Show score display
+    //positions the Score variable just under the position of the word SCORE
+    display = new QGraphicsTextItem(QString::number(score));
+    display->setDefaultTextColor(Qt::yellow);
+    display->setFont(scoreFont);
+    display->setPos(-155, -286);
+    scene->addItem(display);
+}
+
 void GraphicsDialog::sendObstaclePositions()
 {
 //    qDebug() << "sending all obstacle positions";
@@ -269,7 +292,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // Adjust position as needed
+    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // DONE, Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 

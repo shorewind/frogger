@@ -39,7 +39,7 @@ private:
     QTimer *logTimer;
     QTimer *carTimer;
     static const int CAR_WIDTH = 100;
-    static const int CAR_HEIGHT = 50;
+    static const int CAR_HEIGHT = 38;
 };
 
 #endif // OBSTACLE_H
