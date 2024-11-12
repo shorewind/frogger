@@ -80,7 +80,17 @@ void Obstacle::initializeCar(ObstacleType type, bool facingLeft) {
 // initialize either a long or short log
 void Obstacle::initializeLog(int length, bool facingLeft)
 {
-    QString imagePath = ":/images/Log.png";
+    QString imagePath = "";
+    if (length == Obstacle::LongLog)
+    {
+        imagePath = ":/images/longLog.png";
+    }
+    else
+    {
+        imagePath = ":/images/Log.png";
+    }
+
+    // log image sixe: 573 x 149
 
     QPixmap logImage(imagePath);
     if (logImage.isNull())

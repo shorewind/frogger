@@ -67,8 +67,27 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
 
 
     // Add other obstacles to the QMap dynamically
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 110, -50, -2, false);
+    // Row 1
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 150, -45, -2, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -45, -2, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 450, -45, -2, false);
+
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -83, 3, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 300, -83, 3, false);
+
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 450, -121, -1, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -121, -1, false);
+
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -159, 2, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 150, -159, 2, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 450, -159, 2, false);
+
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -197, -1, false);
+    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 100, -197, -1, false);
+
+
+
+
 
     for (auto &obstacle : obstacles)
     {
@@ -125,7 +144,7 @@ void GraphicsDialog::checkCollisions() {
         for (auto &obstacle : obstacles)
         {
             sendObstaclePositions();
-            if (player->collidesWithItem(obstacle))
+            if (player->collidesWithItem(obstacle) && obstacle->type != Obstacle::LongLog && obstacle->type != Obstacle::ShortLog)
             {
                 if (numLives > 0) {
                     numLives--;            // Decrease lives count
