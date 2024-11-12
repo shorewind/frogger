@@ -3,5 +3,6 @@
         <file>images/background.png</file>
         <file>images/Log.png</file>
         <file>images/heart.png</file>
+        <file>images/heart.gif</file>
     </qresource>
 </RCC>

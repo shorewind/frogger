@@ -89,7 +89,7 @@ void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, i
 
 
 void GraphicsDialog::initializeHearts() {
-    QPixmap heartPixmap(":/images/heart.png");
+    QPixmap heartPixmap(":/images/heart.gif");
     QPixmap scaledHeartPixmap = heartPixmap.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     for (int i = 0; i < numLives; ++i) {
