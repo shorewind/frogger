@@ -47,6 +47,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     layout->addWidget(view);
     setLayout(layout);
 
+    drawScoreDisplay();
+
     // Initialize obstacles using the new createObstacle function
 
     // Row 1 - Skylines (blue cars) - both moving left
@@ -60,6 +62,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // Row 3 - Chargers (grey cars) - both moving left
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
+    createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
+    createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
+
 
     // Add other obstacles to the QMap dynamically
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
