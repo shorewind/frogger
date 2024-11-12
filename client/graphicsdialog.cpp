@@ -89,8 +89,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // Spawn logs
     // Row 1: short long short moving left
     log1 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 150, -35, -2, false);
-    log2 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 350, -35, -2, false);
-    log3 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 500, -35, -2, false);
+    log2 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 - 150, -35, -2, false);
+//    log3 = new Obstacle(Obstacle::SHORTW, SCENE_WIDTH / 2 + 300, -35, -2, false);
 
     scene->addItem(log1);
     log1->startMoving();
@@ -98,8 +98,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     scene->addItem(log2);
     log2->startMoving();
 
-    scene->addItem(log3);
-    log3->startMoving();
+//    scene->addItem(log3);
+//    log3->startMoving();
 
 
      QTimer *collisionTimer = new QTimer(this);
