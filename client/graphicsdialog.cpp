@@ -155,24 +155,29 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
         case Qt::Key_A:
             activePlayer->goLeft();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_D:
             activePlayer->goRight();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_W:
             activePlayer->goUp();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_S:
             activePlayer->goDown();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         default:
             activePlayer->stop();
             break;
     }
 
+    display->setPlainText(QString::number(score));
     QDialog::keyPressEvent(e);  // pass event to the base class
 }
 
