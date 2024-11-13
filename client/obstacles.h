@@ -24,6 +24,7 @@ public:
     static const int LOGH = 50;
     int id;        // Unique identifier for each obstacle
     int type;      // Type of obstacle (Charger, Supra, etc.)
+    int speed;     // Speed of obstacle
 
 private slots:
     void move(); // Slot to handle continuous movement
@@ -32,7 +33,7 @@ private:
     void initializeCar(ObstacleType type, bool facingLeft);
     void initializeLog(int length, bool facingLeft);
     void initializeRectangle(int width, int height);
-    int speed;     // Speed of the obstacle
+//    int speed;     // Speed of the obstacle
     int startX;
     int startY;
     QTimer *movementTimer;
