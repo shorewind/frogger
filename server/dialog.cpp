@@ -40,7 +40,6 @@ void Dialog::configureServer()
     if (socket->isValid())
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
-        ui->configureButton->setEnabled(false);
     }
 }
 
