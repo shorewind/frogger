@@ -80,7 +80,7 @@ void Dialog::sendMsg()
 
 void Dialog::sendJson(QJsonObject data)
 {
-    qDebug() << data;
+//    qDebug() << data;
     QJsonDocument doc(data);
     QByteArray ba = doc.toJson();
 
@@ -89,7 +89,7 @@ void Dialog::sendJson(QJsonObject data)
 
 void Dialog::processMsg()
 {
-    qDebug() << "processing message";
+//    qDebug() << "processing message";
     while (socket->hasPendingDatagrams()) {
         QByteArray ba;
         ba.resize(socket->pendingDatagramSize());
