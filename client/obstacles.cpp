@@ -27,7 +27,7 @@ Obstacle::Obstacle(ObstacleType type, int startX, int startY, int speed, bool fa
     }
 
     // Set the initial position
-    setPos(startX, startY);
+    setPos(startX, startY + 10);
 
     // Start the movement timer
     movementTimer = new QTimer(this);
