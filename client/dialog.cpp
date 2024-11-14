@@ -182,7 +182,7 @@ QColor Dialog::generateColorForClient(int clientId) {
 
 void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
 {
-    qDebug() << "sending player position";
+//    qDebug() << "sending player position";
 
     QJsonObject message;
     message["type"] = "POSITION";

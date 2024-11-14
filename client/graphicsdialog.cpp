@@ -288,11 +288,13 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
         int obstacleId = obstacleData["obstacleId"].toInt();
         int x = obstacleData["x"].toInt();
         int y = obstacleData["y"].toInt();
+        int speed = obstacleData["speed"].toInt();
 
         if (obstacles.contains(obstacleId))
         {
             Obstacle* obstacle = obstacles[obstacleId];
             obstacle->setPos(x, y);
+            obstacle->speed = speed;
 
 //            qDebug() << "Updated obstacle " << obstacleId << " to position: (" << x << ", " << y << ")";
         } else {
