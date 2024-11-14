@@ -65,7 +65,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
 
-
     // Add other obstacles to the QMap dynamically
     // Row 1
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 150, -45, -2, false);
@@ -85,12 +84,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
-
-    initializeHearts();
-
-     QTimer *collisionTimer = new QTimer(this);
-         connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
-         collisionTimer->start(16);
+    QTimer *collisionTimer = new QTimer(this);
+    connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
+    collisionTimer->start(16);
 }
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
@@ -158,22 +154,7 @@ void GraphicsDialog::checkCollisions() {
                 else    // Not a log... car or other
                 {
                     player->onLog = false;  // set flag
-                    // Kill player, or decrease lives
-                    if (numLives > 0) {
-                        numLives--;            // Decrease lives count
-                        removeHeart();         // Remove a heart icon
-                        player->setPos(clientId * 2, 245); // Reset player position
-                    }
-
-                    // Check if game over after removing the heart
-                    if (numLives == 0 && hearts.isEmpty()) {
-                        player->setPos(clientId * 2, 245); // Reset player position
-                        removePlayer(clientId);
-                        activeGameState=false;
-                        qDebug() << "Game Over!";
-                        // Additional game-over logic here if needed
-                    }
-
+                    handlePlayerDeath();
                 }
                 // Player collided with at least one obstacle
                 collision = true;
@@ -199,24 +180,28 @@ void GraphicsDialog::checkCollisions() {
         {
             if (player->onLog == false) // if true, kill player or decrease lives
             {
-                if (numLives > 0) {
-                    numLives--;            // Decrease lives count
-                    removeHeart();         // Remove a heart icon
-                    player->setPos(clientId * 2, 245); // Reset player position
-                }
-
-                // Check if game over after removing the heart
-                if (numLives == 0 && hearts.isEmpty()) {
-                    player->setPos(clientId * 2, 245); // Reset player position
-                    removePlayer(clientId);
-                    activeGameState=false;
-                    qDebug() << "Game Over!";
-                    // Additional game-over logic here if needed
-                }
+                handlePlayerDeath();
             }
-            // Otherwise, do nothing.
-
+            break;  // handle only one collision per check
         }
+    }
+}
+
+void GraphicsDialog::handlePlayerDeath()
+{
+    if (numLives > 0) {
+        numLives--;
+        removeHeart();
+        activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+    }
+
+    // check if game over after removing the heart
+    if (numLives == 0 && hearts.isEmpty())
+    {
+        activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        activeGameState=false;
+        qDebug() << "Game Over!";
+        showEndScreen();
     }
 }
 
@@ -379,10 +364,10 @@ void GraphicsDialog::sendObstaclePositions()
 {
 //    qDebug() << "sending all obstacle positions";
 
-//     QJsonObject message;
-//     message["type"] = "OBSTACLE_POSITION";
+     QJsonObject message;
+     message["type"] = "OBSTACLE_POSITION";
 
-//     QJsonArray obstaclePosArray;
+     QJsonArray obstaclePosArray;
 
      for (auto obstacle : obstacles)
      {
@@ -393,16 +378,16 @@ void GraphicsDialog::sendObstaclePositions()
          obstaclePosData["y"] = obstacle->y();
          obstaclePosData["speed"] = obstacle->getSpeed();
 
-//         obstaclePosArray.append(obstaclePosData);
-//     }
+         obstaclePosArray.append(obstaclePosData);
+     }
 
-//     message["obstacles"] = obstaclePosArray;
+     message["obstacles"] = obstaclePosArray;
 
-//     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-//     if (parentDialog)
-//     {
-//         parentDialog->sendJson(message);
-//     }
+     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+     if (parentDialog)
+     {
+         parentDialog->sendJson(message);
+     }
 }
 
 void GraphicsDialog::closeEvent(QCloseEvent *event)

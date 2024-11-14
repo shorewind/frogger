@@ -60,7 +60,7 @@ public slots:
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
     void showEndScreen();
-
+    void handlePlayerDeath();
 
 signals:
     void requestClose();
