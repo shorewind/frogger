@@ -23,6 +23,8 @@ public:
     void goDown();
     void stop();
     void setPos(qreal x, qreal y);
+//    int getX() const;
+//    int getY()const;
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;

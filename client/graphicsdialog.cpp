@@ -1,7 +1,6 @@
 #include "graphicsdialog.h"
 #include "defs.h"
 #include "obstacles.h"
-#include <QTimer>
 #include "dialog.h"
 //286
 
@@ -22,7 +21,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QDialog(parent),
     scene(new QGraphicsScene(this)),
     activePlayer(nullptr),
-    socket(socket) // Initialize the socket
+    socket(socket)
 {
     // set up the scene dimensions
     scene->setSceneRect(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
@@ -48,6 +47,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     setLayout(layout);
 
     drawScoreDisplay();
+    initializeHearts();
 
     // Initialize obstacles using the new createObstacle function
 
@@ -106,25 +106,30 @@ void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, i
 }
 
 
-void GraphicsDialog::initializeHearts() {
-    QPixmap heartPixmap(":/images/heart.png");
+void GraphicsDialog::initializeHearts()
+{
+    QPixmap heartPixmap(":/images/heart.gif");
     QPixmap scaledHeartPixmap = heartPixmap.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     for (int i = 0; i < numLives; ++i) {
         QGraphicsPixmapItem *heart = new QGraphicsPixmapItem(scaledHeartPixmap);
-        heart->setPos(-SCENE_WIDTH / 2 + 10 + i * 30, -SCENE_HEIGHT / 2 + 10);  // Position each heart icon
+        heart->setPos(-SCENE_WIDTH / 2 + 10 + i * 30, -SCENE_HEIGHT / 2 + 10);
         scene->addItem(heart);
-        hearts.append(heart);  // Store each heart in the list
+        hearts.append(heart);
     }
 }
 
-void GraphicsDialog::removeHeart() {
-    if (!hearts.isEmpty()) {
+void GraphicsDialog::removeHeart()
+{
+    if (!hearts.isEmpty())
+    {
         QGraphicsPixmapItem *heart = hearts.takeLast();  // Remove the last heart icon from the list
         scene->removeItem(heart);  // Remove it from the scene
         delete heart;  // Free memory
         qDebug() << "Heart removed. Hearts remaining:" << hearts.size();
-    } else {
+    }
+    else
+    {
         qDebug() << "No more hearts to remove.";
     }
 }
@@ -219,25 +224,34 @@ GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
 
+// top is -211 and bottom is 245
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
-    // Assuming obstacleList is a QList<QGraphicsItem *> containing the car obstacles
-    if (!activePlayer || !activeGameState) {
-        return;
-    }
+    if (!activePlayer || !activeGameState) { return; }
+
+//    const int hole2X = 174;
+//    const int hole2Y = -211;
+
+//    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+//        return;
+//    }
+
     switch (e->key())
     {
         case Qt::Key_A:
             activePlayer->goLeft();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_D:
             activePlayer->goRight();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_W:
             activePlayer->goUp();
             activePlayer->checkCollisionWithObstacles(obstacleList);
+            score = score + 10;
             break;
         case Qt::Key_S:
             activePlayer->goDown();
@@ -248,7 +262,12 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
             break;
     }
 
-    QDialog::keyPressEvent(e); // Pass event to the base class
+//    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+//        activePlayer->stop();
+//    }
+
+    display->setPlainText(QString::number(score));
+    QDialog::keyPressEvent(e);  // pass event to the base class
 }
 
 void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
@@ -269,6 +288,8 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
+            qDebug() << "position: " << x << ", " << y;
+
         }
     }
 }
@@ -283,10 +304,8 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
         int x = obstacleData["x"].toInt();
         int y = obstacleData["y"].toInt();
 
-        // Check if the obstacle exists in the obstacles QMap
         if (obstacles.contains(obstacleId))
         {
-            // Get the obstacle object from the QMap using its ID
             Obstacle* obstacle = obstacles[obstacleId];
             obstacle->setPos(x, y);
 
@@ -296,6 +315,40 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
         }
     }
 }
+
+void GraphicsDialog::showEndScreen()
+{
+    QString OverIm;
+
+    OverIm = ":/images/GameOver.jpg";
+    QPixmap im(OverIm);
+
+    im = im.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(im);
+    backgroundItem->setPos( -120, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("Game Over!");
+    endText->setDefaultTextColor(Qt::white);
+    endText->setFont(QFont("Arial", 36));
+    endText->setPos(-100, -50);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
+}
+
 
 
 void GraphicsDialog::drawScoreDisplay()
@@ -330,17 +383,14 @@ void GraphicsDialog::sendObstaclePositions()
 
 //     QJsonArray obstaclePosArray;
 
-//     // Iterate through all obstacles in the QMap
-//     for (auto obstaclePair : obstacles)
-//     {
-//         Obstacle* obstacle = obstaclePair;
-
-//         QJsonObject obstaclePosData;
-//         obstaclePosData["obstacleId"] = obstacle->getId();
-//         obstaclePosData["obstacleType"] = obstacle->getType();
-//         obstaclePosData["x"] = obstacle->x();
-//         obstaclePosData["y"] = obstacle->y();
-//         obstaclePosData["speed"] = obstacle->getSpeed();
+     for (auto obstacle : obstacles)
+     {
+         QJsonObject obstaclePosData;
+         obstaclePosData["obstacleId"] = obstacle->getId();
+         obstaclePosData["obstacleType"] = obstacle->getType();
+         obstaclePosData["x"] = obstacle->x();
+         obstaclePosData["y"] = obstacle->y();
+         obstaclePosData["speed"] = obstacle->getSpeed();
 
 //         obstaclePosArray.append(obstaclePosData);
 //     }

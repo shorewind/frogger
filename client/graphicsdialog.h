@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsRectItem>
 #include <QMap>
 #include <QVBoxLayout>
@@ -58,6 +59,7 @@ public slots:
     void sendObstaclePositions();
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
+    void showEndScreen();
 
 
 signals:

@@ -9,7 +9,12 @@ Player::Player(int id, QColor color, QGraphicsItem *parent)
     onLog = false;
 }
 
-
+//int Player::getX() const{
+//    return x;
+//}
+//int Player::getY()const{
+//    return y;
+//}
 
 void Player::goLeft() {
     if (x - 30 > -SCENE_WIDTH / 2) // check left boundary

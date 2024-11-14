@@ -40,8 +40,6 @@ void Dialog::configureServer()
     if (socket->isValid())
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
-        ui->textBrowser->append("Connect by typing in terminal: nc -u " + ip + " " + QString::number(port));
-        ui->configureButton->setEnabled(false);
     }
 }
 
@@ -50,7 +48,7 @@ void Dialog::rx()
 {
     while (socket->hasPendingDatagrams())
     {
-        qDebug() << "rx";
+//        qDebug() << "rx";
         msg = socket->receiveDatagram();
 
         QString clientIP = msg.senderAddress().toString();
@@ -66,8 +64,8 @@ void Dialog::rx()
         QJsonObject jsonObj = doc.object();
         QString type = jsonObj["type"].toString();
 
-        qDebug() << senderAddress;
-        qDebug() << type;
+//        qDebug() << senderAddress;
+//        qDebug() << type;
 
         if (type == "DISCONNECT") {
             removeClient(clientKey);
@@ -250,8 +248,8 @@ void Dialog::removeClient(QString &clientKey)
 
 void Dialog::tx(QJsonObject jsonObject)
 {
-    qDebug() << "tx";
-    qDebug() << jsonObject;
+//    qDebug() << "tx";
+//    qDebug() << jsonObject;
 
     QJsonDocument doc(jsonObject);
     QByteArray message = doc.toJson();
