@@ -47,9 +47,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    charger.qrc \
-    resources.qrc \
-    skyline.qrc \
-    supra.qrc
+    resources.qrc
 
 DISTFILES +=
