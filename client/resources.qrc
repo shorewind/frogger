@@ -4,5 +4,6 @@
         <file>images/Log.png</file>
         <file>images/heart.png</file>
         <file>images/heart.gif</file>
+        <file>images/GameOver.jpg</file>
     </qresource>
 </RCC>
