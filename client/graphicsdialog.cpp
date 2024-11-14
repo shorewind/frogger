@@ -13,8 +13,8 @@
 
 // correct vertical start 55
 // bottom of line is 38
-static float position_width = 174;
-static float position_height = 55;
+//static float position_width = 174;
+//static float position_height = 55;
 
 
 GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
@@ -192,13 +192,14 @@ void GraphicsDialog::handlePlayerDeath()
     if (numLives > 0) {
         numLives--;
         removeHeart();
-        activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        activePlayer->resetPlayerPos();
     }
 
     // check if game over after removing the heart
     if (numLives == 0 && hearts.isEmpty())
     {
-        activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        //activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        activePlayer->resetPlayerPos();
         activeGameState=false;
         qDebug() << "Game Over!";
         showEndScreen();
@@ -403,7 +404,7 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
-    activePlayer->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // DONE, Adjust position as needed
+    activePlayer->resetPlayerPos(); // DONE, Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
@@ -423,7 +424,7 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color)
     if (clientPlayers.contains(clientId)) { return; }
 
     Player *player = new Player(clientId, color);
-    player->setPos(-SCENE_WIDTH/2 + clientId * position_width, SCENE_HEIGHT/2 - position_height); // Adjust position as needed
+    player->resetPlayerPos(); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
 

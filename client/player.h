@@ -31,7 +31,7 @@ public:
     void checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles);
 
   //  void decreaseLife();  // Declare the decreaseLife function
-
+    void resetPlayerPos();
 
 signals:
     void positionChanged();

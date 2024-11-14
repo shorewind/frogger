@@ -18,5 +18,8 @@ const int FRAME_RATE = 24;
 
 const int DEFAULT_PORT = 5678;
 
+const int PLAYER_XOFFSET = 174;
+const int PLAYER_YOFFSET = 55;
+
 
 #endif // DEFS_H
