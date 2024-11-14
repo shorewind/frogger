@@ -6,6 +6,7 @@
 
 Player::Player(int id, QColor color, QGraphicsItem *parent)
     : QGraphicsItem(parent), clientId(id), color(color), x(0), y(0) {
+    onLog = false;
 }
 
 //int Player::getX() const{

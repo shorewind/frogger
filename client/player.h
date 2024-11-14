@@ -13,6 +13,7 @@ public:
     Player(int id, QColor color, QGraphicsItem *parent = nullptr);
 
     int clientId;
+    bool onLog;
     QColor color;
     qreal x, y;
 

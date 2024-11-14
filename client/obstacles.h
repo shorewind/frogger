@@ -10,7 +10,7 @@ class Obstacle : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 
 public:
-    enum ObstacleType { Rectangle, Charger, Supra, Skyline, ShortLog, LongLog};
+    enum ObstacleType { Rectangle, Charger, Supra, Skyline, Log};
 
     explicit Obstacle(ObstacleType type, int startX, int startY, int speed, bool facingLeft = false, QGraphicsItem *parent = nullptr);
 
@@ -19,20 +19,19 @@ public:
     int getType() const { return type; }
     int getSpeed() const { return speed; }
 
-    static const int LONGW = 200;
-    static const int SHORTW = 100;
+    static const int LOGW = 100;
     static const int LOGH = 50;
     int id;        // Unique identifier for each obstacle
     int type;      // Type of obstacle (Charger, Supra, etc.)
+    int speed;     // Speed of obstacle
 
 private slots:
     void move(); // Slot to handle continuous movement
 
 private:
     void initializeCar(ObstacleType type, bool facingLeft);
-    void initializeLog(int length, bool facingLeft);
+    void initializeLog(bool facingLeft);
     void initializeRectangle(int width, int height);
-    int speed;     // Speed of the obstacle
     int startX;
     int startY;
     QTimer *movementTimer;
