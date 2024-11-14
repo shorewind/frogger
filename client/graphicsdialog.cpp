@@ -63,7 +63,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
-    createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
+
 
     // Add other obstacles to the QMap dynamically
     // Row 1
