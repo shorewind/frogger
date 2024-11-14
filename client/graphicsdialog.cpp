@@ -68,22 +68,22 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
 
     // Add other obstacles to the QMap dynamically
     // Row 1
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 150, -45, -2, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -45, -2, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 450, -45, -2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 150, -45, -2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 150, -45, -2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 450, -45, -2, false);
     // Row 2
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -83, 3, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 300, -83, 3, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 150, -83, 3, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 300, -83, 3, false);
     // Row 3
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 450, -121, -1, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -121, -1, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 450, -121, -1, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 150, -121, -1, false);
     // Row 4
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 150, -159, 2, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 150, -159, 2, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 450, -159, 2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 150, -159, 2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 150, -159, 2, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 450, -159, 2, false);
     // Row 5
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -197, -1, false);
-    createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 + 100, -197, -1, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
+    createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
 
     initializeHearts();
@@ -130,16 +130,69 @@ void GraphicsDialog::removeHeart() {
 }
 
 void GraphicsDialog::checkCollisions() {
+    // Loop through all active players
     for (int clientId : clientPlayers.keys()) {
         Player *player = clientPlayers[clientId];
         if (!player) continue; // Ensure the player is valid
-//        qDebug() << "Player pos: " << player->y << endl;
 
-        // Loop through obstacles stored in the QMap
+        // Loop through all obstacles
+        bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
         for (auto &obstacle : obstacles)
         {
-            sendObstaclePositions();
-            if (player->collidesWithItem(obstacle) && obstacle->type != Obstacle::LongLog && obstacle->type != Obstacle::ShortLog)
+            sendObstaclePositions();    // debug stuff
+            // If player is colliding with something
+            if (player->collidesWithItem(obstacle))
+            {
+                // If the obstacle is a LOG
+                if (obstacle->type == Obstacle::Log)
+                {
+                    // Move player with the current log
+                    player->setPos(player->x + obstacle->speed, player->y);
+                    player->onLog = true;   // set flag
+                }
+                else    // Not a log... car or other
+                {
+                    player->onLog = false;  // set flag
+                    // Kill player, or decrease lives
+                    if (numLives > 0) {
+                        numLives--;            // Decrease lives count
+                        removeHeart();         // Remove a heart icon
+                        player->setPos(clientId * 2, 245); // Reset player position
+                    }
+
+                    // Check if game over after removing the heart
+                    if (numLives == 0 && hearts.isEmpty()) {
+                        player->setPos(clientId * 2, 245); // Reset player position
+                        removePlayer(clientId);
+                        activeGameState=false;
+                        qDebug() << "Game Over!";
+                        // Additional game-over logic here if needed
+                    }
+
+                }
+                // Player collided with at least one obstacle
+                collision = true;
+            }
+
+            // Strategically break early
+            if (collision)
+            {
+                break;
+            }
+        }
+
+        // Check if player was on a log, but hopped off.
+        if (!collision)
+        {
+            player->onLog = false;
+        }
+        // Log row positions:
+        // -21, -59, -97, -135, -173
+        // Check if player is in the water kill zone
+        qreal y = player->y;
+        if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
+        {
+            if (player->onLog == false) // if true, kill player or decrease lives
             {
                 if (numLives > 0) {
                     numLives--;            // Decrease lives count
@@ -155,35 +208,8 @@ void GraphicsDialog::checkCollisions() {
                     qDebug() << "Game Over!";
                     // Additional game-over logic here if needed
                 }
-                break; // Handle only one collision per check
             }
-
-            // -21, -59, -97, -135, -173
-            qreal y = player->y;
-//            bool onLog = false;
-            if (player->collidesWithItem(obstacle) && (obstacle->type == Obstacle::ShortLog || obstacle->type == Obstacle::LongLog))
-            {
-                player->setPos(player->x + obstacle->speed, player->y);
-//                onLog = true;
-//                    qDebug() << "on log";
-            }
-//            if ((y == -21 || y == -59 || y == -97 || y == -135 || y == -173) && !onLog)
-//            {
-//                if (numLives > 0) {
-//                    numLives--;            // Decrease lives count
-//                    removeHeart();         // Remove a heart icon
-//                    player->setPos(clientId * 2, 245); // Reset player position
-//                }
-
-//                // Check if game over after removing the heart
-//                if (numLives == 0 && hearts.isEmpty()) {
-//                    player->setPos(clientId * 2, 245); // Reset player position
-//                    removePlayer(clientId);
-//                    activeGameState=false;
-//                    qDebug() << "Game Over!";
-//                    // Additional game-over logic here if needed
-//                }
-//            }
+            // Otherwise, do nothing.
 
         }
     }

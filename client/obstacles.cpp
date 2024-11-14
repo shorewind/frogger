@@ -10,19 +10,15 @@ Obstacle::Obstacle(ObstacleType type, int startX, int startY, int speed, bool fa
     switch (type) {
         case Rectangle:
             // Simple rectangular obstacle
-            initializeRectangle(Obstacle::SHORTW, 40);  // Use the same dimension for both width and height
+            initializeRectangle(100, 40);  // Use the same dimension for both width and height
             break;
         case Charger:
         case Supra:
         case Skyline:
             initializeCar(type, facingLeft);
             break;
-        case ShortLog:
-            initializeLog(Obstacle::SHORTW, facingLeft);
-            break;
-        case LongLog:
-            // Initialize log-type obstacles with the provided length
-            initializeLog(Obstacle::LONGW, facingLeft);
+        case Log:
+            initializeLog(facingLeft);
             break;
     }
 
@@ -78,30 +74,21 @@ void Obstacle::initializeCar(ObstacleType type, bool facingLeft) {
 }
 
 // initialize either a long or short log
-void Obstacle::initializeLog(int length, bool facingLeft)
+void Obstacle::initializeLog(bool facingLeft)
 {
-    QString imagePath = "";
-    if (length == Obstacle::LongLog)
-    {
-        imagePath = ":/images/longLog.png";
-    }
-    else
-    {
-        imagePath = ":/images/Log.png";
-    }
-
+    QString imagePath = ":/images/Log.png";
     // log image sixe: 573 x 149
 
     QPixmap logImage(imagePath);
     if (logImage.isNull())
     {
         // Default case draws a rectangle if image fails
-        logImage = QPixmap(length, LOGH);
+        logImage = QPixmap(LOGW, LOGH);
         logImage.fill(Qt::magenta);
     }
 
     // Scale the image to the specified size
-    logImage = logImage.scaled(length, LOGH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    logImage = logImage.scaled(LOGW, LOGH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     // Flip log (not absolutely necesary)
     if (facingLeft)
