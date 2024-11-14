@@ -14,6 +14,7 @@ Obstacle::Obstacle(ObstacleType type, int startX, int startY, int speed, bool fa
             break;
         case Charger:
         case Supra:
+    case FastCar:
         case Skyline:
             initializeCar(type, facingLeft);
             break;
@@ -57,6 +58,9 @@ void Obstacle::initializeCar(ObstacleType type, bool facingLeft) {
         case Skyline:
             imagePath = ":/images/Skyline.png";
             break;
+    case FastCar:
+        imagePath = ":/images/fastcar.png";
+        break;
     }
 
     QPixmap carImage(imagePath);

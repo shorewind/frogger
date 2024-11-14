@@ -55,6 +55,8 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true);
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true);
 
+
+
     // Row 2 - Supras (orange cars) - both moving right
     createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4);
     createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4);
@@ -64,6 +66,10 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
+
+    //row 4
+    createObstacle(Obstacle::FastCar, SCENE_WIDTH / 2 + 100, 250, -6, true);
+
 
     // add logs
     createObstacle(Obstacle::ShortLog, SCENE_WIDTH / 2 - 100, -50, -2, false);
@@ -294,7 +300,8 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
         {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog) {
+        if (parentDialog)
+        {
             parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
         }
     });

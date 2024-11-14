@@ -10,7 +10,7 @@ class Obstacle : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 
 public:
-    enum ObstacleType { Rectangle, Charger, Supra, Skyline, ShortLog, LongLog};
+    enum ObstacleType { Rectangle, Charger, Supra, Skyline, ShortLog, LongLog, FastCar};
 
     explicit Obstacle(ObstacleType type, int startX, int startY, int speed, bool facingLeft = false, QGraphicsItem *parent = nullptr);
 
