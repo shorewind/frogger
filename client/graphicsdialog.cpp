@@ -120,6 +120,9 @@ void GraphicsDialog::removeHeart()
 }
 
 void GraphicsDialog::checkCollisions() {
+
+    QGraphicsView *EndScreen = new QGraphicsView;
+
     for (auto &obstacle : obstacles)
     {
         sendObstaclePositions();
@@ -136,6 +139,7 @@ void GraphicsDialog::checkCollisions() {
                 activePlayer->setPos(activePlayer->clientId * 2, 245);
                 activeGameState=false;
                 qDebug() << "Game Over!";
+                showEndScreen();
             }
             break;  // handle only one collision per check
         }
@@ -146,9 +150,17 @@ GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
 
+// top is -211 and bottom is 245
 void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
     if (!activePlayer || !activeGameState) { return; }
+
+    const int hole2X = 174;
+    const int hole2Y = -211;
+
+    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+        return;
+    }
 
     switch (e->key())
     {
@@ -170,11 +182,14 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
         case Qt::Key_S:
             activePlayer->goDown();
             activePlayer->checkCollisionWithObstacles(obstacleList);
-            score = score + 10;
             break;
         default:
             activePlayer->stop();
             break;
+    }
+
+    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+        activePlayer->stop();
     }
 
     display->setPlainText(QString::number(score));
@@ -199,6 +214,8 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
+            qDebug() << "position: " << x << ", " << y;
+
         }
     }
 }
@@ -224,6 +241,40 @@ void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
         }
     }
 }
+
+void GraphicsDialog::showEndScreen()
+{
+    QString OverIm;
+
+    OverIm = ":/images/GameOver.jpg";
+    QPixmap im(OverIm);
+
+    im = im.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(im);
+    backgroundItem->setPos( -120, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("Game Over!");
+    endText->setDefaultTextColor(Qt::white);
+    endText->setFont(QFont("Arial", 36));
+    endText->setPos(-100, -50);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
+}
+
 
 
 void GraphicsDialog::drawScoreDisplay()
