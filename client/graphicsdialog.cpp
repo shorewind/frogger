@@ -155,12 +155,12 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 {
     if (!activePlayer || !activeGameState) { return; }
 
-    const int hole2X = 174;
-    const int hole2Y = -211;
+//    const int hole2X = 174;
+//    const int hole2Y = -211;
 
-    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
-        return;
-    }
+//    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+//        return;
+//    }
 
     switch (e->key())
     {
@@ -188,9 +188,9 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
             break;
     }
 
-    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
-        activePlayer->stop();
-    }
+//    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
+//        activePlayer->stop();
+//    }
 
     display->setPlainText(QString::number(score));
     QDialog::keyPressEvent(e);  // pass event to the base class
