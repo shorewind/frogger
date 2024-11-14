@@ -131,58 +131,51 @@ void GraphicsDialog::removeHeart()
 }
 
 void GraphicsDialog::checkCollisions() {
-    // Loop through all active players
-    for (int clientId : clientPlayers.keys()) {
-        Player *player = clientPlayers[clientId];
-        if (!player) continue; // Ensure the player is valid
-
-        // Loop through all obstacles
-        bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
-        for (auto &obstacle : obstacles)
+    // Loop through all obstacles
+    bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
+    for (auto &obstacle : obstacles)
+    {
+        sendObstaclePositions();    // debug stuff
+        // If player is colliding with something
+        if (activePlayer->collidesWithItem(obstacle))
         {
-            sendObstaclePositions();    // debug stuff
-            // If player is colliding with something
-            if (player->collidesWithItem(obstacle))
+            // If the obstacle is a LOG
+            if (obstacle->type == Obstacle::Log)
             {
-                // If the obstacle is a LOG
-                if (obstacle->type == Obstacle::Log)
-                {
-                    // Move player with the current log
-                    player->setPos(player->x + obstacle->speed, player->y);
-                    player->onLog = true;   // set flag
-                }
-                else    // Not a log... car or other
-                {
-                    player->onLog = false;  // set flag
-                    handlePlayerDeath();
-                }
-                // Player collided with at least one obstacle
-                collision = true;
+                // Move player with the current log
+                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y);
+                activePlayer->onLog = true;   // set flag
             }
-
-            // Strategically break early
-            if (collision)
+            else    // Not a log... car or other
             {
-                break;
-            }
-        }
-
-        // Check if player was on a log, but hopped off.
-        if (!collision)
-        {
-            player->onLog = false;
-        }
-        // Log row positions:
-        // -21, -59, -97, -135, -173
-        // Check if player is in the water kill zone
-        qreal y = player->y;
-        if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
-        {
-            if (player->onLog == false) // if true, kill player or decrease lives
-            {
+                activePlayer->onLog = false;  // set flag
                 handlePlayerDeath();
             }
-            break;  // handle only one collision per check
+            // Player collided with at least one obstacle
+            collision = true;
+        }
+
+        // Strategically break early
+        if (collision)
+        {
+            break;
+        }
+    }
+
+    // Check if player was on a log, but hopped off.
+    if (!collision)
+    {
+        activePlayer->onLog = false;
+    }
+    // Log row positions:
+    // -21, -59, -97, -135, -173
+    // Check if player is in the water kill zone
+    qreal y = activePlayer->y;
+    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
+    {
+        if (activePlayer->onLog == false) // if true, kill player or decrease lives
+        {
+            handlePlayerDeath();
         }
     }
 }
