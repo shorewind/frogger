@@ -72,4 +72,6 @@ void Player::checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles
         }
     }
 }
-
+void Player::resetPlayerPos() {
+   setPos(-SCENE_WIDTH/2 + clientId * PLAYER_XOFFSET, SCENE_HEIGHT/2 - PLAYER_YOFFSET); // DONE, Adjust position as needed
+}
