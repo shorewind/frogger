@@ -339,10 +339,11 @@ void GraphicsDialog::showEndScreen()
     scene->addItem(overlay);
 
     // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("Game Over!");
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!");
     endText->setDefaultTextColor(Qt::white);
-    endText->setFont(QFont("Arial", 36));
-    endText->setPos(-100, -50);  // Adjust position as necessary
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setDefaultTextColor(Qt::red);
+    endText->setPos(-150, 0);  // Adjust position as necessary
     endText->setZValue(11);  // Ensure text is above the overlay
     scene->addItem(endText);
 
