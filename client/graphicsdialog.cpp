@@ -84,8 +84,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
-    sendObstaclePositions();
-
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
@@ -137,6 +135,7 @@ void GraphicsDialog::checkCollisions() {
     bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
     for (auto &obstacle : obstacles)
     {
+        sendObstaclePositions();    // debug stuff
         // If player is colliding with something
         if (activePlayer->collidesWithItem(obstacle))
         {
