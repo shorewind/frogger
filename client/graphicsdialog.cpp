@@ -401,7 +401,7 @@ void GraphicsDialog::sendObstaclePositions()
 //     if (parentDialog)
 //     {
 //         parentDialog->sendJson(message);
-//     }
+     }
 }
 
 void GraphicsDialog::closeEvent(QCloseEvent *event)
