@@ -46,7 +46,8 @@ private:
 
 private slots:
     void connectToServer();
-    void disconnectFromServer();
+//    void disconnectFromServer();
+    void leaveGame();
     void processMsg();
     void sendMsg();
     QString getLocalIpAddress();

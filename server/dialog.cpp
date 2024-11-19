@@ -9,7 +9,7 @@ Dialog::Dialog(QWidget *parent) :
     ui->setupUi(this);
 
     setLocalIpAddress();
-    ui->portEdit->setText(QString::number(5678));
+    ui->portEdit->setText(QString::number(DEFAULT_PORT));
 
     connect(ui->configureButton, &QPushButton::clicked, this, &Dialog::configureServer);
     connect(ui->startButton, &QPushButton::clicked, this, &Dialog::startGame);
@@ -37,6 +37,8 @@ void Dialog::configureServer()
 
     ui->ipEdit->clear();
     ui->portEdit->clear();
+    ui->textBrowser->clear();
+    clientIdMap.clear();
 
     if (socket->isValid())
     {
@@ -52,6 +54,12 @@ void Dialog::startGame()
     startMessage["message"] = "Starting game...";
     ui->textBrowser->append(startMessage["message"].toString());
     tx(startMessage);
+
+    // Add all connected clients to the game (set in-game flag to true)
+    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it) {
+        it.value().second = true;  // Mark client as in the game
+        clientIdsInGame.append(it.value().first); // Add to in-game list
+    }
 
     broadcastActiveClients();
 //    broadcastPlayerPositions();
@@ -96,7 +104,7 @@ void Dialog::rx()
             if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty())
             {
                 clientId = availableIds.takeFirst();
-                clientIdMap[clientKey] = clientId;
+                clientIdMap[clientKey] = qMakePair(clientId, false);
                 clientAddresses.append(senderAddress);
                 clientPorts.append(senderPort);
             }
@@ -129,6 +137,37 @@ void Dialog::rx()
             ui->textBrowser->append(broadcastMessage["message"].toString());
             tx(broadcastMessage);
         }
+        else if (type == "LEAVE")
+        {
+            if (clientIdMap.contains(clientKey) && clientIdMap[clientKey].second == true)
+            {
+                int clientId = clientIdMap[clientKey].first;
+
+                clientIdsInGame.removeAll(clientId);
+                clientIdMap[clientKey].second = false;
+
+                QStringList parts = clientKey.split(':');
+
+                if (parts.size() == 2)
+                {
+                    QHostAddress address = QHostAddress(parts[0]);
+                    quint16 port = static_cast<quint16>(parts[1].toUInt());
+
+                    // create a disconnection message to broadcast
+                    QJsonObject disconnectionMsg;
+                    disconnectionMsg["type"] = "MESSAGE";
+                    disconnectionMsg["message"] = QString("Client %1 (%2:%3) has left the game.")
+                                                     .arg(clientId)
+                                                     .arg(address.toString())
+                                                     .arg(port);
+
+                    ui->textBrowser->append(disconnectionMsg["message"].toString());
+                    tx(disconnectionMsg);
+                }
+            }
+            broadcastActiveClients();
+            return;
+        }
         else if (type == "MESSAGE")
         {
             // handle incoming messages from clients
@@ -136,7 +175,7 @@ void Dialog::rx()
 
             if (clientIdMap.contains(clientKey) && !message.isEmpty())
             {
-                int clientId = clientIdMap[clientKey];
+                int clientId = clientIdMap[clientKey].first;
                 ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
                                          .arg(clientId)
                                          .arg(clientIP)
@@ -220,13 +259,20 @@ void Dialog::broadcastActiveClients()
     activeClientsMessage["type"] = "ACTIVE_CLIENTS";
 
     QJsonArray activeClientsArray;
+    QJsonArray inGameClientsArray;
 
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
     {
-        activeClientsArray.append(it.value());
+        int clientId = it.value().first;
+        activeClientsArray.append(clientId);
+        if (it.value().second)
+        {
+            inGameClientsArray.append(clientId);
+        }
     }
 
     activeClientsMessage["clientIds"] = activeClientsArray;
+    activeClientsMessage["clientIdsInGame"] = inGameClientsArray;
 
     tx(activeClientsMessage);
 }
@@ -237,11 +283,14 @@ void Dialog::removeClient(QString &clientKey)
 //    qDebug() << "disconnecting " << clientKey;
     if (clientIdMap.contains(clientKey))
     {
-        int clientId = clientIdMap[clientKey];
+        int clientId = clientIdMap[clientKey].first;
+        bool isInGame = clientIdMap[clientKey].second;
         clientIdMap.remove(clientKey);
 
-        // WIP: Reset the player position to default value
-        playerPositions[clientId] = QPoint(clientId*150 - SCENE_WIDTH/2, SCENE_HEIGHT/2 - 55);
+        if (isInGame)
+        {
+            clientIdsInGame.removeAll(clientId);
+        }
 
         QStringList parts = clientKey.split(':');
 

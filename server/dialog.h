@@ -34,7 +34,8 @@ private:
     QList<QHostAddress> clientAddresses;
     QList<quint16> clientPorts;
     QList<int> availableIds;
-    QMap<QString, int> clientIdMap;
+    QList<int> clientIdsInGame;
+    QMap<QString, QPair<int, bool>> clientIdMap;  // holds clientKey, clientId, and in_game bool
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;

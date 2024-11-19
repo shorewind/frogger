@@ -30,7 +30,7 @@ void Dialog::connectToServer()
 
     if (socket->isValid())
     {
-//        qDebug() << "socket valid";
+        qDebug() << "socket valid";
         ui->textBrowser->append("Connected to Server: " + ip + ":" + QString::number(port));
         ui->sendButton->setEnabled(true);
         ui->connectButton->setEnabled(false);
@@ -44,27 +44,13 @@ void Dialog::connectToServer()
     }
     else
     {
-//        qDebug() << "invalid socket";
+        qDebug() << "invalid socket";
     }
 }
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    disconnectFromServer();
-    event->accept();
-}
-
-void Dialog::disconnectFromServer()
-{
     QJsonObject disconnectMessage;
-
-    if (graphicsDialog)
-    {
-        graphicsDialog->removePlayer(activeClientId);
-        graphicsDialog->close(); // Explicitly close the dialog before deleting
-        delete graphicsDialog;  // Ensure it’s properly deleted
-        graphicsDialog = nullptr;  // Set to nullptr after deletion
-    }
 
     disconnectMessage["type"] = "DISCONNECT";
     sendJson(disconnectMessage);
@@ -72,6 +58,23 @@ void Dialog::disconnectFromServer()
     socket->disconnectFromHost();
     delete socket;
     close();
+    event->accept();
+}
+
+void Dialog::leaveGame()
+{ 
+    QJsonObject disconnectMessage;
+
+    disconnectMessage["type"] = "LEAVE";
+    sendJson(disconnectMessage);
+
+    if (graphicsDialog)
+    {
+        graphicsDialog->removePlayer(activeClientId);
+        graphicsDialog->close();
+        delete graphicsDialog;
+        graphicsDialog = nullptr;
+    }
 }
 
 void Dialog::sendMsg()
@@ -96,7 +99,8 @@ void Dialog::sendJson(QJsonObject data)
 void Dialog::processMsg()
 {
     qDebug() << "processing message";
-    while (socket->hasPendingDatagrams()) {
+    while (socket->hasPendingDatagrams())
+    {
         QByteArray ba;
         ba.resize(socket->pendingDatagramSize());
         QHostAddress sender;
@@ -124,10 +128,11 @@ void Dialog::processMsg()
             {
                 graphicsDialog = new GraphicsDialog(this);
                 graphicsDialog->show();
-                connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::disconnectFromServer);
+                connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::leaveGame);
             }
 
-            if (activeClientId != -1 && graphicsDialog) {
+            if (activeClientId != -1 && graphicsDialog)
+            {
                 QColor color = generateColorForClient(activeClientId);
                 qDebug() << "add player " << activeClientId;
                 graphicsDialog->addActivePlayer(activeClientId, color);
@@ -139,32 +144,33 @@ void Dialog::processMsg()
         {
             qDebug() << "rejection";
             ui->textBrowser->append("Server: " + message);
-            socket->disconnectFromHost();
-            delete socket;
-            return;
+//            disconnectFromServer();
         }
         else if (type == "ACTIVE_CLIENTS")
         {
             // process the list of active client IDs received from the server
-            QJsonArray clientIdsArray = jsonObj["clientIds"].toArray();
+            QJsonArray clientIdsArray = jsonObj["clientIdsInGame"].toArray();
 
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
-            for (const QJsonValue &value : clientIdsArray) {
+            for (const QJsonValue &value : clientIdsArray)
+            {
                 int clientId = value.toInt();
                 newActiveClients.insert(clientId);
                 QColor color = generateColorForClient(clientId);
                 qDebug() << "add active player " << clientId;
 
                 // add player if not already in the graphics dialog
-                if (!activeClients.contains(clientId)) {
+                if (!activeClients.contains(clientId) && graphicsDialog)
+                {
                     graphicsDialog->addPlayer(clientId, color);
                 }
             }
 
             // check for players that are no longer active
             for (int clientId : activeClients) {
-                if (!newActiveClients.contains(clientId)) {
+                if (!newActiveClients.contains(clientId) && graphicsDialog)
+                {
                     qDebug() << "remove active player " << clientId;
                     graphicsDialog->removePlayer(clientId);
                 }
