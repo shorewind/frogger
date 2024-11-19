@@ -43,6 +43,8 @@ private:
     QString ip;
     quint16 port;
     QSet<int> activeClients;
+    QString playerColor;
+    QString playerUsername;
 
 private slots:
     void connectToServer();
@@ -56,6 +58,9 @@ private slots:
 
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);
+    void onColorButtonClick();
+    void submitUsername();
+    void setPlayerColor(QString &color);
 };
 
 #endif // DIALOG_H

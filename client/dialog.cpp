@@ -12,11 +12,21 @@ Dialog::Dialog(QWidget *parent) :
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
 
+    ui->greenButton->setStyleSheet("background-color: green");
+    ui->blueButton->setStyleSheet("background-color: blue");
+    ui->yellowButton->setStyleSheet("background-color: yellow");
+    ui->redButton->setStyleSheet("background-color: red");
+
     connect(ui->ipEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
     connect(ui->portEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
     updateConnectButtonState();
 
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
+    connect(ui->submitButton, &QPushButton::clicked, this, &Dialog::submitUsername);
+    connect(ui->greenButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+    connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+    connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+    connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 }
 
 void Dialog::updateConnectButtonState()
@@ -45,8 +55,6 @@ void Dialog::connectToServer()
     {
         qDebug() << "socket valid";
         ui->textBrowser->append("Connected to Server: " + ip + ":" + QString::number(port));
-        ui->sendButton->setEnabled(true);
-        ui->connectButton->setEnabled(false);
 
         QJsonObject connectMessage;
         connectMessage["type"] = "CONNECT";
@@ -134,6 +142,13 @@ void Dialog::processMsg()
         {
             activeClientId = parseClientIdFromMsg(message);
             ui->textBrowser->append("Server: " + message);
+            ui->sendButton->setEnabled(true);
+            ui->connectButton->setEnabled(false);
+            ui->submitButton->setEnabled(true);
+            ui->greenButton->setEnabled(true);
+            ui->blueButton->setEnabled(true);
+            ui->yellowButton->setEnabled(true);
+            ui->redButton->setEnabled(true);
         }
         else if (type == "START")
         {
@@ -227,6 +242,42 @@ int Dialog::parseClientIdFromMsg(const QString &msg)
     return -1;
 }
 
+void Dialog::onColorButtonClick()
+{
+    QPushButton* button = static_cast<QPushButton*>(sender());
+
+    if (!button) return;
+
+    QString color;
+
+    if (button == ui->greenButton) {
+        color = "green";
+    } else if (button == ui->blueButton) {
+        color = "blue";
+    } else if (button == ui->yellowButton) {
+        color = "yellow";
+    } else if (button == ui->redButton) {
+        color = "red";
+    }
+
+    setPlayerColor(color);
+}
+
+void Dialog::setPlayerColor(QString &color)
+{
+    playerColor = color;
+
+    QJsonObject colorMessage;
+
+    colorMessage["type"] = "PLAYER_COLOR";
+    colorMessage["clientId"] = activeClientId;
+    colorMessage["color"] = playerColor;
+
+    sendJson(colorMessage);
+
+    ui->textBrowser->append("You selected the color: " + playerColor);
+}
+
 QColor Dialog::generateColorForClient(int clientId)
 {
     static QList<QColor> colors = {
@@ -234,6 +285,20 @@ QColor Dialog::generateColorForClient(int clientId)
         QColor("yellow")
     };
     return colors[clientId % colors.size()];
+}
+
+void Dialog::submitUsername()
+{
+    playerUsername = ui->usernameEdit->text();
+
+    QJsonObject usernameMessage;
+    usernameMessage["type"] = "USERNAME";
+    usernameMessage["clientId"] = activeClientId;
+    usernameMessage["username"] = playerUsername;
+
+    sendJson(usernameMessage);
+
+    ui->textBrowser->append("You submitted the username: " + playerUsername);
 }
 
 void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
