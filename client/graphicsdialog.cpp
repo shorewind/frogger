@@ -94,6 +94,11 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
 {
     Obstacle* newObstacle = new Obstacle(type, x, y, speed, facingLeft);
+    if (!newObstacle) {
+        qDebug() << "Failed to create obstacle.";
+        return;  // Handle any initialization failure
+    }
+
     newObstacle->id = obstacleId++;
     newObstacle->type = type;
     newObstacle->speed = speed;
@@ -163,6 +168,22 @@ void GraphicsDialog::checkCollisions() {
         }
     }
 
+
+    // Check if two players collide and handle the consequences
+    for (auto &otherPlayer : clientPlayers)
+    {
+        // Player* otherPlayer = activePlayer + 1;
+
+        if(!otherPlayer) continue;
+        if (activePlayer != otherPlayer && activePlayer->collidesWithItem(otherPlayer)) {
+            // Both players collide, lose a life
+            handlePlayerDeath();
+            //otherPlayer->handleplayerDeath();
+
+            break;  // Stop after detecting one collision
+        }
+    }
+
     // Check if player was on a log, but hopped off.
     if (!collision)
     {
@@ -183,6 +204,8 @@ void GraphicsDialog::checkCollisions() {
 
 void GraphicsDialog::handlePlayerDeath()
 {
+    if (!activePlayer) return;
+
     if (numLives > 0) {
         numLives--;
         removeHeart();
@@ -396,6 +419,12 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     if (clientPlayers.contains(clientId)) { return; }
 
     activePlayer = new Player(clientId, color);
+
+    if (!activePlayer) {
+        qDebug() << "Failed to create active player.";
+        return;  // Early exit if player creation fails
+    }
+
     activePlayer->resetPlayerPos(); // DONE, Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;

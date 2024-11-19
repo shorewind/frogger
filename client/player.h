@@ -22,6 +22,7 @@ public:
     void goUp();
     void goDown();
     void stop();
+    void handleplayerDeath();
     void setPos(qreal x, qreal y);
 //    int getX() const;
 //    int getY()const;
