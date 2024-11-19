@@ -38,7 +38,7 @@ private:
     Ui::Dialog *ui;
 
     QUdpSocket* socket;
-    GraphicsDialog *graphicsDialog;
+    GraphicsDialog *graphicsDialog = nullptr;
     int activeClientId;
     QString ip;
     quint16 port;

@@ -50,6 +50,7 @@ private slots:
     void broadcastObstaclePositions();
     QString getLocalIpAddress();
     void setLocalIpAddress();
+    void startGame();
 };
 
 #endif // DIALOG_H

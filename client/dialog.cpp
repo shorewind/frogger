@@ -15,7 +15,6 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
 }
 
-
 void Dialog::connectToServer()
 {
     socket = new QUdpSocket(this);
@@ -31,21 +30,21 @@ void Dialog::connectToServer()
 
     if (socket->isValid())
     {
+//        qDebug() << "socket valid";
         ui->textBrowser->append("Connected to Server: " + ip + ":" + QString::number(port));
         ui->sendButton->setEnabled(true);
         ui->connectButton->setEnabled(false);
 
-        // Send initial JSON "CONNECT" message
         QJsonObject connectMessage;
         connectMessage["type"] = "CONNECT";
 
         sendJson(connectMessage);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
-
-        graphicsDialog = new GraphicsDialog(this);
-        graphicsDialog->show();
-        connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::disconnectFromServer);
+    }
+    else
+    {
+//        qDebug() << "invalid socket";
     }
 }
 
@@ -59,7 +58,14 @@ void Dialog::disconnectFromServer()
 {
     QJsonObject disconnectMessage;
 
-    graphicsDialog->removePlayer(activeClientId);
+    if (graphicsDialog)
+    {
+        graphicsDialog->removePlayer(activeClientId);
+        graphicsDialog->close(); // Explicitly close the dialog before deleting
+        delete graphicsDialog;  // Ensure it’s properly deleted
+        graphicsDialog = nullptr;  // Set to nullptr after deletion
+    }
+
     disconnectMessage["type"] = "DISCONNECT";
     sendJson(disconnectMessage);
 
@@ -80,7 +86,7 @@ void Dialog::sendMsg()
 
 void Dialog::sendJson(QJsonObject data)
 {
-//    qDebug() << data;
+    qDebug() << data;
     QJsonDocument doc(data);
     QByteArray ba = doc.toJson();
 
@@ -89,7 +95,7 @@ void Dialog::sendJson(QJsonObject data)
 
 void Dialog::processMsg()
 {
-//    qDebug() << "processing message";
+    qDebug() << "processing message";
     while (socket->hasPendingDatagrams()) {
         QByteArray ba;
         ba.resize(socket->pendingDatagramSize());
@@ -105,15 +111,37 @@ void Dialog::processMsg()
         QString type = jsonObj["type"].toString();
         QString message = jsonObj["message"].toString();
 
+        qDebug() << jsonObj;
+
         if (type == "WELCOME")
         {
-            int clientId = parseClientIdFromMsg(message);
-            if (clientId != -1) {
-                QColor color = generateColorForClient(clientId);
-                qDebug() << "add player " << clientId;
-                graphicsDialog->addActivePlayer(clientId, color);
-            }
+            activeClientId = parseClientIdFromMsg(message);
             ui->textBrowser->append("Server: " + message);
+        }
+        else if (type == "START")
+        {
+            if (!graphicsDialog)
+            {
+                graphicsDialog = new GraphicsDialog(this);
+                graphicsDialog->show();
+                connect(graphicsDialog, &GraphicsDialog::requestClose, this, &Dialog::disconnectFromServer);
+            }
+
+            if (activeClientId != -1 && graphicsDialog) {
+                QColor color = generateColorForClient(activeClientId);
+                qDebug() << "add player " << activeClientId;
+                graphicsDialog->addActivePlayer(activeClientId, color);
+            }
+
+
+        }
+        else if (type == "REJECTION")
+        {
+            qDebug() << "rejection";
+            ui->textBrowser->append("Server: " + message);
+            socket->disconnectFromHost();
+            delete socket;
+            return;
         }
         else if (type == "ACTIVE_CLIENTS")
         {
@@ -148,14 +176,21 @@ void Dialog::processMsg()
         }
         else if (type == "POSITION")
         {
+//            qDebug() << "updating player positions";
             QJsonArray playersArray = jsonObj["players"].toArray();
-            graphicsDialog->updatePlayerPositions(playersArray);
+            if (graphicsDialog)
+            {
+                graphicsDialog->updatePlayerPositions(playersArray);
+            }
         }
-        else if (type == "OBSTACLE_POSITION")
-        {
-            QJsonArray obstaclesArray = jsonObj["obstacles"].toArray();
-            graphicsDialog->updateObstaclePositions(obstaclesArray);
-        }
+//        else if (type == "OBSTACLE_POSITION")
+//        {
+//            QJsonArray obstaclesArray = jsonObj["obstacles"].toArray();
+//            if (graphicsDialog)
+//            {
+////                graphicsDialog->updateObstaclePositions(obstaclesArray);
+//            }
+//        }
         else
         {
             ui->textBrowser->append("Server: " + message);
@@ -163,16 +198,18 @@ void Dialog::processMsg()
     }
 }
 
-
-int Dialog::parseClientIdFromMsg(const QString &msg) {
+int Dialog::parseClientIdFromMsg(const QString &msg)
+{
     QRegExp regex("You are Client (\\d+)");
-    if (regex.indexIn(msg) != -1) {
+    if (regex.indexIn(msg) != -1)
+    {
         return regex.cap(1).toInt();
     }
     return -1;
 }
 
-QColor Dialog::generateColorForClient(int clientId) {
+QColor Dialog::generateColorForClient(int clientId)
+{
     static QList<QColor> colors = {
         QColor("red"), QColor("green"), QColor("blue"),
         QColor("yellow")

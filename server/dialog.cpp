@@ -11,7 +11,8 @@ Dialog::Dialog(QWidget *parent) :
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(5678));
 
-    connect(ui->configureButton, SIGNAL(clicked()), this, SLOT(configureServer()));
+    connect(ui->configureButton, &QPushButton::clicked, this, &Dialog::configureServer);
+    connect(ui->startButton, &QPushButton::clicked, this, &Dialog::startGame);
 
     for (int i = 1; i <= 4; ++i) {
         availableIds.append(i);
@@ -40,7 +41,21 @@ void Dialog::configureServer()
     if (socket->isValid())
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
+        ui->startButton->setEnabled(true);
     }
+}
+
+void Dialog::startGame()
+{
+    QJsonObject startMessage;
+    startMessage["type"] = "START";
+    startMessage["message"] = "Starting game...";
+    ui->textBrowser->append(startMessage["message"].toString());
+    tx(startMessage);
+
+    broadcastActiveClients();
+//    broadcastPlayerPositions();
+//    broadcastObstaclePositions();  // no longer need to sync obstacles
 }
 
 
@@ -48,7 +63,6 @@ void Dialog::rx()
 {
     while (socket->hasPendingDatagrams())
     {
-//        qDebug() << "rx";
         msg = socket->receiveDatagram();
 
         QString clientIP = msg.senderAddress().toString();
@@ -64,10 +78,13 @@ void Dialog::rx()
         QJsonObject jsonObj = doc.object();
         QString type = jsonObj["type"].toString();
 
+        qDebug() << "rx";
+        qDebug() << jsonObj;
 //        qDebug() << senderAddress;
 //        qDebug() << type;
 
-        if (type == "DISCONNECT") {
+        if (type == "DISCONNECT")
+        {
             removeClient(clientKey);
             broadcastActiveClients();
             return;
@@ -76,11 +93,23 @@ void Dialog::rx()
         {
             // handle new connections
             int clientId = -1;
-            if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty()) {
+            if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty())
+            {
                 clientId = availableIds.takeFirst();
                 clientIdMap[clientKey] = clientId;
                 clientAddresses.append(senderAddress);
                 clientPorts.append(senderPort);
+            }
+            else
+            {
+                // reject the connection if no IDs are available
+                QJsonObject rejectionMessage;
+                rejectionMessage["type"] = "REJECTION";
+                rejectionMessage["message"] = "Server is full. Try again later.";
+                QJsonDocument rejectionDoc(rejectionMessage);
+                socket->writeDatagram(rejectionDoc.toJson(), senderAddress, senderPort);
+                ui->textBrowser->append("Connection rejected: Server is full.");
+                return;
             }
 
             // notify the new client
@@ -99,16 +128,14 @@ void Dialog::rx()
                     .arg(senderPort);
             ui->textBrowser->append(broadcastMessage["message"].toString());
             tx(broadcastMessage);
-
-            broadcastActiveClients();
-            broadcastPlayerPositions();
-            broadcastObstaclePositions();
         }
-        else if (type == "MESSAGE") {
+        else if (type == "MESSAGE")
+        {
             // handle incoming messages from clients
             QString message = jsonObj["message"].toString();
 
-            if (clientIdMap.contains(clientKey) && !message.isEmpty()) {
+            if (clientIdMap.contains(clientKey) && !message.isEmpty())
+            {
                 int clientId = clientIdMap[clientKey];
                 ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
                                          .arg(clientId)
@@ -134,11 +161,11 @@ void Dialog::rx()
             updatePlayerPositions(playersArray);
             broadcastPlayerPositions();
         }
-        else if (type == "OBSTACLE_POSITION")
-        {
-            obstaclesArray = jsonObj["obstacles"].toArray();
-            broadcastObstaclePositions();
-        }
+//        else if (type == "OBSTACLE_POSITION")
+//        {
+//            obstaclesArray = jsonObj["obstacles"].toArray();
+//            broadcastObstaclePositions();
+//        }
     }
 }
 
@@ -248,8 +275,8 @@ void Dialog::removeClient(QString &clientKey)
 
 void Dialog::tx(QJsonObject jsonObject)
 {
-//    qDebug() << "tx";
-//    qDebug() << jsonObject;
+    qDebug() << "tx";
+    qDebug() << jsonObject;
 
     QJsonDocument doc(jsonObject);
     QByteArray message = doc.toJson();

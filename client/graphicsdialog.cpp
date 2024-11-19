@@ -84,8 +84,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
-    sendObstaclePositions();
-
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
@@ -268,7 +266,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
-            qDebug() << "position: " << x << ", " << y;
+//            qDebug() << "position: " << x << ", " << y;
 
         }
     }
