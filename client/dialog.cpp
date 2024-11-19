@@ -12,7 +12,20 @@ Dialog::Dialog(QWidget *parent) :
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
 
+    connect(ui->ipEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
+    connect(ui->portEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
+    updateConnectButtonState();
+
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
+}
+
+void Dialog::updateConnectButtonState()
+{
+    // enable connect button if both fields have text, else disable it
+    bool ipHasText = !ui->ipEdit->text().isEmpty();
+    bool portHasText = !ui->portEdit->text().isEmpty();
+
+    ui->connectButton->setEnabled(ipHasText && portHasText);
 }
 
 void Dialog::connectToServer()
@@ -89,7 +102,7 @@ void Dialog::sendMsg()
 
 void Dialog::sendJson(QJsonObject data)
 {
-    qDebug() << data;
+//    qDebug() << data;
     QJsonDocument doc(data);
     QByteArray ba = doc.toJson();
 
@@ -98,7 +111,7 @@ void Dialog::sendJson(QJsonObject data)
 
 void Dialog::processMsg()
 {
-    qDebug() << "processing message";
+//    qDebug() << "processing message";
     while (socket->hasPendingDatagrams())
     {
         QByteArray ba;
@@ -134,7 +147,7 @@ void Dialog::processMsg()
             if (activeClientId != -1 && graphicsDialog)
             {
                 QColor color = generateColorForClient(activeClientId);
-                qDebug() << "add player " << activeClientId;
+//                qDebug() << "add player " << activeClientId;
                 graphicsDialog->addActivePlayer(activeClientId, color);
             }
 
@@ -158,7 +171,7 @@ void Dialog::processMsg()
                 int clientId = value.toInt();
                 newActiveClients.insert(clientId);
                 QColor color = generateColorForClient(clientId);
-                qDebug() << "add active player " << clientId;
+//                qDebug() << "add active player " << clientId;
 
                 // add player if not already in the graphics dialog
                 if (!activeClients.contains(clientId) && graphicsDialog)
@@ -171,7 +184,7 @@ void Dialog::processMsg()
             for (int clientId : activeClients) {
                 if (!newActiveClients.contains(clientId) && graphicsDialog)
                 {
-                    qDebug() << "remove active player " << clientId;
+//                    qDebug() << "remove active player " << clientId;
                     graphicsDialog->removePlayer(clientId);
                 }
             }

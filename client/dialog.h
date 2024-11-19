@@ -52,6 +52,7 @@ private slots:
     void sendMsg();
     QString getLocalIpAddress();
     void setLocalIpAddress();
+    void updateConnectButtonState();
 
     int parseClientIdFromMsg(const QString &msg);
     QColor generateColorForClient(int clientId);

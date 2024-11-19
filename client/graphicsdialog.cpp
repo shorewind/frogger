@@ -400,12 +400,13 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
     connect(activePlayer, &Player::positionChanged, this, [this]()
         {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog) {
+        if (parentDialog)
+        {
             parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
         }
     });
@@ -420,14 +421,14 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color)
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
 }
 
 void GraphicsDialog::removePlayer(int clientId)
 {
     if (clientPlayers.contains(clientId))
     {
-        qDebug() << "removing player " << clientId;
+//        qDebug() << "removing player " << clientId;
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);

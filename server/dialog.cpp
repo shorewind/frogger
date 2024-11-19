@@ -14,7 +14,8 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->configureButton, &QPushButton::clicked, this, &Dialog::configureServer);
     connect(ui->startButton, &QPushButton::clicked, this, &Dialog::startGame);
 
-    for (int i = 1; i <= 4; ++i) {
+    for (int i = 1; i <= 4; ++i)
+    {
         availableIds.append(i);
     }
 }
@@ -28,7 +29,8 @@ void Dialog::configureServer()
 
     // bind the socket to the specified IP and port
     bool success = socket->bind(QHostAddress(ip), port);
-    if (!success) {
+    if (!success)
+    {
         ui->textBrowser->append("Failed to bind server socket: " + socket->errorString());
         return;
     }
@@ -43,22 +45,28 @@ void Dialog::configureServer()
     if (socket->isValid())
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
-        ui->startButton->setEnabled(true);
+        ui->textBrowser->append("Connect at least one client to start game.");
     }
+
+    activeGame = false;
 }
 
 void Dialog::startGame()
 {
     QJsonObject startMessage;
     startMessage["type"] = "START";
-    startMessage["message"] = "Starting game...";
+    startMessage["message"] = "Game Started.";
     ui->textBrowser->append(startMessage["message"].toString());
     tx(startMessage);
 
-    // Add all connected clients to the game (set in-game flag to true)
-    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it) {
-        it.value().second = true;  // Mark client as in the game
-        clientIdsInGame.append(it.value().first); // Add to in-game list
+    activeGame = true;
+    ui->startButton->setEnabled(false);
+
+    // add all connected clients to the game
+    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
+    {
+        it.value().second = true;  // mark client as in the game
+        clientIdsInGame.append(it.value().first);
     }
 
     broadcastActiveClients();
@@ -123,7 +131,7 @@ void Dialog::rx()
             // notify the new client
             QJsonObject welcomeMessage;
             welcomeMessage["type"] = "WELCOME";
-            welcomeMessage["message"] = "Welcome to the server! You are Client " + QString::number(clientId);
+            welcomeMessage["message"] = "Welcome to Fast and Froggy! You are Client " + QString::number(clientId);
             QJsonDocument welcomeDoc(welcomeMessage);
             socket->writeDatagram(welcomeDoc.toJson(), senderAddress, senderPort);
 
@@ -136,6 +144,8 @@ void Dialog::rx()
                     .arg(senderPort);
             ui->textBrowser->append(broadcastMessage["message"].toString());
             tx(broadcastMessage);
+
+            broadcastActiveClients();
         }
         else if (type == "LEAVE")
         {
@@ -153,16 +163,34 @@ void Dialog::rx()
                     QHostAddress address = QHostAddress(parts[0]);
                     quint16 port = static_cast<quint16>(parts[1].toUInt());
 
-                    // create a disconnection message to broadcast
-                    QJsonObject disconnectionMsg;
-                    disconnectionMsg["type"] = "MESSAGE";
-                    disconnectionMsg["message"] = QString("Client %1 (%2:%3) has left the game.")
+                    QJsonObject goodbyeMsg;
+                    goodbyeMsg["type"] = "GOODBYE";
+                    goodbyeMsg["message"] = "You left the game! You are Client " + QString::number(clientId);
+                    QJsonDocument goodbyeDoc(goodbyeMsg);
+                    socket->writeDatagram(goodbyeDoc.toJson(), senderAddress, senderPort);
+
+
+                    QJsonObject leaveMsg;
+                    leaveMsg["type"] = "MESSAGE";
+                    leaveMsg["message"] = QString("Client %1 (%2:%3) has left the game.")
                                                      .arg(clientId)
                                                      .arg(address.toString())
                                                      .arg(port);
 
-                    ui->textBrowser->append(disconnectionMsg["message"].toString());
-                    tx(disconnectionMsg);
+                    ui->textBrowser->append(leaveMsg["message"].toString());
+                    tx(leaveMsg);
+                }
+
+                if (clientIdsInGame.isEmpty())
+                {
+                    activeGame = false;
+                    ui->startButton->setEnabled(true);
+                    ui->textBrowser->append("Game Over.");
+
+                    QJsonObject gameOverMessage;
+                    gameOverMessage["type"] = "GAME_OVER";
+                    gameOverMessage["message"] = "Game Over.";
+                    tx(gameOverMessage);
                 }
             }
             broadcastActiveClients();
@@ -210,7 +238,8 @@ void Dialog::rx()
 
 void Dialog::updatePlayerPositions(QJsonArray playersArray)
 {
-    for (const QJsonValue &value : playersArray) {
+    for (const QJsonValue &value : playersArray)
+    {
         QJsonObject playerData = value.toObject();
         int clientId = playerData["clientId"].toInt();
         int x = playerData["x"].toInt();
@@ -275,6 +304,20 @@ void Dialog::broadcastActiveClients()
     activeClientsMessage["clientIdsInGame"] = inGameClientsArray;
 
     tx(activeClientsMessage);
+
+    if (inGameClientsArray.size() == 0)
+    {
+        activeGame = false;
+    }
+
+    if (activeClientsArray.size() > 0 && activeGame == false)
+    {
+        ui->startButton->setEnabled(true);
+    }
+    else
+    {
+        ui->startButton->setEnabled(false);
+    }
 }
 
 

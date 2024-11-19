@@ -39,6 +39,7 @@ private:
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
+    bool activeGame;
 
 private slots:
     void rx();  // receive
