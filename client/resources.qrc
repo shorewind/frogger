@@ -5,9 +5,8 @@
         <file>images/heart.png</file>
         <file>images/heart.gif</file>
         <file>images/GameOver.jpg</file>
-        <file>images/Charger.png</file>
+	<file>images/Charger.png</file>
         <file>images/Supra.png</file>
-        <file>images/Skyline.png</file>
-        <file>images/coolbackground.png</file>
+	<file>images/Skyline.png</file>
     </qresource>
 </RCC>

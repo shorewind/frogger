@@ -29,7 +29,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     scene->setBackgroundBrush(Qt::black);
 
     // load and set the background image
-    QPixmap background(":/images/coolbackground.png");
+    QPixmap background(":/images/background.png");
     background = background.scaled(SCENE_WIDTH, SCENE_HEIGHT, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(background);
     backgroundItem->setPos(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2);
