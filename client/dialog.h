@@ -45,6 +45,8 @@ private:
     QSet<int> activeClients;
     QString playerColor;
     QString playerUsername;
+    QList<QColor> availableColors = {QColor("green"), QColor("blue"), QColor("yellow"), QColor("red")};
+    QList<QColor> usedColors;
 
 private slots:
     void connectToServer();
@@ -57,7 +59,7 @@ private slots:
     void updateConnectButtonState();
 
     int parseClientIdFromMsg(const QString &msg);
-    QColor generateColorForClient(int clientId);
+    QColor getNextAvailableColor();
     void onColorButtonClick();
     void submitUsername();
     void setPlayerColor(QString &color);

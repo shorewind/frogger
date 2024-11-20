@@ -13,6 +13,7 @@
 #include <QMap>
 #include <QPoint>
 #include <QNetworkInterface>
+#include "clientdata.h"
 
 namespace Ui {
 class Dialog;
@@ -35,7 +36,7 @@ private:
     QList<quint16> clientPorts;
     QList<int> availableIds;
     QList<int> clientIdsInGame;
-    QMap<QString, QPair<int, bool>> clientIdMap;  // holds clientKey, clientId, and in_game bool
+    QMap<QString, ClientData> clientIdMap;  // holds clientKey, clientId, and in_game bool
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;

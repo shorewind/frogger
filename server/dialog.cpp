@@ -65,8 +65,8 @@ void Dialog::startGame()
     // add all connected clients to the game
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
     {
-        it.value().second = true;  // mark client as in the game
-        clientIdsInGame.append(it.value().first);
+        it.value().isInGame = true;  // mark client as in the game
+        clientIdsInGame.append(it.value().clientId);
     }
 
     broadcastActiveClients();
@@ -112,7 +112,8 @@ void Dialog::rx()
             if (!clientIdMap.contains(clientKey) && !availableIds.isEmpty())
             {
                 clientId = availableIds.takeFirst();
-                clientIdMap[clientKey] = qMakePair(clientId, false);
+                clientIdMap[clientKey].clientId = clientId;
+                clientIdMap[clientKey].isInGame = false;
                 clientAddresses.append(senderAddress);
                 clientPorts.append(senderPort);
             }
@@ -149,12 +150,12 @@ void Dialog::rx()
         }
         else if (type == "LEAVE")
         {
-            if (clientIdMap.contains(clientKey) && clientIdMap[clientKey].second == true)
+            if (clientIdMap.contains(clientKey) && clientIdMap[clientKey].isInGame == true)
             {
-                int clientId = clientIdMap[clientKey].first;
+                int clientId = clientIdMap[clientKey].clientId;
 
                 clientIdsInGame.removeAll(clientId);
-                clientIdMap[clientKey].second = false;
+                clientIdMap[clientKey].isInGame = false;
 
                 QStringList parts = clientKey.split(':');
 
@@ -203,7 +204,7 @@ void Dialog::rx()
 
             if (clientIdMap.contains(clientKey) && !message.isEmpty())
             {
-                int clientId = clientIdMap[clientKey].first;
+                int clientId = clientIdMap[clientKey].clientId;
                 ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
                                          .arg(clientId)
                                          .arg(clientIP)
@@ -227,6 +228,30 @@ void Dialog::rx()
 
             updatePlayerPositions(playersArray);
             broadcastPlayerPositions();
+        }
+        else if (type == "USERNAME")
+        {
+            QString username = jsonObj["username"].toString();
+            if (clientIdMap.contains(clientKey))
+            {
+                clientIdMap[clientKey].username = username;
+                ui->textBrowser->append(QString("Client %1 set their username to: %2")
+                                         .arg(clientIdMap[clientKey].clientId)
+                                         .arg(username));
+            }
+            broadcastActiveClients();
+        }
+        else if (type == "PLAYER_COLOR")
+        {
+            QString color = jsonObj["color"].toString();
+            if (clientIdMap.contains(clientKey))
+            {
+                clientIdMap[clientKey].color = color;
+                ui->textBrowser->append(QString("Client %1 set their color to: %2")
+                                         .arg(clientIdMap[clientKey].clientId)
+                                         .arg(color));
+            }
+            broadcastActiveClients();
         }
 //        else if (type == "OBSTACLE_POSITION")
 //        {
@@ -292,15 +317,23 @@ void Dialog::broadcastActiveClients()
 
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
     {
-        int clientId = it.value().first;
-        activeClientsArray.append(clientId);
-        if (it.value().second)
+        const ClientData &clientData = it.value();
+
+        QJsonObject clientObj;
+        clientObj["clientId"] = clientData.clientId;
+        clientObj["username"] = clientData.username;
+        clientObj["color"] = clientData.color;
+        clientObj["isInGame"] = clientData.isInGame;
+
+        activeClientsArray.append(clientObj);
+
+        if (clientData.isInGame)
         {
-            inGameClientsArray.append(clientId);
+            inGameClientsArray.append(clientData.clientId);
         }
     }
 
-    activeClientsMessage["clientIds"] = activeClientsArray;
+    activeClientsMessage["clientData"] = activeClientsArray;
     activeClientsMessage["clientIdsInGame"] = inGameClientsArray;
 
     tx(activeClientsMessage);
@@ -326,8 +359,8 @@ void Dialog::removeClient(QString &clientKey)
 //    qDebug() << "disconnecting " << clientKey;
     if (clientIdMap.contains(clientKey))
     {
-        int clientId = clientIdMap[clientKey].first;
-        bool isInGame = clientIdMap[clientKey].second;
+        int clientId = clientIdMap[clientKey].clientId;
+        bool isInGame = clientIdMap[clientKey].isInGame;
         clientIdMap.remove(clientKey);
 
         if (isInGame)

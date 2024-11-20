@@ -161,9 +161,17 @@ void Dialog::processMsg()
 
             if (activeClientId != -1 && graphicsDialog)
             {
-                QColor color = generateColorForClient(activeClientId);
-//                qDebug() << "add player " << activeClientId;
+                QColor color;
+                if (!playerColor.isEmpty())
+                {
+                    color = QColor(playerColor);
+                }
+                else
+                {
+                    color = getNextAvailableColor();
+                }
                 graphicsDialog->addActivePlayer(activeClientId, color);
+//                qDebug() << "add player " << activeClientId;
             }
 
 
@@ -178,21 +186,38 @@ void Dialog::processMsg()
         {
             // process the list of active client IDs received from the server
             QJsonArray clientIdsArray = jsonObj["clientIdsInGame"].toArray();
+            QJsonArray clientDataArray = jsonObj["clientData"].toArray();
 
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
-            for (const QJsonValue &value : clientIdsArray)
+            for (const QJsonValue &value : clientDataArray)
             {
-                int clientId = value.toInt();
-                newActiveClients.insert(clientId);
-                QColor color = generateColorForClient(clientId);
-//                qDebug() << "add active player " << clientId;
+                QJsonObject clientData = value.toObject();
+                int clientId = clientData["clientId"].toInt();
 
-                // add player if not already in the graphics dialog
-                if (!activeClients.contains(clientId) && graphicsDialog)
+                if (clientIdsArray.contains(clientId))
                 {
-                    graphicsDialog->addPlayer(clientId, color);
+                    QString username = clientData["username"].toString();
+                    QString colorString = clientData["color"].toString();
+
+                    QColor color;
+                    if (!colorString.isEmpty())
+                    {
+                        color = QColor(colorString);
+                    }
+                    else
+                    {
+                        color = getNextAvailableColor();
+                    }
+
+                    newActiveClients.insert(clientId);
+
+                    if (!activeClients.contains(clientId) && graphicsDialog)
+                    {
+                        graphicsDialog->addPlayer(clientId, color);
+                    }
                 }
+
             }
 
             // check for players that are no longer active
@@ -278,13 +303,32 @@ void Dialog::setPlayerColor(QString &color)
     ui->textBrowser->append("You selected the color: " + playerColor);
 }
 
-QColor Dialog::generateColorForClient(int clientId)
+QColor Dialog::getNextAvailableColor()
 {
-    static QList<QColor> colors = {
-        QColor("red"), QColor("green"), QColor("blue"),
-        QColor("yellow")
-    };
-    return colors[clientId % colors.size()];
+    // If there are still available colors, return the next one
+    if (!availableColors.isEmpty())
+    {
+        QColor color = availableColors.takeFirst();  // Take the first color
+        usedColors.append(color);  // Track that the color has been used
+        return color;
+    }
+    else
+    {
+        // No available colors, reset the list
+        availableColors.append(usedColors);  // Reset available colors from used ones
+        usedColors.clear();  // Clear the used colors set
+
+        // If no colors are left to use, return an invalid color or handle the error case
+        if (availableColors.isEmpty())
+        {
+            return QColor();  // Returning an invalid color (empty QColor)
+        }
+
+        // Return the next available color after reset
+        QColor color = availableColors.takeFirst();
+        usedColors.append(color);  // Mark it as used
+        return color;
+    }
 }
 
 void Dialog::submitUsername()
