@@ -209,6 +209,13 @@ void GraphicsDialog::checkCollisions()
             handlePlayerDeath();
         }
     }
+
+    if (y == -211)
+    {
+        activePlayer->finished = true;
+        qDebug() << "Player Finished";
+        activeGameState = false;
+    }
 }
 
 
@@ -228,6 +235,7 @@ void GraphicsDialog::handlePlayerDeath()
     if (numLives == 0 && hearts.isEmpty())
     {
         //activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
         activePlayer->resetPlayerPos();
         activeGameState=false;
         qDebug() << "Game Over!";
@@ -237,6 +245,29 @@ void GraphicsDialog::handlePlayerDeath()
 
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
+}
+
+void GraphicsDialog::checkRoundOver()
+{
+    bool done = true;
+    for(auto &player : clientPlayers.values())
+    {
+        if ( player->finished || player->dead )
+        {
+            done = true;
+        }
+        else
+        {
+            done = false;
+            break;
+        }
+    }
+
+    if (done)
+    {
+        activeGameState = false;
+        showEndScreen();
+    }
 }
 
 // top is -211 and bottom is 245
