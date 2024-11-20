@@ -176,7 +176,7 @@ void GraphicsDialog::checkCollisions()
         // Check if the colliding item is a bounding line using a custom data property
         if (item->data(0).toString() == "boundingLine") {
                     qDebug() << "Collision with bounding line!";
-                    activePlayer->resetPlayerPos();
+                    activePlayer->setPos(currentPos.x()+38, currentPos.y()+38);;
                     return;
         }
     }
