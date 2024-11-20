@@ -84,8 +84,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
-    sendObstaclePositions();
-
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
@@ -266,7 +264,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
-            qDebug() << "position: " << x << ", " << y;
+//            qDebug() << "position: " << x << ", " << y;
 
         }
     }
@@ -400,12 +398,13 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
     connect(activePlayer, &Player::positionChanged, this, [this]()
         {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog) {
+        if (parentDialog)
+        {
             parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
         }
     });
@@ -420,14 +419,14 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color)
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
 }
 
 void GraphicsDialog::removePlayer(int clientId)
 {
     if (clientPlayers.contains(clientId))
     {
-        qDebug() << "removing player " << clientId;
+//        qDebug() << "removing player " << clientId;
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);
