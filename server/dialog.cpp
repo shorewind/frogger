@@ -10,6 +10,7 @@ Dialog::Dialog(QWidget *parent) :
 
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));
+    ui->textBrowser->append("Press the configure button to start a game server.");
 
     connect(ui->configureButton, &QPushButton::clicked, this, &Dialog::configureServer);
     connect(ui->startButton, &QPushButton::clicked, this, &Dialog::startGame);
@@ -22,6 +23,14 @@ Dialog::Dialog(QWidget *parent) :
 
 void Dialog::configureServer()
 {
+    bool ipHasText = !ui->ipEdit->text().isEmpty();
+    bool portHasText = !ui->portEdit->text().isEmpty();
+
+    if (!ipHasText || !portHasText)
+    {
+        return;
+    }
+
     socket = new QUdpSocket(this);
 
     QString ip = ui->ipEdit->text();
@@ -46,9 +55,26 @@ void Dialog::configureServer()
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
         ui->textBrowser->append("Connect at least one client to start game.");
+        ui->configureButton->setEnabled(false);
     }
 
     activeGame = false;
+}
+
+void Dialog::closeEvent(QCloseEvent *event)
+{
+    QJsonObject disconnectAllMessage;
+    disconnectAllMessage["type"] = "DISCONNECT_ALL";
+    disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
+
+    tx(disconnectAllMessage);
+
+    if (socket && socket->isOpen()) {
+        socket->close();
+        qDebug() << "Server socket disconnected.";
+    }
+
+    event->accept();
 }
 
 void Dialog::startGame()

@@ -12,6 +12,8 @@ Dialog::Dialog(QWidget *parent) :
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
 
+    ui->textBrowser->append("Server should send a welcome message and clear the inputs on successful connection to active game server.");
+
     connect(ui->usernameEdit, &QLineEdit::returnPressed, this, &Dialog::onSubmitButtonClick);
     connect(ui->messageEdit, &QLineEdit::returnPressed, this, &Dialog::onSendButtonClick);
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
@@ -41,14 +43,8 @@ void Dialog::connectToServer()
     socket->connectToHost(QHostAddress(ip), port);
     connect(socket, &QUdpSocket::readyRead, this, &Dialog::processMsg);
 
-    ui->ipEdit->clear();
-    ui->portEdit->clear();
-
     if (socket->isValid())
     {
-        qDebug() << "socket valid";
-        ui->textBrowser->append("Connected to Server: " + ip + ":" + QString::number(port));
-
         QJsonObject connectMessage;
         connectMessage["type"] = "CONNECT";
 
@@ -56,24 +52,25 @@ void Dialog::connectToServer()
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
     }
-    else
-    {
-        qDebug() << "invalid socket";
-    }
 }
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
+    leaveGame();
+    disconnectFromServer();
+    close();
+    event->accept();
+}
+
+void Dialog::disconnectFromServer()
+{
     QJsonObject disconnectMessage;
 
     disconnectMessage["type"] = "DISCONNECT";
-    leaveGame();
     sendJson(disconnectMessage);
 
     socket->disconnectFromHost();
     delete socket;
-    close();
-    event->accept();
 }
 
 void Dialog::leaveGame()
@@ -145,6 +142,9 @@ void Dialog::processMsg()
 
         if (type == "WELCOME")
         {
+            ui->textBrowser->setText("Connected to Server: " + ip + ":" + QString::number(port));
+            ui->ipEdit->clear();
+            ui->portEdit->clear();
             activeClientId = parseClientIdFromMsg(message);
             ui->textBrowser->append("Server: " + message);
             ui->sendButton->setEnabled(true);
@@ -184,6 +184,24 @@ void Dialog::processMsg()
             }
             ui->submitButton->setEnabled(false);
             ui->textBrowser->append(message);
+        }
+        else if (type == "DISCONNECT_ALL")
+        {
+            leaveGame();
+            ui->connectButton->setEnabled(true);
+            ui->sendButton->setEnabled(false);
+            ui->submitButton->setEnabled(false);
+            ui->greenButton->setEnabled(false);
+            ui->blueButton->setEnabled(false);
+            ui->yellowButton->setEnabled(false);
+            ui->redButton->setEnabled(false);
+            ui->greenButton->setStyleSheet("");
+            ui->blueButton->setStyleSheet("");
+            ui->yellowButton->setStyleSheet("");
+            ui->redButton->setStyleSheet("");
+            ui->textBrowser->append(message);
+            setLocalIpAddress();
+            ui->portEdit->setText(QString::number(DEFAULT_PORT));
         }
         else if (type == "REJECTION")
         {

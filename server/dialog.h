@@ -29,6 +29,7 @@ public:
 
 private:
     Ui::Dialog *ui;
+    void closeEvent(QCloseEvent *event) override;
 
     QUdpSocket* socket;
     QNetworkDatagram msg;
