@@ -87,7 +87,25 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
+
+    createBoundingLine(-SCENE_WIDTH / 2 + 50, -SCENE_HEIGHT / 2 + 50, 100, 10); // Horizontal line
+    createBoundingLine(100, 100, 10, 200);                                      // Vertical line
+
+
+
+
 }
+
+void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
+{
+    QGraphicsRectItem* boundingLine = new QGraphicsRectItem(x, y, width, height);
+    boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
+    boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
+    boundingLine->setZValue(1);             // Ensure it appears above the background
+    scene->addItem(boundingLine);
+    boundingLines.append(boundingLine);     // Add to the list of bounding lines
+}
+
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
 {
@@ -131,53 +149,81 @@ void GraphicsDialog::removeHeart()
 }
 
 void GraphicsDialog::checkCollisions() {
-    // Loop through all obstacles
-    bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
+    // Loop through all bounding lines
+    for (auto boundingLine : boundingLines)
+    {
+        if (activePlayer->collidesWithItem(boundingLine))
+        {
+            // Prevent the player from moving through the bounding line
+            QPointF newPos = activePlayer->pos(); // Get the current position of the player
+
+            // Adjust position based on collision direction
+            QRectF playerRect = activePlayer->boundingRect().translated(newPos);
+            QRectF lineRect = boundingLine->boundingRect().translated(boundingLine->pos());
+
+            if (playerRect.right() > lineRect.left() && playerRect.left() < lineRect.left()) {
+                // Player is colliding from the left
+                newPos.setX(lineRect.left() - playerRect.width());
+            } else if (playerRect.left() < lineRect.right() && playerRect.right() > lineRect.right()) {
+                // Player is colliding from the right
+                newPos.setX(lineRect.right());
+            } else if (playerRect.bottom() > lineRect.top() && playerRect.top() < lineRect.top()) {
+                // Player is colliding from the top
+                newPos.setY(lineRect.top() - playerRect.height());
+            } else if (playerRect.top() < lineRect.bottom() && playerRect.bottom() > lineRect.bottom()) {
+                // Player is colliding from the bottom
+                newPos.setY(lineRect.bottom());
+            }
+
+            // Apply the adjusted position
+            activePlayer->setPos(newPos.x(), newPos.y()); // Fix: Use two arguments for setPos if required
+            return; // Exit the loop as we already handled the collision
+        }
+    }
+
+    // Handle other collisions (e.g., obstacles)
+    bool collision = false;
     for (auto &obstacle : obstacles)
     {
-        // If player is colliding with something
         if (activePlayer->collidesWithItem(obstacle))
         {
-            // If the obstacle is a LOG
             if (obstacle->type == Obstacle::Log)
             {
-                // Move player with the current log
-                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y);
-                activePlayer->onLog = true;   // set flag
+                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y); // Use () if x() and y() are methods
+                activePlayer->onLog = true;
             }
-            else    // Not a log... car or other
+            else
             {
-                activePlayer->onLog = false;  // set flag
+                activePlayer->onLog = false;
                 handlePlayerDeath();
             }
-            // Player collided with at least one obstacle
+
             collision = true;
         }
 
-        // Strategically break early
         if (collision)
         {
             break;
         }
     }
 
-    // Check if player was on a log, but hopped off.
     if (!collision)
     {
         activePlayer->onLog = false;
     }
-    // Log row positions:
-    // -21, -59, -97, -135, -173
-    // Check if player is in the water kill zone
+
+    // Water zone check
     qreal y = activePlayer->y;
     if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
     {
-        if (activePlayer->onLog == false) // if true, kill player or decrease lives
+        if (activePlayer->onLog == false)
         {
             handlePlayerDeath();
         }
     }
 }
+
+
 
 void GraphicsDialog::handlePlayerDeath()
 {
