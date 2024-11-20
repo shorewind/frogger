@@ -108,7 +108,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
 
 
-
 }
 
 void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
@@ -117,6 +116,7 @@ void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
     boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
     boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
     boundingLine->setZValue(1);             // Ensure it appears above the background
+    boundingLine->setData(0, "boundingLine");
     scene->addItem(boundingLine);
     boundingLines.append(boundingLine);     // Add to the list of bounding lines
 }
@@ -163,80 +163,56 @@ void GraphicsDialog::removeHeart()
     }
 }
 
-void GraphicsDialog::checkCollisions() {
-    // Loop through all bounding lines
-    for (auto boundingLine : boundingLines)
+void GraphicsDialog::checkCollisions()
+{
+    // Store the current position of the player before movement
+    QPointF currentPos = activePlayer->pos();
+
+    // Get all items colliding with the player
+    QList<QGraphicsItem*> collisions = scene->collidingItems(activePlayer);
+
+    for (QGraphicsItem* item : collisions)
     {
-        if (activePlayer->collidesWithItem(boundingLine))
-        {
-            // Prevent the player from moving through the bounding line
-            QPointF newPos = activePlayer->pos(); // Get the current position of the player
-
-            // Adjust position based on collision direction
-            QRectF playerRect = activePlayer->boundingRect().translated(newPos);
-            QRectF lineRect = boundingLine->boundingRect().translated(boundingLine->pos());
-
-            if (playerRect.right() > lineRect.left() && playerRect.left() < lineRect.left()) {
-                // Player is colliding from the left
-                newPos.setX(lineRect.left() - playerRect.width());
-            } else if (playerRect.left() < lineRect.right() && playerRect.right() > lineRect.right()) {
-                // Player is colliding from the right
-                newPos.setX(lineRect.right());
-            } else if (playerRect.bottom() > lineRect.top() && playerRect.top() < lineRect.top()) {
-                // Player is colliding from the top
-                newPos.setY(lineRect.top() - playerRect.height());
-            } else if (playerRect.top() < lineRect.bottom() && playerRect.bottom() > lineRect.bottom()) {
-                // Player is colliding from the bottom
-                newPos.setY(lineRect.bottom());
-            }
-
-            // Apply the adjusted position
-            activePlayer->setPos(newPos.x(), newPos.y()); // Fix: Use two arguments for setPos if required
-            return; // Exit the loop as we already handled the collision
+        // Check if the colliding item is a bounding line using a custom data property
+        if (item->data(0).toString() == "boundingLine") {
+                    qDebug() << "Collision with bounding line!";
+                    activePlayer->resetPlayerPos();
+                    return;
         }
     }
 
-    // Handle other collisions (e.g., obstacles)
+    // Check for collisions with obstacles
     bool collision = false;
-    for (auto &obstacle : obstacles)
-    {
-        if (activePlayer->collidesWithItem(obstacle))
-        {
-            if (obstacle->type == Obstacle::Log)
-            {
-                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y); // Use () if x() and y() are methods
+    for (auto& obstacle : obstacles) {
+        if (activePlayer->collidesWithItem(obstacle)) {
+            if (obstacle->type == Obstacle::Log) {
+                // Move the player with the log
+                activePlayer->setPos(currentPos.x() + obstacle->speed, currentPos.y());
                 activePlayer->onLog = true;
-            }
-            else
-            {
+            } else {
                 activePlayer->onLog = false;
                 handlePlayerDeath();
             }
-
             collision = true;
-        }
-
-        if (collision)
-        {
             break;
         }
     }
 
-    if (!collision)
-    {
+    if (!collision) {
         activePlayer->onLog = false;
     }
 
     // Water zone check
-    qreal y = activePlayer->y;
-    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
-    {
-        if (activePlayer->onLog == false)
-        {
+    qreal y = currentPos.y();
+    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
+        if (!activePlayer->onLog) {
             handlePlayerDeath();
         }
     }
 }
+
+
+
 
 
 
@@ -495,3 +471,4 @@ void GraphicsDialog::removePlayer(int clientId)
         clientPlayers.remove(clientId);
     }
 }
+
