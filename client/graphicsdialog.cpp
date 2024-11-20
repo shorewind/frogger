@@ -175,10 +175,10 @@ void GraphicsDialog::checkCollisions() {
         // Player* otherPlayer = activePlayer + 1;
 
         if(!otherPlayer) continue;
-        if (activePlayer != otherPlayer && activePlayer->collidesWithItem(otherPlayer)) {
+        if (activePlayer != otherPlayer && ( activePlayer->collidesWithItem(otherPlayer) || otherPlayer->collidesWithItem(activePlayer)) ) {
             // Both players collide, lose a life
+            otherPlayer->handleplayerDeath();
             handlePlayerDeath();
-            //otherPlayer->handleplayerDeath();
 
             break;  // Stop after detecting one collision
         }

@@ -78,10 +78,15 @@ void Player::handleplayerDeath()
     if (lives > 0) {
         lives--;
         //removeHeart();
-        setPos(clientId * 2, 245); // Adjust position if player still has lives
+        resetPlayerPos();
     }
 
     // check if game over after removing the heart
+    if (lives == 0 && hearts.isEmpty())
+    {
+        resetPlayerPos();
+        qDebug() << "Game Over";
+    }
 }
 
 void Player::resetPlayerPos() {
