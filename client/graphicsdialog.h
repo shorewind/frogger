@@ -39,6 +39,8 @@ private:
     QMap<int, Obstacle*> obstacles;
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
+    void checkRoundOver();
+    bool roundOver;
     QList<QGraphicsPixmapItem*> hearts;  // List to store heart icons
     int numLives = 3;
     void initializeHearts();  // Function to initialize the heart icons

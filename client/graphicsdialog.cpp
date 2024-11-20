@@ -89,6 +89,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
+
+    // Set round over flag
+    roundOver = false;
 }
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
@@ -135,6 +138,7 @@ void GraphicsDialog::removeHeart()
 void GraphicsDialog::checkCollisions() {
     // Loop through all obstacles
     bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
+//    qDebug() << "player position: " << activePlayer->pos();
     for (auto &obstacle : obstacles)
     {
         // If player is colliding with something
@@ -179,6 +183,13 @@ void GraphicsDialog::checkCollisions() {
             handlePlayerDeath();
         }
     }
+
+    if (y == -211)
+    {
+        activePlayer->finished = true;
+        qDebug() << "Player Finished";
+        activeGameState = false;
+    }
 }
 
 void GraphicsDialog::handlePlayerDeath()
@@ -193,6 +204,7 @@ void GraphicsDialog::handlePlayerDeath()
     if (numLives == 0 && hearts.isEmpty())
     {
         //activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
         activePlayer->resetPlayerPos();
         activeGameState=false;
         qDebug() << "Game Over!";
@@ -202,6 +214,23 @@ void GraphicsDialog::handlePlayerDeath()
 
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
+}
+
+void GraphicsDialog::checkRoundOver()
+{
+    bool done = true;
+    for(auto &player : clientPlayers.values())
+    {
+        if ( !player->finished && !player->dead )
+        {
+            done = false;
+        }
+    }
+
+    if (done)
+    {
+        roundOver = true;
+    }
 }
 
 // top is -211 and bottom is 245
