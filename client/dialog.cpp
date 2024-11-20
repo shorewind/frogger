@@ -12,34 +12,27 @@ Dialog::Dialog(QWidget *parent) :
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
 
-    ui->greenButton->setStyleSheet("background-color: green");
-    ui->blueButton->setStyleSheet("background-color: blue");
-    ui->yellowButton->setStyleSheet("background-color: yellow");
-    ui->redButton->setStyleSheet("background-color: red");
-
-    connect(ui->ipEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
-    connect(ui->portEdit, &QLineEdit::textChanged, this, &Dialog::updateConnectButtonState);
-    updateConnectButtonState();
-
+    connect(ui->usernameEdit, &QLineEdit::returnPressed, this, &Dialog::onSubmitButtonClick);
+    connect(ui->messageEdit, &QLineEdit::returnPressed, this, &Dialog::onSendButtonClick);
     connect(ui->connectButton, &QPushButton::clicked, this, &Dialog::connectToServer);
     connect(ui->submitButton, &QPushButton::clicked, this, &Dialog::submitUsername);
+
     connect(ui->greenButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 }
 
-void Dialog::updateConnectButtonState()
+void Dialog::connectToServer()
 {
-    // enable connect button if both fields have text, else disable it
     bool ipHasText = !ui->ipEdit->text().isEmpty();
     bool portHasText = !ui->portEdit->text().isEmpty();
 
-    ui->connectButton->setEnabled(ipHasText && portHasText);
-}
+    if (!ipHasText || !portHasText)
+    {
+        return;
+    }
 
-void Dialog::connectToServer()
-{
     socket = new QUdpSocket(this);
 
     ip = ui->ipEdit->text();
@@ -74,6 +67,7 @@ void Dialog::closeEvent(QCloseEvent *event)
     QJsonObject disconnectMessage;
 
     disconnectMessage["type"] = "DISCONNECT";
+    leaveGame();
     sendJson(disconnectMessage);
 
     socket->disconnectFromHost();
@@ -97,6 +91,16 @@ void Dialog::leaveGame()
         graphicsDialog = nullptr;
     }
     ui->submitButton->setEnabled(true);
+}
+
+void Dialog::onSubmitButtonClick()
+{
+    ui->submitButton->click();
+}
+
+void Dialog::onSendButtonClick()
+{
+    ui->sendButton->click();
 }
 
 void Dialog::sendMsg()
@@ -150,6 +154,10 @@ void Dialog::processMsg()
             ui->blueButton->setEnabled(true);
             ui->yellowButton->setEnabled(true);
             ui->redButton->setEnabled(true);
+            ui->greenButton->setStyleSheet("background-color: green");
+            ui->blueButton->setStyleSheet("background-color: blue");
+            ui->yellowButton->setStyleSheet("background-color: yellow");
+            ui->redButton->setStyleSheet("background-color: red");
         }
         else if (type == "START")
         {
@@ -191,16 +199,34 @@ void Dialog::processMsg()
 
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
+
+            QMap<QString, QPushButton*> colorButtonMap = {
+                {"green", ui->greenButton},
+                {"blue", ui->blueButton},
+                {"yellow", ui->yellowButton},
+                {"red", ui->redButton},
+            };
+
+            QSet<QString> colorsTaken;
+
             for (const QJsonValue &value : clientDataArray)
             {
                 QJsonObject clientData = value.toObject();
                 int clientId = clientData["clientId"].toInt();
+                QString username = clientData["username"].toString();
+                QString colorString = clientData["color"].toString();
+
+                // track taken colors
+                if (clientId != activeClientId)
+                {
+                    if (!colorString.isEmpty())
+                    {
+                        colorsTaken.insert(colorString);
+                    }
+                }
 
                 if (clientIdsArray.contains(clientId))
                 {
-                    QString username = clientData["username"].toString();
-                    QString colorString = clientData["color"].toString();
-
                     QColor color;
                     if (!colorString.isEmpty())
                     {
@@ -220,6 +246,21 @@ void Dialog::processMsg()
                 }
 
             }
+
+           // enable/disable color buttons based on whether the color is taken
+           for (const QString &color : colorButtonMap.keys())
+           {
+               if (colorsTaken.contains(color))
+               {
+                   colorButtonMap[color]->setEnabled(false);
+                   colorButtonMap[color]->setStyleSheet("");
+               }
+               else
+               {
+                   colorButtonMap[color]->setEnabled(true);
+                   colorButtonMap[color]->setStyleSheet("background-color: " + color);
+               }
+           }
 
             // check for players that are no longer active
             for (int clientId : activeClients)
@@ -336,6 +377,11 @@ QColor Dialog::getNextAvailableColor()
 void Dialog::submitUsername()
 {
     playerUsername = ui->usernameEdit->text();
+
+    if (playerUsername.isEmpty())
+    {
+        return;
+    }
 
     QJsonObject usernameMessage;
     usernameMessage["type"] = "USERNAME";

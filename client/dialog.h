@@ -56,11 +56,11 @@ private slots:
     void sendMsg();
     QString getLocalIpAddress();
     void setLocalIpAddress();
-    void updateConnectButtonState();
-
     int parseClientIdFromMsg(const QString &msg);
     QColor getNextAvailableColor();
     void onColorButtonClick();
+    void onSubmitButtonClick();
+    void onSendButtonClick();
     void submitUsername();
     void setPlayerColor(QString &color);
 };
