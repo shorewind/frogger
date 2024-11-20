@@ -96,6 +96,7 @@ void Dialog::leaveGame()
         delete graphicsDialog;
         graphicsDialog = nullptr;
     }
+    ui->submitButton->setEnabled(true);
 }
 
 void Dialog::sendMsg()
@@ -173,8 +174,8 @@ void Dialog::processMsg()
                 graphicsDialog->addActivePlayer(activeClientId, color);
 //                qDebug() << "add player " << activeClientId;
             }
-
-
+            ui->submitButton->setEnabled(false);
+            ui->textBrowser->append(message);
         }
         else if (type == "REJECTION")
         {
@@ -221,7 +222,8 @@ void Dialog::processMsg()
             }
 
             // check for players that are no longer active
-            for (int clientId : activeClients) {
+            for (int clientId : activeClients)
+            {
                 if (!newActiveClients.contains(clientId) && graphicsDialog)
                 {
 //                    qDebug() << "remove active player " << clientId;
@@ -231,7 +233,7 @@ void Dialog::processMsg()
 
             activeClients = newActiveClients;
 
-            ui->textBrowser->append("Server: Active clients updated.");
+//            ui->textBrowser->append("Server: Active clients updated.");
         }
         else if (type == "POSITION")
         {
@@ -252,7 +254,7 @@ void Dialog::processMsg()
 //        }
         else
         {
-            ui->textBrowser->append("Server: " + message);
+            ui->textBrowser->append(message);
         }
     }
 }

@@ -114,6 +114,8 @@ void Dialog::rx()
                 clientId = availableIds.takeFirst();
                 clientIdMap[clientKey].clientId = clientId;
                 clientIdMap[clientKey].isInGame = false;
+                clientIdMap[clientKey].username = QString("Client %1").arg(clientId);  // set default username
+
                 clientAddresses.append(senderAddress);
                 clientPorts.append(senderPort);
             }
@@ -139,8 +141,8 @@ void Dialog::rx()
             // broadcast new connection
             QJsonObject broadcastMessage;
             broadcastMessage["type"] = "JOINED";
-            broadcastMessage["message"] = QString("Client %1 (%2:%3) has joined the server.")
-                    .arg(clientId)
+            broadcastMessage["message"] = QString("%1 (%2:%3) has joined the server.")
+                    .arg(clientIdMap[clientKey].username)
                     .arg(clientIP)
                     .arg(senderPort);
             ui->textBrowser->append(broadcastMessage["message"].toString());
@@ -173,8 +175,8 @@ void Dialog::rx()
 
                     QJsonObject leaveMsg;
                     leaveMsg["type"] = "MESSAGE";
-                    leaveMsg["message"] = QString("Client %1 (%2:%3) has left the game.")
-                                                     .arg(clientId)
+                    leaveMsg["message"] = QString("%1 (%2:%3) has left the game.")
+                                                     .arg(clientIdMap[clientKey].username)
                                                      .arg(address.toString())
                                                      .arg(port);
 
@@ -204,17 +206,16 @@ void Dialog::rx()
 
             if (clientIdMap.contains(clientKey) && !message.isEmpty())
             {
-                int clientId = clientIdMap[clientKey].clientId;
-                ui->textBrowser->append(QString("Client %1 (%2:%3): %4")
-                                         .arg(clientId)
+                ui->textBrowser->append(QString("%1 (%2:%3): %4")
+                                         .arg(clientIdMap[clientKey].username)
                                          .arg(clientIP)
                                          .arg(senderPort)
                                          .arg(message));
 
                 QJsonObject outgoingMessage;
                 outgoingMessage["type"] = "MESSAGE";
-                outgoingMessage["message"] = QString("Client %1 (%2:%3)> %4")
-                        .arg(clientId)
+                outgoingMessage["message"] = QString("%1 (%2:%3)> %4")
+                        .arg(clientIdMap[clientKey].username)
                         .arg(clientIP)
                         .arg(senderPort)
                         .arg(message);
@@ -247,8 +248,8 @@ void Dialog::rx()
             if (clientIdMap.contains(clientKey))
             {
                 clientIdMap[clientKey].color = color;
-                ui->textBrowser->append(QString("Client %1 set their color to: %2")
-                                         .arg(clientIdMap[clientKey].clientId)
+                ui->textBrowser->append(QString("%1 set their color to: %2")
+                                         .arg(clientIdMap[clientKey].username)
                                          .arg(color));
             }
             broadcastActiveClients();
@@ -361,7 +362,6 @@ void Dialog::removeClient(QString &clientKey)
     {
         int clientId = clientIdMap[clientKey].clientId;
         bool isInGame = clientIdMap[clientKey].isInGame;
-        clientIdMap.remove(clientKey);
 
         if (isInGame)
         {
@@ -387,14 +387,15 @@ void Dialog::removeClient(QString &clientKey)
             // create a disconnection message to broadcast
             QJsonObject disconnectionMsg;
             disconnectionMsg["type"] = "MESSAGE";
-            disconnectionMsg["message"] = QString("Client %1 (%2:%3) has disconnected.")
-                                             .arg(clientId)
+            disconnectionMsg["message"] = QString("%1 (%2:%3) has disconnected.")
+                                             .arg(clientIdMap[clientKey].username)
                                              .arg(address.toString())
                                              .arg(port);
 
             ui->textBrowser->append(disconnectionMsg["message"].toString());
             tx(disconnectionMsg);
         }
+        clientIdMap.remove(clientKey);
     }
 }
 
