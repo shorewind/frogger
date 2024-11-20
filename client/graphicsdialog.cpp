@@ -55,11 +55,19 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true);
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true);
 
-    // Row 2 - Supras (orange cars) - both moving right
-    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4);
-    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4);
+    // Row 2 - Chargers (grey cars) - both moving left
+    createObstacle(Obstacle::Charger, -SCENE_WIDTH / 2 - 150, 135, 4);
+    createObstacle(Obstacle::Charger, -SCENE_WIDTH / 2 + 150, 135, 4);
 
-    // Row 3 - Chargers (grey cars) - both moving left
+    // Row 3 - Supras (orange cars) - both moving right
+    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, -4, true);
+    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, -4, true);
+
+    // Row 4 - Skylines (blue cars) - both moving left
+    createObstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 - 150, 65, 4);
+    createObstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 + 300, 65, 4);
+
+    // Row 5 - Chargers (grey cars) - both moving left
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
