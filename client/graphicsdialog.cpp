@@ -221,15 +221,21 @@ void GraphicsDialog::checkRoundOver()
     bool done = true;
     for(auto &player : clientPlayers.values())
     {
-        if ( !player->finished && !player->dead )
+        if ( player->finished || player->dead )
+        {
+            done = true;
+        }
+        else
         {
             done = false;
+            break;
         }
     }
 
     if (done)
     {
-        roundOver = true;
+        activeGameState = false;
+        showEndScreen();
     }
 }
 
