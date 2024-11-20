@@ -88,9 +88,24 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
 
-    createBoundingLine(-SCENE_WIDTH / 2 + 50, -SCENE_HEIGHT / 2 + 50, 100, 10); // Horizontal line
-    createBoundingLine(100, 100, 10, 200);                                      // Vertical line
 
+//these are all of the bounding for the top of the game
+    //half log
+    createBoundingLine(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2 + 100, 35, 10);
+    // 1st
+    createBoundingLine(-SCENE_WIDTH / 2 + 85, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //2nd
+    createBoundingLine(-SCENE_WIDTH / 2 + 195, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //3rd
+    createBoundingLine(-SCENE_WIDTH / 2 + 310, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //4th
+    createBoundingLine(-SCENE_WIDTH / 2 + 425, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //5th
+    createBoundingLine(-SCENE_WIDTH / 2 + 545, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //6th
+    createBoundingLine(-SCENE_WIDTH / 2 + 655, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //7th
+    createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
 
 
 
