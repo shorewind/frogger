@@ -29,6 +29,7 @@ SOURCES += \
         dialog.cpp
 
 HEADERS += \
+        clientdata.h \
         defs.h \
         dialog.h
 

@@ -84,15 +84,43 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 - 100, -197, -1, false);
     createObstacle(Obstacle::Log, SCENE_WIDTH / 2 + 100, -197, -1, false);
 
-    sendObstaclePositions();
-
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
 
-    // Set round over flag
-    roundOver = false;
+
+//these are all of the bounding for the top of the game
+    //half log
+    createBoundingLine(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2 + 100, 35, 10);
+    // 1st
+    createBoundingLine(-SCENE_WIDTH / 2 + 85, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //2nd
+    createBoundingLine(-SCENE_WIDTH / 2 + 195, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //3rd
+    createBoundingLine(-SCENE_WIDTH / 2 + 310, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //4th
+    createBoundingLine(-SCENE_WIDTH / 2 + 425, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //5th
+    createBoundingLine(-SCENE_WIDTH / 2 + 545, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //6th
+    createBoundingLine(-SCENE_WIDTH / 2 + 655, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //7th
+    createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
+
+
 }
+
+void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
+{
+    QGraphicsRectItem* boundingLine = new QGraphicsRectItem(x, y, width, height);
+    boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
+    boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
+    boundingLine->setZValue(1);             // Ensure it appears above the background
+    boundingLine->setData(0, "boundingLine");
+    scene->addItem(boundingLine);
+    boundingLines.append(boundingLine);     // Add to the list of bounding lines
+}
+
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
 {
@@ -135,51 +163,49 @@ void GraphicsDialog::removeHeart()
     }
 }
 
-void GraphicsDialog::checkCollisions() {
-    // Loop through all obstacles
-    bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
-//    qDebug() << "player position: " << activePlayer->pos();
-    for (auto &obstacle : obstacles)
+void GraphicsDialog::checkCollisions()
+{
+    // Store the current position of the player before movement
+    QPointF currentPos = activePlayer->pos();
+
+    // Get all items colliding with the player
+    QList<QGraphicsItem*> collisions = scene->collidingItems(activePlayer);
+
+    for (QGraphicsItem* item : collisions)
     {
-        // If player is colliding with something
-        if (activePlayer->collidesWithItem(obstacle))
-        {
-            // If the obstacle is a LOG
-            if (obstacle->type == Obstacle::Log)
-            {
-                // Move player with the current log
-                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y);
-                activePlayer->onLog = true;   // set flag
-            }
-            else    // Not a log... car or other
-            {
-                activePlayer->onLog = false;  // set flag
+        // Check if the colliding item is a bounding line using a custom data property
+        if (item->data(0).toString() == "boundingLine") {
+                    qDebug() << "Collision with bounding line!";
+                    activePlayer->setPos(currentPos.x()+38, currentPos.y()+38);;
+                    return;
+        }
+    }
+
+    // Check for collisions with obstacles
+    bool collision = false;
+    for (auto& obstacle : obstacles) {
+        if (activePlayer->collidesWithItem(obstacle)) {
+            if (obstacle->type == Obstacle::Log) {
+                // Move the player with the log
+                activePlayer->setPos(currentPos.x() + obstacle->speed, currentPos.y());
+                activePlayer->onLog = true;
+            } else {
+                activePlayer->onLog = false;
                 handlePlayerDeath();
             }
-            // Player collided with at least one obstacle
             collision = true;
-        }
-
-        // Strategically break early
-        if (collision)
-        {
             break;
         }
     }
 
-    // Check if player was on a log, but hopped off.
-    if (!collision)
-    {
+    if (!collision) {
         activePlayer->onLog = false;
     }
-    // Log row positions:
-    // -21, -59, -97, -135, -173
-    // Check if player is in the water kill zone
-    qreal y = activePlayer->y;
-    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
-    {
-        if (activePlayer->onLog == false) // if true, kill player or decrease lives
-        {
+
+    // Water zone check
+    qreal y = currentPos.y();
+    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
+        if (!activePlayer->onLog) {
             handlePlayerDeath();
         }
     }
@@ -191,6 +217,11 @@ void GraphicsDialog::checkCollisions() {
         activeGameState = false;
     }
 }
+
+
+
+
+
 
 void GraphicsDialog::handlePlayerDeath()
 {
@@ -301,7 +332,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
-            qDebug() << "position: " << x << ", " << y;
+//            qDebug() << "position: " << x << ", " << y;
 
         }
     }
@@ -435,12 +466,13 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
     connect(activePlayer, &Player::positionChanged, this, [this]()
         {
         // The lambda captures 'this' (GraphicsDialog), and calls sendPlayerPosition from Dialog
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog) {
+        if (parentDialog)
+        {
             parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
         }
     });
@@ -455,16 +487,17 @@ void GraphicsDialog::addPlayer(int clientId, const QColor &color)
     scene->addItem(player);
     clientPlayers[clientId] = player;
 
-    qDebug() << "added player " << clientId;
+//    qDebug() << "added player " << clientId;
 }
 
 void GraphicsDialog::removePlayer(int clientId)
 {
     if (clientPlayers.contains(clientId))
     {
-        qDebug() << "removing player " << clientId;
+//        qDebug() << "removing player " << clientId;
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);
     }
 }
+

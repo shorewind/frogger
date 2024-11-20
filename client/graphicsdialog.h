@@ -25,6 +25,7 @@ public:
     explicit GraphicsDialog(QWidget *parent = nullptr, QUdpSocket *socket = nullptr);
     ~GraphicsDialog();
 
+
 protected:
     void keyPressEvent(QKeyEvent *e) override;
     void closeEvent(QCloseEvent *event) override;
@@ -37,6 +38,8 @@ private:
     QString serverIp;
     quint16 serverPort;
     QMap<int, Obstacle*> obstacles;
+    QList<QGraphicsRectItem*> boundingLines;
+    void createBoundingLine(int x, int y, int width, int height); // Declare here
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
     void checkRoundOver();
