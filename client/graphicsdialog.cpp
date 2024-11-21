@@ -293,46 +293,32 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
     switch (e->key())
        {
            case Qt::Key_A:
+           case Qt::Key_J:
                activePlayer->goLeft();
                activePlayer->checkCollisionWithObstacles(obstacleList);
                score = score + 10;
                break;
-           case Qt::Key_J:
-               activePlayer->goLeft();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               score = score = 10;
-               break;
 
            case Qt::Key_D:
+           case Qt::Key_L:
                activePlayer->goRight();
                activePlayer->checkCollisionWithObstacles(obstacleList);
                score = score + 10;
                break;
-           case Qt::Key_L:
-                activePlayer->goRight();
-                activePlayer->checkCollisionWithObstacles(obstacleList);
-                score = score + 10;
-               break;
 
            case Qt::Key_W:
+           case Qt::Key_I:
                activePlayer->goUp();
                activePlayer->checkCollisionWithObstacles(obstacleList);
                score = score + 10;
-               break;
-           case Qt::Key_I:
-                activePlayer->goUp();
-                activePlayer->checkCollisionWithObstacles(obstacleList);
-                score = score +10;
-               break;
+               break;         
 
            case Qt::Key_S:
-               activePlayer->goDown();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               break;
            case Qt::Key_K:
                activePlayer->goDown();
                activePlayer->checkCollisionWithObstacles(obstacleList);
-              break;
+               break;
+
            default:
                activePlayer->stop();
                break;
