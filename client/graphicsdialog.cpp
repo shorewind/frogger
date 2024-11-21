@@ -118,18 +118,17 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // initialize round flag
     roundOver = false;
 
-
 }
 
 void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
 {
     QGraphicsRectItem* boundingLine = new QGraphicsRectItem(x, y, width, height);
-    boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
-    boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
-    boundingLine->setZValue(1);             // Ensure it appears above the background
-    boundingLine->setData(0, "boundingLine");
+    boundingLine->setBrush(Qt::transparent); // Make the fill transparent
+    boundingLine->setPen(Qt::NoPen);         // No border
+    boundingLine->setZValue(1);              // Ensure it appears above the background
+    boundingLine->setData(0, "boundingLine"); // Store some custom data (here, we label it as "boundingLine") to identify the item later
     scene->addItem(boundingLine);
-    boundingLines.append(boundingLine);     // Add to the list of bounding lines
+    boundingLines.append(boundingLine);      // Add to your list
 }
 
 
