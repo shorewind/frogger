@@ -242,7 +242,7 @@ void Dialog::processMsg()
                 // track taken colors
                 if (clientId != activeClientId && !colorString.isEmpty())
                 {
-                    usedColors.append(colorString);
+                    clientColors[clientId] = colorString;
                 }
 
                 if (clientIdsArray.contains(clientId))
@@ -265,7 +265,18 @@ void Dialog::processMsg()
            // enable/disable color buttons based on whether the color is taken
            for (const QString &color : colorButtonMap.keys())
            {
-               if (usedColors.contains(color))
+               bool colorTaken = false;
+
+               for (int clientId : clientColors.keys())
+               {
+                   if (clientColors[clientId] == color)
+                   {
+                       colorTaken = true;
+                       break;
+                   }
+               }
+
+               if (colorTaken)
                {
                    colorButtonMap[color]->setEnabled(false);
                    colorButtonMap[color]->setStyleSheet("");

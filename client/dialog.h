@@ -45,7 +45,8 @@ private:
     quint16 port;
     QSet<int> activeClients;
     QString playerColor;
-    QList<QString> usedColors;
+//    QList<QString> usedColors;
+    QMap<int, QString> clientColors;
 
 private slots:
     void connectToServer();
