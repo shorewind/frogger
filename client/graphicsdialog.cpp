@@ -29,7 +29,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     scene->setBackgroundBrush(Qt::black);
 
     // load and set the background image
-    QPixmap background(":/images/background.png");
+    QPixmap background(":/images/coolbackground.png");
     background = background.scaled(SCENE_WIDTH, SCENE_HEIGHT, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(background);
     backgroundItem->setPos(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2);
@@ -55,11 +55,19 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 - 150, 175, -4, true);
     createObstacle(Obstacle::Skyline, SCENE_WIDTH / 2 + 150, 175, -4, true);
 
-    // Row 2 - Supras (orange cars) - both moving right
-    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, 4);
-    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, 4);
+    // Row 2 - Chargers (grey cars) - both moving left
+    createObstacle(Obstacle::Charger, -SCENE_WIDTH / 2 - 150, 135, 4);
+    createObstacle(Obstacle::Charger, -SCENE_WIDTH / 2 + 150, 135, 4);
 
-    // Row 3 - Chargers (grey cars) - both moving left
+    // Row 3 - Supras (orange cars) - both moving right
+    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 150, 100, -4, true);
+    createObstacle(Obstacle::Supra, -SCENE_WIDTH / 2 + 350, 100, -4, true);
+
+    // Row 4 - Skylines (blue cars) - both moving left
+    createObstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 - 150, 65, 4);
+    createObstacle(Obstacle::Skyline, -SCENE_WIDTH / 2 + 300, 65, 4);
+
+    // Row 5 - Chargers (grey cars) - both moving left
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 - 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 150, 25, -4, true);
     createObstacle(Obstacle::Charger, SCENE_WIDTH / 2 + 450, 25, -4, true);
@@ -87,7 +95,43 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     QTimer *collisionTimer = new QTimer(this);
     connect(collisionTimer, &QTimer::timeout, this, &GraphicsDialog::checkCollisions);
     collisionTimer->start(16);
+
+
+//these are all of the bounding for the top of the game
+    //half log
+    createBoundingLine(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2 + 100, 35, 10);
+    // 1st
+    createBoundingLine(-SCENE_WIDTH / 2 + 85, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //2nd
+    createBoundingLine(-SCENE_WIDTH / 2 + 195, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //3rd
+    createBoundingLine(-SCENE_WIDTH / 2 + 310, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //4th
+    createBoundingLine(-SCENE_WIDTH / 2 + 425, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //5th
+    createBoundingLine(-SCENE_WIDTH / 2 + 545, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //6th
+    createBoundingLine(-SCENE_WIDTH / 2 + 655, -SCENE_HEIGHT / 2 + 100, 65, 10);
+    //7th
+    createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
+
+    // initialize round flag
+    roundOver = false;
+
+
 }
+
+void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
+{
+    QGraphicsRectItem* boundingLine = new QGraphicsRectItem(x, y, width, height);
+    boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
+    boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
+    boundingLine->setZValue(1);             // Ensure it appears above the background
+    boundingLine->setData(0, "boundingLine");
+    scene->addItem(boundingLine);
+    boundingLines.append(boundingLine);     // Add to the list of bounding lines
+}
+
 
 void GraphicsDialog::createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft)
 {
@@ -130,53 +174,61 @@ void GraphicsDialog::removeHeart()
     }
 }
 
-void GraphicsDialog::checkCollisions() {
-    // Loop through all obstacles
-    bool collision = false; // This is used to tell that a player PREVIOUSLY was on a log
-    for (auto &obstacle : obstacles)
+void GraphicsDialog::checkCollisions()
+{
+    // Store the current position of the player before movement
+    QPointF currentPos = activePlayer->pos();
+
+    // Get all items colliding with the player
+    QList<QGraphicsItem*> collisions = scene->collidingItems(activePlayer);
+
+    for (QGraphicsItem* item : collisions)
     {
-        // If player is colliding with something
-        if (activePlayer->collidesWithItem(obstacle))
-        {
-            // If the obstacle is a LOG
-            if (obstacle->type == Obstacle::Log)
-            {
-                // Move player with the current log
-                activePlayer->setPos(activePlayer->x + obstacle->speed, activePlayer->y);
-                activePlayer->onLog = true;   // set flag
-            }
-            else    // Not a log... car or other
-            {
-                activePlayer->onLog = false;  // set flag
+        // Check if the colliding item is a bounding line using a custom data property
+        if (item->data(0).toString() == "boundingLine") {
+                    qDebug() << "Collision with bounding line!";
+                    activePlayer->setPos(currentPos.x()+38, currentPos.y()+38);;
+                    return;
+        }
+    }
+
+    // Check for collisions with obstacles
+    bool collision = false;
+    for (auto& obstacle : obstacles) {
+        if (activePlayer->collidesWithItem(obstacle)) {
+            if (obstacle->type == Obstacle::Log) {
+                // Move the player with the log
+                activePlayer->setPos(currentPos.x() + obstacle->speed, currentPos.y());
+                activePlayer->onLog = true;
+            } else {
+                activePlayer->onLog = false;
                 handlePlayerDeath();
             }
-            // Player collided with at least one obstacle
             collision = true;
-        }
-
-        // Strategically break early
-        if (collision)
-        {
             break;
         }
     }
 
-    // Check if player was on a log, but hopped off.
-    if (!collision)
-    {
+    if (!collision) {
         activePlayer->onLog = false;
     }
-    // Log row positions:
-    // -21, -59, -97, -135, -173
-    // Check if player is in the water kill zone
-    qreal y = activePlayer->y;
-    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173)
-    {
-        if (activePlayer->onLog == false) // if true, kill player or decrease lives
-        {
+
+    // Water zone check
+    qreal y = currentPos.y();
+    if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
+        if (!activePlayer->onLog) {
             handlePlayerDeath();
         }
     }
+
+    if (y == -211)
+    {
+        activePlayer->finished = true;
+        qDebug() << "Player Finished";
+        activeGameState = false;
+    }
+    // Check if the round should end
+    checkRoundOver();
 }
 
 void GraphicsDialog::handlePlayerDeath()
@@ -190,6 +242,7 @@ void GraphicsDialog::handlePlayerDeath()
     // check if game over after removing the heart
     if (numLives == 0 && hearts.isEmpty())
     {
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
         activePlayer->resetPlayerPos();
         activeGameState=false;
 //        scene->removeItem(activePlayer);
@@ -201,6 +254,30 @@ void GraphicsDialog::handlePlayerDeath()
 
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
+}
+
+void GraphicsDialog::checkRoundOver()
+{
+    bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
+    for(auto &player : clientPlayers.values())
+    {
+        if ( player->finished || player->dead ) // Player is either dead or at the lily pads
+        {
+            done = true;
+        }
+        else    // player is either not dead or not to the lily pads yet, keep round running
+        {
+            done = false;
+            break;  // only need one to throw false so exit early
+        }
+    }
+
+    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
+    {
+        activeGameState = false;    // lock player movement
+        showEndScreen();            // show end screen
+        roundOver = true;           // round has ended
+    }
 }
 
 // top is -211 and bottom is 245
@@ -219,11 +296,11 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
     {
         case Qt::Key_A:
             activePlayer->goLeft();
-            score = score + 10;
+            activePlayer->checkCollisionWithObstacles(obstacleList);
             break;
         case Qt::Key_D:
             activePlayer->goRight();
-            score = score + 10;
+            activePlayer->checkCollisionWithObstacles(obstacleList);
             break;
         case Qt::Key_W:
             activePlayer->goUp();
@@ -447,3 +524,4 @@ void GraphicsDialog::removePlayer(int clientId)
         clientPlayers.remove(clientId);
     }
 }
+

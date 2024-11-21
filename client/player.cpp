@@ -7,6 +7,8 @@
 Player::Player(int id, QString username, QColor color, QGraphicsItem *parent)
     : QGraphicsItem(parent), clientId(id), username(username), color(color), x(0), y(0) {
     onLog = false;
+    finished = false;
+    dead = false;
 }
 
 void Player::goLeft() {

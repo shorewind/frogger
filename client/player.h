@@ -15,6 +15,8 @@ public:
     int clientId;
     QString username;
     bool onLog;
+    bool finished;
+    bool dead;
     QColor color;
     qreal x, y;
     int textWidth;
