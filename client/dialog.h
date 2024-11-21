@@ -38,22 +38,31 @@ private:
     Ui::Dialog *ui;
 
     QUdpSocket* socket;
-    GraphicsDialog *graphicsDialog;
+    GraphicsDialog *graphicsDialog = nullptr;
     int activeClientId;
     QString ip;
     quint16 port;
     QSet<int> activeClients;
+    QString playerColor;
+    QString playerUsername;
+    QList<QColor> availableColors = {QColor("green"), QColor("blue"), QColor("yellow"), QColor("red")};
+    QList<QColor> usedColors;
 
 private slots:
     void connectToServer();
     void disconnectFromServer();
+    void leaveGame();
     void processMsg();
     void sendMsg();
     QString getLocalIpAddress();
     void setLocalIpAddress();
-
     int parseClientIdFromMsg(const QString &msg);
-    QColor generateColorForClient(int clientId);
+    QColor getNextAvailableColor();
+    void onColorButtonClick();
+    void onSubmitButtonClick();
+    void onSendButtonClick();
+    void submitUsername();
+    void setPlayerColor(QString &color);
 };
 
 #endif // DIALOG_H

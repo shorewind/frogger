@@ -17,6 +17,7 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlTableModel>
+#include "clientdata.h"
 
 namespace Ui {
 class Dialog;
@@ -32,16 +33,19 @@ public:
     void TestDatabase ();
 private:
     Ui::Dialog *ui;
+    void closeEvent(QCloseEvent *event) override;
 
     QUdpSocket* socket;
     QNetworkDatagram msg;
     QList<QHostAddress> clientAddresses;
     QList<quint16> clientPorts;
     QList<int> availableIds;
-    QMap<QString, int> clientIdMap;
+    QList<int> clientIdsInGame;
+    QMap<QString, ClientData> clientIdMap;  // holds clientKey, clientId, and in_game bool
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
+    bool activeGame;
 
 
 private slots:
@@ -55,6 +59,7 @@ private slots:
     void broadcastObstaclePositions();
     QString getLocalIpAddress();
     void setLocalIpAddress();
+    void startGame();
 };
 
 #endif // DIALOG_H

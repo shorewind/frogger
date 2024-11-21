@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,6 +29,7 @@ SOURCES += \
         dialog.cpp
 
 HEADERS += \
+        clientdata.h \
         defs.h \
         dialog.h
 

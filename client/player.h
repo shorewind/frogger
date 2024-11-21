@@ -14,6 +14,8 @@ public:
 
     int clientId;
     bool onLog;
+    bool finished;
+    bool dead;
     QColor color;
     qreal x, y;
 
