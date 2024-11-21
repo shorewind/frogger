@@ -297,13 +297,11 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
            case Qt::Key_A:
            case Qt::Key_J:
                activePlayer->goLeft();
-                  score = score + 10;
                break;
 
            case Qt::Key_D:
            case Qt::Key_L:
                activePlayer->goRight();
-                  score = score + 10;
                break;
 
            case Qt::Key_W:
