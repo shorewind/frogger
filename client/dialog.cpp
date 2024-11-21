@@ -177,9 +177,10 @@ void Dialog::processMsg()
                 }
                 else
                 {
-                    color = getNextAvailableColor();
+                    color = QColor("white");
                 }
-                graphicsDialog->addActivePlayer(activeClientId, color);
+
+                graphicsDialog->addActivePlayer(activeClientId, playerUsername, color);
 //                qDebug() << "add player " << activeClientId;
             }
             ui->submitButton->setEnabled(false);
@@ -215,6 +216,7 @@ void Dialog::processMsg()
             QJsonArray clientIdsArray = jsonObj["clientIdsInGame"].toArray();
             QJsonArray clientDataArray = jsonObj["clientData"].toArray();
 
+            qDebug() << "DATA: " << clientDataArray;
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
 
@@ -225,8 +227,6 @@ void Dialog::processMsg()
                 {"red", ui->redButton},
             };
 
-            QSet<QString> colorsTaken;
-
             for (const QJsonValue &value : clientDataArray)
             {
                 QJsonObject clientData = value.toObject();
@@ -234,32 +234,29 @@ void Dialog::processMsg()
                 QString username = clientData["username"].toString();
                 QString colorString = clientData["color"].toString();
 
-                // track taken colors
-                if (clientId != activeClientId)
+                if (clientId == activeClientId)
                 {
-                    if (!colorString.isEmpty())
-                    {
-                        colorsTaken.insert(colorString);
-                    }
+                    playerUsername = username;
+                }
+
+                // track taken colors
+                if (clientId != activeClientId && !colorString.isEmpty())
+                {
+                    usedColors.append(colorString);
                 }
 
                 if (clientIdsArray.contains(clientId))
                 {
-                    QColor color;
-                    if (!colorString.isEmpty())
+                    if (colorString.isEmpty())
                     {
-                        color = QColor(colorString);
-                    }
-                    else
-                    {
-                        color = getNextAvailableColor();
+                        colorString = "white";
                     }
 
                     newActiveClients.insert(clientId);
 
                     if (!activeClients.contains(clientId) && graphicsDialog)
                     {
-                        graphicsDialog->addPlayer(clientId, color);
+                        graphicsDialog->addPlayer(clientId, username, QColor(colorString));
                     }
                 }
 
@@ -268,7 +265,7 @@ void Dialog::processMsg()
            // enable/disable color buttons based on whether the color is taken
            for (const QString &color : colorButtonMap.keys())
            {
-               if (colorsTaken.contains(color))
+               if (usedColors.contains(color))
                {
                    colorButtonMap[color]->setEnabled(false);
                    colorButtonMap[color]->setStyleSheet("");
@@ -362,34 +359,6 @@ void Dialog::setPlayerColor(QString &color)
     sendJson(colorMessage);
 
     ui->textBrowser->append("You selected the color: " + playerColor);
-}
-
-QColor Dialog::getNextAvailableColor()
-{
-    // If there are still available colors, return the next one
-    if (!availableColors.isEmpty())
-    {
-        QColor color = availableColors.takeFirst();  // Take the first color
-        usedColors.append(color);  // Track that the color has been used
-        return color;
-    }
-    else
-    {
-        // No available colors, reset the list
-        availableColors.append(usedColors);  // Reset available colors from used ones
-        usedColors.clear();  // Clear the used colors set
-
-        // If no colors are left to use, return an invalid color or handle the error case
-        if (availableColors.isEmpty())
-        {
-            return QColor();  // Returning an invalid color (empty QColor)
-        }
-
-        // Return the next available color after reset
-        QColor color = availableColors.takeFirst();
-        usedColors.append(color);  // Mark it as used
-        return color;
-    }
 }
 
 void Dialog::submitUsername()

@@ -194,7 +194,7 @@ void Dialog::rx()
 
                     QJsonObject goodbyeMsg;
                     goodbyeMsg["type"] = "GOODBYE";
-                    goodbyeMsg["message"] = "You left the game! You are Client " + QString::number(clientId);
+                    goodbyeMsg["message"] = "You left the game! You were Client " + QString::number(clientId);
                     QJsonDocument goodbyeDoc(goodbyeMsg);
                     socket->writeDatagram(goodbyeDoc.toJson(), senderAddress, senderPort);
 
