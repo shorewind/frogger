@@ -107,6 +107,9 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     //7th
     createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
 
+    // initialize round flag
+    roundOver = false;
+
 
 }
 
@@ -216,6 +219,7 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
     }
+    // Check if the round should end
     checkRoundOver();
 }
 
@@ -245,24 +249,25 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::checkRoundOver()
 {
-    bool done = true;
+    bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
-        if ( player->finished || player->dead )
+        if ( player->finished || player->dead ) // Player is either dead or at the lily pads
         {
             done = true;
         }
-        else
+        else    // player is either not dead or not to the lily pads yet, keep round running
         {
             done = false;
-            break;
+            break;  // only need one to throw false so exit early
         }
     }
 
-    if (done)
+    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
-        activeGameState = false;
-        showEndScreen();
+        activeGameState = false;    // lock player movement
+        showEndScreen();            // show end screen
+        roundOver = true;           // round has ended
     }
 }
 
