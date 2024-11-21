@@ -13,6 +13,10 @@
 #include <QMap>
 #include <QPoint>
 #include <QNetworkInterface>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlTableModel>
 #include "clientdata.h"
 
 namespace Ui {
@@ -26,7 +30,7 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
-
+    void TestDatabase ();
 private:
     Ui::Dialog *ui;
     void closeEvent(QCloseEvent *event) override;
@@ -42,6 +46,7 @@ private:
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
     bool activeGame;
+
 
 private slots:
     void rx();  // receive
