@@ -293,24 +293,35 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
 //    }
 
     switch (e->key())
-    {
-        case Qt::Key_A:
-            activePlayer->goLeft();
-            break;
-        case Qt::Key_D:
-            activePlayer->goRight();
-            break;
-        case Qt::Key_W:
-            activePlayer->goUp();
-            score = score + 10;
-            break;
-        case Qt::Key_S:
-            activePlayer->goDown();
-            break;
-        default:
-            activePlayer->stop();
-            break;
-    }
+       {
+           case Qt::Key_A:
+           case Qt::Key_J:
+               activePlayer->goLeft();
+                  score = score + 10;
+               break;
+
+           case Qt::Key_D:
+           case Qt::Key_L:
+               activePlayer->goRight();
+                  score = score + 10;
+               break;
+
+           case Qt::Key_W:
+           case Qt::Key_I:
+               activePlayer->goUp();
+                  score = score + 10;
+               break;         
+
+           case Qt::Key_S:
+           case Qt::Key_K:
+               activePlayer->goDown();
+                  break;
+
+           default:
+               activePlayer->stop();
+               break;
+       }
+
 
 //    if (activePlayer->getX() == hole2X && activePlayer->getY() == hole2Y){
 //        activePlayer->stop();

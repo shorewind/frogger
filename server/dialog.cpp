@@ -6,6 +6,70 @@ Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
 {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
+    db.setDatabaseName("HighScore.db");
+    db.open();
+    QSqlQuery query;
+    bool success = query.exec(
+                "CREATE TABLE IF NOT EXISTS HighScore ("
+                "id INTEGER PRIMARY KEY,"
+                "playerName TEXT NO NULL,"
+                "score INTEGER NOT NULL"
+                ");"
+                );
+    if (!success)
+        qDebug () << query.lastError() .text ();
+
+    TestDatabase();
+
+/*
+   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+   query.bindValue(":id", 1);
+   query.bindValue(":playerName", "AMullins");
+   query.bindValue(":score",15);
+   query.exec();   //send query to the db. then run Sql lite statementS
+
+   if (!query.exec ())
+       qDebug() << query.lastError ().text ();
+
+   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+   query.bindValue(":id", 2);
+   query.bindValue(":playerName", "SomeoneElse");
+   query.bindValue(":score",5);
+   query.exec();
+
+
+   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+   query.bindValue(":id", 3);
+   query.bindValue(":playerName", "LastPerson");
+   query.bindValue(":score",-20);
+   query.exec();
+
+
+   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+   query.bindValue(":id", 4);
+   query.bindValue(":playerName", "Frank");
+   query.bindValue(":score",25);
+   query.exec();
+
+  query.exec("SELECT playerName, score FROM HighScore;");
+  qDebug() << "Printing Scores";
+  while (query.next()) {
+      QString name = query.value (0) .toString ();
+      int score = query.value(1) .toInt ();
+      qDebug () << name << score;
+  }
+*/
+
+
+
+
+     // QSqlTableModel table(parent,db);   //Proof of concept
+
     ui->setupUi(this);
 
     setLocalIpAddress();
@@ -20,6 +84,84 @@ Dialog::Dialog(QWidget *parent) :
         availableIds.append(i);
     }
 }
+
+void Dialog::TestDatabase() {
+
+    QSqlQuery query;
+    //Getting count of database for creating unique IDs
+
+    query.exec("SELECT COUNT(1) CNT FROM HighScore;");
+    //qDebug() <<
+
+    query.exec ("Select  * from HighScore;");
+    int newID = query.size()+1;
+
+
+    //Inserting into database
+
+
+    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+    query.bindValue(":id", 1);
+    query.bindValue(":playerName", "AMullins");
+    query.bindValue(":score", 15);
+    query.exec();   //send query to the db. then run Sql lite statementS
+
+    if (!query.exec ())
+        qDebug() << query.lastError ().text ();
+
+    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+    query.bindValue(":id", 2);
+    query.bindValue(":playerName", "SomeoneElse");
+    query.bindValue(":score", 5);
+    query.exec();
+
+
+    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+    query.bindValue(":id", 3);
+    query.bindValue(":playerName", "LastPerson");
+    query.bindValue(":score", -20);
+    query.exec();
+
+
+    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
+             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
+    query.bindValue(":id", 4);
+    query.bindValue(":playerName", "Frank");
+    query.bindValue(":score", 25);
+    query.exec();
+
+   query.exec("SELECT playerName, score FROM HighScore;");
+   qDebug() << "Printing Scores";
+   while (query.next()) {
+       QString name = query.value (0) .toString ();
+       int score = query.value(1) .toInt ();
+       qDebug () << name << score;
+   }
+}
+
+
+
+
+    /* query.exec("SELECT COUNT(1);");
+  query.first ();
+ // int newID = query.value (0).toInt ()++;
+
+  query.exec ("Select * fro")
+
+  //Inserting into database
+
+
+ // int newId = query.value(0) .toInt ()++;
+
+  query.exec ("Select  * from HighScore");
+  int newID = query.size()+1 */
+
+
+
+
 
 void Dialog::configureServer()
 {
