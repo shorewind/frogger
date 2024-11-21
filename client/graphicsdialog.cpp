@@ -192,7 +192,7 @@ void GraphicsDialog::handlePlayerDeath()
     {
         activePlayer->resetPlayerPos();
         activeGameState=false;
-        scene->removeItem(activePlayer);
+//        scene->removeItem(activePlayer);
         sendScoreToServer();
         qDebug() << "Game Over!";
         showEndScreen();

@@ -21,5 +21,7 @@ const int DEFAULT_PORT = 5678;
 const int PLAYER_XOFFSET = 174;
 const int PLAYER_YOFFSET = 55;
 
+const int USERTEXT_PADDING = 4;
+const int MOVE_OFFSET = 38;
 
 #endif // DEFS_H
