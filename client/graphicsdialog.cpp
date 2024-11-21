@@ -216,12 +216,8 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
     }
+    checkRoundOver();
 }
-
-
-
-
-
 
 void GraphicsDialog::handlePlayerDeath()
 {
