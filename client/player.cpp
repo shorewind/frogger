@@ -47,7 +47,7 @@ void Player::setPos(qreal newX, qreal newY) {
 // for repainting
 QRectF Player::boundingRect() const {
     int maxWidth = std::max(PLAYER_WIDTH, textWidth);
-    return QRectF(-maxWidth/2, -PLAYER_HEIGHT/2, maxWidth, PLAYER_HEIGHT+textHeight); // return the bounding rectangle for the player centered
+    return QRectF(-maxWidth/2, -PLAYER_HEIGHT/2, maxWidth, PLAYER_HEIGHT+textHeight+USERTEXT_PADDING);
 }
 
 void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
