@@ -26,6 +26,7 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
+    QString playerUsername;
 
 public slots:
     void sendJson(QJsonObject data);
@@ -44,9 +45,8 @@ private:
     quint16 port;
     QSet<int> activeClients;
     QString playerColor;
-    QString playerUsername;
-    QList<QColor> availableColors = {QColor("green"), QColor("blue"), QColor("yellow"), QColor("red")};
-    QList<QColor> usedColors;
+//    QList<QString> usedColors;
+    QMap<int, QString> clientColors;
 
 private slots:
     void connectToServer();
@@ -57,7 +57,6 @@ private slots:
     QString getLocalIpAddress();
     void setLocalIpAddress();
     int parseClientIdFromMsg(const QString &msg);
-    QColor getNextAvailableColor();
     void onColorButtonClick();
     void onSubmitButtonClick();
     void onSendButtonClick();

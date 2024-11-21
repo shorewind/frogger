@@ -16,7 +16,7 @@
 #include <QJsonArray>
 #include "player.h"
 #include "dialog.h"
-#include "obstacles.h" // Include the Obstacle class
+#include "obstacles.h"
 
 class GraphicsDialog : public QDialog {
     Q_OBJECT
@@ -44,20 +44,23 @@ private:
     void checkCollisions();
     void checkRoundOver();
     bool roundOver;
-    QList<QGraphicsPixmapItem*> hearts;  // List to store heart icons
+    QList<QGraphicsPixmapItem*> hearts;
     int numLives = 3;
-    void initializeHearts();  // Function to initialize the heart icons
-    void removeHeart();       // Function to remove a heart icon
+    void initializeHearts();
+    void removeHeart();
+    void sendScoreToServer();
     int obstacleId = 0;
 
     bool activeGameState=true;
 
-    QGraphicsTextItem *header,*display;     // Score header and display object ptrs
-    int score = 0;                          // Current score
+    QGraphicsTextItem *header,*display;
+    int score = 0;
+    int level = 1;
+    int winnerClientId = 0;
 
 public slots:
-    void addActivePlayer(int clientId, const QColor &color);
-    void addPlayer(int clientId, const QColor &color);
+    void addActivePlayer(int clientId, QString username, const QColor &color);
+    void addPlayer(int clientId, QString username, const QColor &color);
     void removePlayer(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
     void updateObstaclePositions(QJsonArray &obstaclesArray);

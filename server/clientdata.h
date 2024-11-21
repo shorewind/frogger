@@ -3,14 +3,14 @@
 
 #include <QString>
 
-struct ClientData {
-    int clientId;      // Unique client ID
-    QString username;  // Client's username
-    QString color;     // Client's selected color
-    bool isInGame;     // Whether the client is in the game
+struct ClientData
+{
+    int clientId;
+    QString username;
+    QString color;
+    bool isInGame;
 
-    // Constructor with default values
-    ClientData(int id = -1, const QString &user = "", const QString &col = "", bool inGame = false)
+    ClientData(int id = -1, const QString &user = "", const QString &col = "white", bool inGame = false)
         : clientId(id), username(user), color(col), isInGame(inGame) {}
 };
 

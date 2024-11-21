@@ -242,10 +242,11 @@ void GraphicsDialog::handlePlayerDeath()
     // check if game over after removing the heart
     if (numLives == 0 && hearts.isEmpty())
     {
-        //activePlayer->setPos(-SCENE_WIDTH/2 + activePlayer->clientId * position_width, SCENE_HEIGHT/2 - position_height);
         activePlayer->dead = true;  // player done died bruh :( RIP bro...
         activePlayer->resetPlayerPos();
         activeGameState=false;
+//        scene->removeItem(activePlayer);
+        sendScoreToServer();
         qDebug() << "Game Over!";
         showEndScreen();
     }
@@ -296,29 +297,23 @@ void GraphicsDialog::keyPressEvent(QKeyEvent *e)
            case Qt::Key_A:
            case Qt::Key_J:
                activePlayer->goLeft();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               score = score + 10;
                break;
 
            case Qt::Key_D:
            case Qt::Key_L:
                activePlayer->goRight();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               score = score + 10;
                break;
 
            case Qt::Key_W:
            case Qt::Key_I:
                activePlayer->goUp();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               score = score + 10;
+                  score = score + 10;
                break;         
 
            case Qt::Key_S:
            case Qt::Key_K:
                activePlayer->goDown();
-               activePlayer->checkCollisionWithObstacles(obstacleList);
-               break;
+                  break;
 
            default:
                activePlayer->stop();
@@ -416,7 +411,22 @@ void GraphicsDialog::showEndScreen()
     // Optionally, add a button or other interaction elements
 }
 
+void GraphicsDialog::sendScoreToServer()
+{
+    QJsonObject scoreMsg;
+    scoreMsg["type"] = "SCORE_UPDATE";
+    scoreMsg["clientId"] = activePlayer->clientId;
+    scoreMsg["score"] = score;
+    scoreMsg["levelsPlayed"] = level;
 
+    // WIP
+    Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+    if (parentDialog)
+    {
+        scoreMsg["playerUsername"] = parentDialog->playerUsername;
+        parentDialog->sendJson(scoreMsg);
+    }
+}
 
 void GraphicsDialog::drawScoreDisplay()
 {
@@ -477,11 +487,11 @@ void GraphicsDialog::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
+void GraphicsDialog::addActivePlayer(int clientId, QString username, const QColor &color)
 {
     if (clientPlayers.contains(clientId)) { return; }
 
-    activePlayer = new Player(clientId, color);
+    activePlayer = new Player(clientId, username, color);
     activePlayer->resetPlayerPos(); // DONE, Adjust position as needed
     scene->addItem(activePlayer);
     clientPlayers[clientId] = activePlayer;
@@ -498,11 +508,11 @@ void GraphicsDialog::addActivePlayer(int clientId, const QColor &color)
     });
 }
 
-void GraphicsDialog::addPlayer(int clientId, const QColor &color)
+void GraphicsDialog::addPlayer(int clientId, QString username, const QColor &color)
 {
     if (clientPlayers.contains(clientId)) { return; }
 
-    Player *player = new Player(clientId, color);
+    Player *player = new Player(clientId, username, color);
     player->resetPlayerPos(); // Adjust position as needed
     scene->addItem(player);
     clientPlayers[clientId] = player;
@@ -515,6 +525,7 @@ void GraphicsDialog::removePlayer(int clientId)
     if (clientPlayers.contains(clientId))
     {
 //        qDebug() << "removing player " << clientId;
+        clientPlayers[clientId]->resetPlayerPos();
         scene->removeItem(clientPlayers[clientId]);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);

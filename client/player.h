@@ -10,14 +10,17 @@
 class Player : public QObject, public QGraphicsItem {
     Q_OBJECT
 public:
-    Player(int id, QColor color, QGraphicsItem *parent = nullptr);
+    Player(int id, QString username, QColor color, QGraphicsItem *parent = nullptr);
 
     int clientId;
+    QString username;
     bool onLog;
     bool finished;
     bool dead;
     QColor color;
     qreal x, y;
+    int textWidth;
+    int textHeight;
 
     void goLeft();
     void goRight();
@@ -25,14 +28,11 @@ public:
     void goDown();
     void stop();
     void setPos(qreal x, qreal y);
-//    int getX() const;
-//    int getY()const;
 
     QRectF boundingRect() const override;
+    QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    void checkCollisionWithObstacles(const QList<QGraphicsItem *> &obstacles);
 
-  //  void decreaseLife();  // Declare the decreaseLife function
     void resetPlayerPos();
 
 signals:
