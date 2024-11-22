@@ -70,6 +70,7 @@ public slots:
     void drawScoreDisplay();
     void showEndScreen();
     void handlePlayerDeath();
+//    void setGameStats(bool isAlive, int score, int level);
 
 signals:
     void requestClose();

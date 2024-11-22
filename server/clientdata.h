@@ -10,9 +10,26 @@ struct ClientData
     QString color;
     bool isInGame;
     bool isAlive;
+    bool finishedLastLevel;
+    int levelsPlayed;
+    int score;
 
-    ClientData(int id = -1, const QString &user = "", const QString &col = "white", bool inGame = false, bool isAlive = false)
-        : clientId(id), username(user), color(col), isInGame(inGame), isAlive(isAlive) {}
+    ClientData(int id = -1,
+               const QString &user = "",
+               const QString &col = "white",
+               bool inGame = false,
+               bool isAlive = false,
+               bool finished = false,
+               int level = 1,
+               int score = 0)  :   clientId(id),
+                                   username(user),
+                                   color(col),
+                                   isInGame(inGame),
+                                   isAlive(isAlive),
+                                   finishedLastLevel(finished),
+                                   levelsPlayed(level),
+                                   score(score)
+                                   {}
 };
 
 #endif // CLIENTDATA_H

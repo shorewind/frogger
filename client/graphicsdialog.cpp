@@ -418,9 +418,10 @@ void GraphicsDialog::sendScoreToServer()
     scoreMsg["type"] = "SCORE";
     scoreMsg["clientId"] = activePlayer->clientId;
     scoreMsg["score"] = score;
+    scoreMsg["isAlive"] = !activePlayer->dead;
     scoreMsg["levelsPlayed"] = level;
+    scoreMsg["finishedLastLevel"] = activePlayer->finished;
 
-    // WIP
     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
     if (parentDialog)
     {
