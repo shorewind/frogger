@@ -24,7 +24,7 @@ class GraphicsDialog : public QDialog {
 public:
     explicit GraphicsDialog(QWidget *parent = nullptr, QUdpSocket *socket = nullptr);
     ~GraphicsDialog();
-
+    void setPlayerState(QJsonObject clientData);
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;

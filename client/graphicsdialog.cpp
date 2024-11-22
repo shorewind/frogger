@@ -227,9 +227,8 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
+        checkRoundOver();
     }
-    // Check if the round should end
-    checkRoundOver();
 }
 
 void GraphicsDialog::handlePlayerDeath()
@@ -248,7 +247,7 @@ void GraphicsDialog::handlePlayerDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-        qDebug() << "Game Over!";
+        checkRoundOver();
         showEndScreen();
     }
 }
@@ -489,6 +488,16 @@ void GraphicsDialog::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+void GraphicsDialog::setPlayerState(QJsonObject clientData)
+{
+    int clientId = clientData["clientId"].toInt();
+    if (clientPlayers.contains(clientId)) { return; }
+    clientPlayers[clientId]->clientId = clientId;
+    clientPlayers[clientId]->username = clientData["username"].toString();
+    clientPlayers[clientId]->dead = !clientData["isAlive"].toBool();
+    clientPlayers[clientId]->finished = clientData["finishedLastLevel"].toBool();
+}
+
 void GraphicsDialog::addActivePlayer(int clientId, QString username, const QColor &color)
 {
     if (clientPlayers.contains(clientId)) { return; }
@@ -537,7 +546,10 @@ void GraphicsDialog::removePlayerFromScene(int clientId)
 {
     if (clientPlayers.contains(clientId))
     {
-        clientPlayers[clientId]->resetPlayerPos();
-        scene->removeItem(clientPlayers[clientId]);
+        if (clientPlayers[clientId]->scene() == scene)
+        {
+            clientPlayers[clientId]->resetPlayerPos();
+            scene->removeItem(clientPlayers[clientId]);
+        }
     }
 }

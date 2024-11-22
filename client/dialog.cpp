@@ -253,10 +253,13 @@ void Dialog::processMsg()
                     }
 
                     newActiveClients.insert(clientId);
-
-                    if (!activeClients.contains(clientId) && graphicsDialog && clientData["isAlive"].toBool())
+                    if (graphicsDialog)
                     {
-                        graphicsDialog->addPlayer(clientId, username, QColor(colorString));
+                        if (!activeClients.contains(clientId) && clientData["isAlive"].toBool())
+                        {
+                            graphicsDialog->addPlayer(clientId, username, QColor(colorString));
+                        }
+                        graphicsDialog->setPlayerState(clientData);
                     }
                 }
 
@@ -291,13 +294,18 @@ void Dialog::processMsg()
             // check for players that are no longer active
             for (int clientId : activeClients)
             {
-                if ((!newActiveClients.contains(clientId) && graphicsDialog))
+                if (graphicsDialog)
                 {
-                    graphicsDialog->removePlayer(clientId);
-                }
-                else if (!isPlayerAlive(clientId) && graphicsDialog)
-                {
-                    graphicsDialog->removePlayerFromScene(clientId);
+                    if (!newActiveClients.contains(clientId))
+                    {
+                        qDebug() << "removing player " << clientId;
+                        graphicsDialog->removePlayer(clientId);
+                    }
+                    else if (!isPlayerAlive(clientId))
+                    {
+                        qDebug() << "removing dead player " << clientId;
+                        graphicsDialog->removePlayerFromScene(clientId);
+                    }
                 }
             }
 
