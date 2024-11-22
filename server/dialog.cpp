@@ -430,7 +430,7 @@ void Dialog::rx()
             {
                 clientIdMap[clientKey].isAlive = jsonObj["isAlive"].toBool();
                 clientIdMap[clientKey].finishedLastLevel = jsonObj["finishedLastLevel"].toBool();
-                clientIdMap[clientKey].levelsPlayed = jsonObj["levelsPlayed"].toBool();
+                clientIdMap[clientKey].levelsPlayed = jsonObj["levelsPlayed"].toInt();
                 clientIdMap[clientKey].score = jsonObj["score"].toInt();
 
                 if (!clientIdMap[clientKey].isAlive)
