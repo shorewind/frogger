@@ -226,6 +226,7 @@ void GraphicsDialog::checkCollisions()
         activePlayer->finished = true;
         qDebug() << "Player Finished";
         activeGameState = false;
+        sendScoreToServer();
     }
     // Check if the round should end
     checkRoundOver();
@@ -414,7 +415,7 @@ void GraphicsDialog::showEndScreen()
 void GraphicsDialog::sendScoreToServer()
 {
     QJsonObject scoreMsg;
-    scoreMsg["type"] = "SCORE_UPDATE";
+    scoreMsg["type"] = "SCORE";
     scoreMsg["clientId"] = activePlayer->clientId;
     scoreMsg["score"] = score;
     scoreMsg["levelsPlayed"] = level;
@@ -525,10 +526,17 @@ void GraphicsDialog::removePlayer(int clientId)
     if (clientPlayers.contains(clientId))
     {
 //        qDebug() << "removing player " << clientId;
-        clientPlayers[clientId]->resetPlayerPos();
-        scene->removeItem(clientPlayers[clientId]);
+        removePlayerFromScene(clientId);
         delete clientPlayers[clientId];
         clientPlayers.remove(clientId);
     }
 }
 
+void GraphicsDialog::removePlayerFromScene(int clientId)
+{
+    if (clientPlayers.contains(clientId))
+    {
+        clientPlayers[clientId]->resetPlayerPos();
+        scene->removeItem(clientPlayers[clientId]);
+    }
+}

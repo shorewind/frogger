@@ -234,6 +234,7 @@ void Dialog::startGame()
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
     {
         it.value().isInGame = true;  // mark client as in the game
+        it.value().isAlive = true;
         clientIdsInGame.append(it.value().clientId);
     }
 
@@ -326,6 +327,7 @@ void Dialog::rx()
 
                 clientIdsInGame.removeAll(clientId);
                 clientIdMap[clientKey].isInGame = false;
+                clientIdMap[clientKey].isAlive = false;
 
                 QStringList parts = clientKey.split(':');
 
@@ -422,6 +424,19 @@ void Dialog::rx()
             }
             broadcastActiveClients();
         }
+        else if (type == "SCORE")
+        {
+            if (clientIdMap.contains(clientKey))
+            {
+                clientIdMap[clientKey].isAlive = false;
+                ui->textBrowser->append(QString("%1 died.").arg(clientIdMap[clientKey].username));
+            }
+            QJsonObject outgoingMessage;
+            outgoingMessage["type"] = "MESSAGE";
+            outgoingMessage["message"] = QString("%1 died.").arg(clientIdMap[clientKey].username);
+            tx(outgoingMessage);
+            broadcastActiveClients();
+        }
 //        else if (type == "OBSTACLE_POSITION")
 //        {
 //            obstaclesArray = jsonObj["obstacles"].toArray();
@@ -493,6 +508,7 @@ void Dialog::broadcastActiveClients()
         clientObj["username"] = clientData.username;
         clientObj["color"] = clientData.color;
         clientObj["isInGame"] = clientData.isInGame;
+        clientObj["isAlive"] = clientData.isAlive;
 
         activeClientsArray.append(clientObj);
 

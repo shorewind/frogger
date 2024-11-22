@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QNetworkInterface>
+#include <QJsonArray>
 
 class GraphicsDialog;
 
@@ -27,6 +28,7 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
     QString playerUsername;
+    bool isPlayerAlive(int clientId);
 
 public slots:
     void sendJson(QJsonObject data);
@@ -47,6 +49,7 @@ private:
     QString playerColor;
 //    QList<QString> usedColors;
     QMap<int, QString> clientColors;
+    QJsonArray clientDataArray;
 
 private slots:
     void connectToServer();

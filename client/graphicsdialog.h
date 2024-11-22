@@ -62,6 +62,7 @@ public slots:
     void addActivePlayer(int clientId, QString username, const QColor &color);
     void addPlayer(int clientId, QString username, const QColor &color);
     void removePlayer(int clientId);
+    void removePlayerFromScene(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
     void updateObstaclePositions(QJsonArray &obstaclesArray);
     void sendObstaclePositions();

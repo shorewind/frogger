@@ -9,9 +9,10 @@ struct ClientData
     QString username;
     QString color;
     bool isInGame;
+    bool isAlive;
 
-    ClientData(int id = -1, const QString &user = "", const QString &col = "white", bool inGame = false)
-        : clientId(id), username(user), color(col), isInGame(inGame) {}
+    ClientData(int id = -1, const QString &user = "", const QString &col = "white", bool inGame = false, bool isAlive = false)
+        : clientId(id), username(user), color(col), isInGame(inGame), isAlive(isAlive) {}
 };
 
 #endif // CLIENTDATA_H
