@@ -25,6 +25,7 @@ public:
     explicit GraphicsDialog(QWidget *parent = nullptr, QUdpSocket *socket = nullptr);
     ~GraphicsDialog();
     void setPlayerState(QJsonObject clientData);
+    void handleLevelOver();
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
@@ -53,7 +54,7 @@ private:
 
     bool activeGameState=true;
 
-    QGraphicsTextItem *header,*display;
+    QGraphicsTextItem *header,*display, *endText;
     int score = 0;
     int level = 1;
     int winnerClientId = 0;

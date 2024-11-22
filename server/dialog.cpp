@@ -431,7 +431,7 @@ void Dialog::rx()
                 clientIdMap[clientKey].isAlive = jsonObj["isAlive"].toBool();
                 clientIdMap[clientKey].finishedLastLevel = jsonObj["finishedLastLevel"].toBool();
                 clientIdMap[clientKey].levelsPlayed = jsonObj["levelsPlayed"].toBool();
-                clientIdMap[clientKey].score = jsonObj["score"].toBool();
+                clientIdMap[clientKey].score = jsonObj["score"].toInt();
 
                 if (!clientIdMap[clientKey].isAlive)
                 {
@@ -442,8 +442,26 @@ void Dialog::rx()
                     ui->textBrowser->append(playerDiedMsg);
                     tx(outgoingMessage);
                 }
+                else if (clientIdMap[clientKey].isAlive && clientIdMap[clientKey].finishedLastLevel)
+                {
+                    QString playerFinishedMsg = QString("%1 finished the level.").arg(clientIdMap[clientKey].username);
+                    QJsonObject outgoingMessage;
+                    outgoingMessage["type"] = "MESSAGE";
+                    outgoingMessage["message"] = playerFinishedMsg;
+                    ui->textBrowser->append(playerFinishedMsg);
+                    tx(outgoingMessage);
+                }
             }
             broadcastActiveClients();
+        }
+        else if (type == "LEVEL_OVER")
+        {
+            ui->textBrowser->append("Level Over.");
+
+            QJsonObject levelOverMsg;
+            levelOverMsg["type"] = "LEVEL_OVER";
+            levelOverMsg["message"] = "Level Over.";
+            tx(levelOverMsg);
         }
 //        else if (type == "OBSTACLE_POSITION")
 //        {
@@ -519,6 +537,7 @@ void Dialog::broadcastActiveClients()
         clientObj["isAlive"] = clientData.isAlive;
         clientObj["finishedLastLevel"] = clientData.finishedLastLevel;
         clientObj["levelsPlayed"] = clientData.levelsPlayed;
+        clientObj["score"] = clientData.score;
 
         activeClientsArray.append(clientObj);
 

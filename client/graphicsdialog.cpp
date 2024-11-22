@@ -202,6 +202,7 @@ void GraphicsDialog::checkCollisions()
                 activePlayer->onLog = true;
             } else {
                 activePlayer->onLog = false;
+                qDebug() << "obstacle death";
                 handlePlayerDeath();
             }
             collision = true;
@@ -217,17 +218,24 @@ void GraphicsDialog::checkCollisions()
     qreal y = currentPos.y();
     if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
         if (!activePlayer->onLog) {
+            qDebug() << "water death";
             handlePlayerDeath();
         }
     }
 
-    if (y == -211)
+    if (y == -211 && activePlayer->finished == false)
     {
         activePlayer->finished = true;
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
         checkRoundOver();
+        showEndScreen();
+        if (endText)
+        {
+            qDebug() << "setting new text";
+            endText->setPlainText("LEVEL FINISHED");
+        }
     }
 }
 
@@ -242,6 +250,7 @@ void GraphicsDialog::handlePlayerDeath()
     // check if game over after removing the heart
     if (numLives == 0 && hearts.isEmpty())
     {
+        qDebug() << "you died";
         activePlayer->dead = true;  // player done died bruh :( RIP bro...
         activePlayer->resetPlayerPos();
         activeGameState=false;
@@ -249,6 +258,10 @@ void GraphicsDialog::handlePlayerDeath()
         sendScoreToServer();
         checkRoundOver();
         showEndScreen();
+        if (endText)
+        {
+            endText->setPlainText("YOU DIED");
+        }
     }
 }
 
@@ -261,6 +274,8 @@ void GraphicsDialog::checkRoundOver()
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
+        qDebug() << player->username << player->finished << player->dead;
+
         if ( player->finished || player->dead ) // Player is either dead or at the lily pads
         {
             done = true;
@@ -274,9 +289,18 @@ void GraphicsDialog::checkRoundOver()
 
     if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
+        qDebug() << "round over";
         activeGameState = false;    // lock player movement
-        showEndScreen();            // show end screen
         roundOver = true;           // round has ended
+        QJsonObject levelMsg;
+        levelMsg["type"] = "LEVEL_OVER";
+        levelMsg["winnerUsername"] = "";
+
+        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+        if (parentDialog)
+        {
+            parentDialog->sendJson(levelMsg);
+        }
     }
 }
 
@@ -400,15 +424,17 @@ void GraphicsDialog::showEndScreen()
     scene->addItem(overlay);
 
     // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!");
-    endText->setDefaultTextColor(Qt::white);
-    endText->setFont(QFont("Georgia", 36, QFont::Bold));
-    endText->setDefaultTextColor(Qt::red);
-    endText->setPos(-150, 0);  // Adjust position as necessary
-    endText->setZValue(11);  // Ensure text is above the overlay
-    scene->addItem(endText);
-
-    // Optionally, add a button or other interaction elements
+    if (!endText)
+    {
+        qDebug() << "new end text";
+        endText = new QGraphicsTextItem;
+        endText->setDefaultTextColor(Qt::white);
+        endText->setFont(QFont("Georgia", 36, QFont::Bold));
+        endText->setDefaultTextColor(Qt::red);
+        endText->setPos(-150, 0);  // Adjust position as necessary
+        endText->setZValue(11);  // Ensure text is above the overlay
+        scene->addItem(endText);
+    }
 }
 
 void GraphicsDialog::sendScoreToServer()
@@ -420,12 +446,21 @@ void GraphicsDialog::sendScoreToServer()
     scoreMsg["isAlive"] = !activePlayer->dead;
     scoreMsg["levelsPlayed"] = level;
     scoreMsg["finishedLastLevel"] = activePlayer->finished;
+    scoreMsg["isLevelOver"] = roundOver;
 
     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
     if (parentDialog)
     {
         scoreMsg["playerUsername"] = parentDialog->playerUsername;
         parentDialog->sendJson(scoreMsg);
+    }
+}
+
+void GraphicsDialog::handleLevelOver()
+{
+    if (endText)
+    {
+        endText->setPlainText("LEVEL OVER");
     }
 }
 
@@ -491,11 +526,12 @@ void GraphicsDialog::closeEvent(QCloseEvent *event)
 void GraphicsDialog::setPlayerState(QJsonObject clientData)
 {
     int clientId = clientData["clientId"].toInt();
-    if (clientPlayers.contains(clientId)) { return; }
+    if (!clientPlayers.contains(clientId)) { return; }
     clientPlayers[clientId]->clientId = clientId;
     clientPlayers[clientId]->username = clientData["username"].toString();
     clientPlayers[clientId]->dead = !clientData["isAlive"].toBool();
     clientPlayers[clientId]->finished = clientData["finishedLastLevel"].toBool();
+    qDebug() << "set player state";
 }
 
 void GraphicsDialog::addActivePlayer(int clientId, QString username, const QColor &color)

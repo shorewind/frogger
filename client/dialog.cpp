@@ -216,7 +216,6 @@ void Dialog::processMsg()
             QJsonArray clientIdsArray = jsonObj["clientIdsInGame"].toArray();
             clientDataArray = jsonObj["clientData"].toArray();
 
-            qDebug() << "DATA: " << clientDataArray;
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
 
@@ -320,6 +319,13 @@ void Dialog::processMsg()
             if (graphicsDialog)
             {
                 graphicsDialog->updatePlayerPositions(playersArray);
+            }
+        }
+        else if (type == "LEVEL_OVER")
+        {
+            if (graphicsDialog)
+            {
+                graphicsDialog->handleLevelOver();
             }
         }
         else
