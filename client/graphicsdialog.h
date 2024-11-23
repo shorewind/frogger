@@ -26,6 +26,7 @@ public:
     ~GraphicsDialog();
     void setPlayerState(QJsonObject clientData);
     void handleLevelOver();
+    void checkRoundOver();
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
@@ -43,7 +44,6 @@ private:
     void createBoundingLine(int x, int y, int width, int height); // Declare here
     QList<QGraphicsItem *> obstacleList;
     void checkCollisions();
-    void checkRoundOver();
     bool roundOver;
     QList<QGraphicsPixmapItem*> hearts;
     int numLives = 3;
@@ -55,6 +55,7 @@ private:
     bool activeGameState=true;
 
     QGraphicsTextItem *header,*display, *endText;
+    QGraphicsRectItem *overlay;
     int score = 0;
     int level = 1;
     int winnerClientId = 0;

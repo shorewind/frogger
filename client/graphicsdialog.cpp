@@ -229,13 +229,10 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
-        checkRoundOver();
-        showEndScreen();
-        if (endText)
-        {
-            qDebug() << "setting new text";
-            endText->setPlainText("LEVEL FINISHED");
-        }
+//        checkRoundOver();
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("LEVEL FINISHED");
     }
 }
 
@@ -256,12 +253,10 @@ void GraphicsDialog::handlePlayerDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-        checkRoundOver();
-        showEndScreen();
-        if (endText)
-        {
-            endText->setPlainText("YOU DIED");
-        }
+//        checkRoundOver();
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
     }
 }
 
@@ -274,9 +269,9 @@ void GraphicsDialog::checkRoundOver()
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
-        qDebug() << player->username << player->finished << player->dead;
+//        qDebug() << player->username << player->finished << player->dead << player->inGame;
 
-        if ( player->finished || player->dead ) // Player is either dead or at the lily pads
+        if ( player->finished || player->dead || !player->inGame) // Player is either dead or at the lily pads
         {
             done = true;
         }
@@ -415,26 +410,7 @@ void GraphicsDialog::showEndScreen()
     backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
     scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
 
-
-    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
     overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
-    overlay->setZValue(10);  // Ensure the overlay is above game items
-
-    // Add the overlay to the scene
-    scene->addItem(overlay);
-
-    // Add a text label (you can customize the message as needed)
-    if (!endText)
-    {
-        qDebug() << "new end text";
-        endText = new QGraphicsTextItem;
-        endText->setDefaultTextColor(Qt::white);
-        endText->setFont(QFont("Georgia", 36, QFont::Bold));
-        endText->setDefaultTextColor(Qt::red);
-        endText->setPos(-150, 0);  // Adjust position as necessary
-        endText->setZValue(11);  // Ensure text is above the overlay
-        scene->addItem(endText);
-    }
 }
 
 void GraphicsDialog::sendScoreToServer()
@@ -458,10 +434,8 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-    if (endText)
-    {
-        endText->setPlainText("LEVEL OVER");
-    }
+    showEndScreen();
+    endText->setPlainText("LEVEL OVER");
 }
 
 void GraphicsDialog::drawScoreDisplay()
@@ -485,6 +459,19 @@ void GraphicsDialog::drawScoreDisplay()
     display->setFont(scoreFont);
     display->setPos(-155, -286);
     scene->addItem(display);
+
+    // Initialize end text
+    overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setZValue(10);
+    scene->addItem(overlay);
+
+    endText = new QGraphicsTextItem;
+    endText->setDefaultTextColor(Qt::white);
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setDefaultTextColor(Qt::red);
+    endText->setPos(-150, 0);
+    endText->setZValue(11);
+    scene->addItem(endText);
 }
 
 void GraphicsDialog::sendObstaclePositions()
@@ -531,6 +518,7 @@ void GraphicsDialog::setPlayerState(QJsonObject clientData)
     clientPlayers[clientId]->username = clientData["username"].toString();
     clientPlayers[clientId]->dead = !clientData["isAlive"].toBool();
     clientPlayers[clientId]->finished = clientData["finishedLastLevel"].toBool();
+    clientPlayers[clientId]->inGame = clientData["isInGame"].toBool();
     qDebug() << "set player state";
 }
 

@@ -23,6 +23,60 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+
+    connect(ui->allPlayersButton, &QPushButton::clicked, this, &Dialog::showAllSessions);
+    connect(ui->currentUserButton, &QPushButton::clicked, this, &Dialog::showSessionsForUser);
+
+    db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
+    db.setDatabaseName("../froggy_game_data.db");
+    if (!db.open()) {
+        qDebug() << "Error opening database: " << db.lastError().text();
+    } else {
+        showAllSessions();
+        showLeaderboard();
+    }
+}
+
+void Dialog::showLeaderboard()
+{
+    tmLeaderboard = new QSqlQueryModel;
+    tmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
+
+    if (tmLeaderboard->lastError().isValid())
+    {
+        qDebug() << "Error in query: " << tmLeaderboard->lastError().text();
+    }
+
+    ui->leaderboardTableView->setModel(tmLeaderboard);
+    ui->leaderboardTableView->resizeColumnsToContents();
+}
+
+void Dialog::showAllSessions()
+{
+    tmHistory = new QSqlQueryModel;
+    tmHistory->setQuery("SELECT * FROM sessions ORDER BY id DESC");
+
+    if (tmHistory->lastError().isValid())
+    {
+        qDebug() << "Error in query: " << tmHistory->lastError().text();
+    }
+
+    ui->historyTableView->setModel(tmHistory);
+    ui->historyTableView->resizeColumnsToContents();
+}
+
+void Dialog::showSessionsForUser()
+{
+    if (!playerUsername.isEmpty())
+    {
+        QString filteredQuery = QString("SELECT * FROM sessions WHERE player_username = '%1' ORDER BY id DESC").arg(playerUsername);
+        tmHistory->setQuery(filteredQuery);
+
+        if (tmHistory->lastError().isValid())
+        {
+            qDebug() << "Error in query: " << tmHistory->lastError().text();
+        }
+    }
 }
 
 void Dialog::connectToServer()
@@ -56,9 +110,17 @@ void Dialog::connectToServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    leaveGame();
-    disconnectFromServer();
-    close();
+    if (db.isOpen())
+    {
+        db.close();
+    }
+
+    if (validConnection)
+    {
+        leaveGame();
+        disconnectFromServer();
+    }
+
     event->accept();
 }
 
@@ -142,6 +204,7 @@ void Dialog::processMsg()
 
         if (type == "WELCOME")
         {
+            validConnection = true;
             ui->textBrowser->setText("Connected to Server: " + ip + ":" + QString::number(port));
             ui->ipEdit->clear();
             ui->portEdit->clear();
@@ -188,7 +251,9 @@ void Dialog::processMsg()
         }
         else if (type == "DISCONNECT_ALL")
         {
+            validConnection = false;
             leaveGame();
+            ui->textBrowser->clear();
             ui->connectButton->setEnabled(true);
             ui->sendButton->setEnabled(false);
             ui->submitButton->setEnabled(false);
@@ -228,7 +293,7 @@ void Dialog::processMsg()
 
             for (const QJsonValue &value : clientDataArray)
             {
-                QJsonObject clientData = value.toObject();
+                clientData = value.toObject();
                 int clientId = clientData["clientId"].toInt();
                 QString username = clientData["username"].toString();
                 QString colorString = clientData["color"].toString();
@@ -259,6 +324,7 @@ void Dialog::processMsg()
                             graphicsDialog->addPlayer(clientId, username, QColor(colorString));
                         }
                         graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
                     }
                 }
 
@@ -299,11 +365,15 @@ void Dialog::processMsg()
                     {
                         qDebug() << "removing player " << clientId;
                         graphicsDialog->removePlayer(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
                     }
                     else if (!isPlayerAlive(clientId))
                     {
                         qDebug() << "removing dead player " << clientId;
                         graphicsDialog->removePlayerFromScene(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
                     }
                 }
             }
@@ -327,6 +397,9 @@ void Dialog::processMsg()
             {
                 graphicsDialog->handleLevelOver();
             }
+            ui->textBrowser->append(message);
+            tmLeaderboard->setQuery("SELECT * FROM sessions ORDER BY score DESC LIMIT 10");
+            tmHistory->setQuery("SELECT * FROM sessions ORDER BY id DESC");
         }
         else
         {

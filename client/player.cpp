@@ -9,6 +9,7 @@ Player::Player(int id, QString username, QColor color, QGraphicsItem *parent)
     onLog = false;
     finished = false;
     dead = false;
+    inGame = false;
 }
 
 void Player::goLeft() {

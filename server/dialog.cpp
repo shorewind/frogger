@@ -6,69 +6,8 @@ Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
-    db.setDatabaseName("HighScore.db");
-    db.open();
-    QSqlQuery query;
-    bool success = query.exec(
-                "CREATE TABLE IF NOT EXISTS HighScore ("
-                "id INTEGER PRIMARY KEY,"
-                "playerName TEXT NO NULL,"
-                "score INTEGER NOT NULL"
-                ");"
-                );
-    if (!success)
-        qDebug () << query.lastError() .text ();
 
-    TestDatabase();
-
-/*
-   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-   query.bindValue(":id", 1);
-   query.bindValue(":playerName", "AMullins");
-   query.bindValue(":score",15);
-   query.exec();   //send query to the db. then run Sql lite statementS
-
-   if (!query.exec ())
-       qDebug() << query.lastError ().text ();
-
-   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-   query.bindValue(":id", 2);
-   query.bindValue(":playerName", "SomeoneElse");
-   query.bindValue(":score",5);
-   query.exec();
-
-
-   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-   query.bindValue(":id", 3);
-   query.bindValue(":playerName", "LastPerson");
-   query.bindValue(":score",-20);
-   query.exec();
-
-
-   query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-            "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-   query.bindValue(":id", 4);
-   query.bindValue(":playerName", "Frank");
-   query.bindValue(":score",25);
-   query.exec();
-
-  query.exec("SELECT playerName, score FROM HighScore;");
-  qDebug() << "Printing Scores";
-  while (query.next()) {
-      QString name = query.value (0) .toString ();
-      int score = query.value(1) .toInt ();
-      qDebug () << name << score;
-  }
-*/
-
-
-
-
-     // QSqlTableModel table(parent,db);   //Proof of concept
+    setupDatabase();
 
     ui->setupUi(this);
 
@@ -85,83 +24,105 @@ Dialog::Dialog(QWidget *parent) :
     }
 }
 
-void Dialog::TestDatabase() {
-
+void Dialog::setupDatabase()
+{
+    db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
+    db.setDatabaseName("../froggy_game_data.db");
+    db.open();
     QSqlQuery query;
-    //Getting count of database for creating unique IDs
+    bool createdGamesTable = query.exec(
+        "CREATE TABLE IF NOT EXISTS games ("
+        "id INTEGER PRIMARY KEY,"
+        "timestamp TIMESTAMP DEFAULT (datetime('now', 'localtime')),"
+        "winner_username TEXT NOT NULL,"
+        "high_score INTEGER NOT NULL,"
+        "max_level INTEGER NOT NULL"
+        ");"
+    );
+    if (!createdGamesTable)
+        qDebug () << "Error Creating Games Table: " << query.lastError().text();
 
-    query.exec("SELECT COUNT(1) CNT FROM HighScore;");
-    //qDebug() <<
+    bool createdSessionsTable = query.exec(
+        "CREATE TABLE IF NOT EXISTS sessions ("
+        "id INTEGER PRIMARY KEY,"
+        "game_id INTEGER NOT NULL,"
+        "player_username TEXT NOT NULL,"
+        "score INTEGER NOT NULL,"
+        "levels_played INTEGER NOT NULL"
+        ");"
+    );
+    if (!createdSessionsTable)
+        qDebug () << "Error Creating Sessions Table: " << query.lastError().text();
 
-    query.exec ("Select  * from HighScore;");
-    int newID = query.size()+1;
+//    query.exec("SELECT MAX(id) FROM games");
+//    if (query.next()) {
+//        currentGameId = query.value(0).toInt();
+//    }
+//    else
+//    {
+//        currentGameId = 1;
+//    }
 
-
-    //Inserting into database
-
-
-    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-    query.bindValue(":id", 1);
-    query.bindValue(":playerName", "AMullins");
-    query.bindValue(":score", 15);
-    query.exec();   //send query to the db. then run Sql lite statementS
-
-    if (!query.exec ())
-        qDebug() << query.lastError ().text ();
-
-    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-    query.bindValue(":id", 2);
-    query.bindValue(":playerName", "SomeoneElse");
-    query.bindValue(":score", 5);
-    query.exec();
-
-
-    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-    query.bindValue(":id", 3);
-    query.bindValue(":playerName", "LastPerson");
-    query.bindValue(":score", -20);
-    query.exec();
-
-
-    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
-             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
-    query.bindValue(":id", 4);
-    query.bindValue(":playerName", "Frank");
-    query.bindValue(":score", 25);
-    query.exec();
-
-   query.exec("SELECT playerName, score FROM HighScore;");
-   qDebug() << "Printing Scores";
-   while (query.next()) {
-       QString name = query.value (0) .toString ();
-       int score = query.value(1) .toInt ();
-       qDebug () << name << score;
-   }
+    query.exec("SELECT MAX(game_id) FROM sessions");
+    if (query.next()) {
+        currentGameId = query.value(0).toInt();
+    }
+    else
+    {
+        currentGameId = 0;
+    }
 }
 
+bool sessionExists(int gameId, const QString &playerUsername)
+{
+    QSqlQuery query;
+    query.prepare("SELECT COUNT(*) FROM sessions WHERE game_id = :game_id AND player_username = :player_username");
+    query.bindValue(":game_id", gameId);
+    query.bindValue(":player_username", playerUsername);
+    query.exec();
 
+    if (query.next())
+    {
+        return query.value(0).toInt() > 0;
+    }
+    return false;
+}
 
+void insertOrUpdateSession(int gameId, const QString &playerUsername, int score, int levelsPlayed)
+{
+    QSqlQuery query;
+    if (sessionExists(gameId, playerUsername))
+    {
+        query.prepare("UPDATE sessions SET score = :score, levels_played = :levels_played "
+                      "WHERE game_id = :game_id AND player_username = :player_username");
+        query.bindValue(":score", score);
+        query.bindValue(":levels_played", levelsPlayed);
+        query.bindValue(":game_id", gameId);
+        query.bindValue(":player_username", playerUsername);
 
-    /* query.exec("SELECT COUNT(1);");
-  query.first ();
- // int newID = query.value (0).toInt ()++;
+        if (!query.exec())
+        {
+            qDebug() << "Error updating session: " << query.lastError().text();
+            return;
+        }
+    }
+    else
+    {
+        query.prepare("INSERT INTO sessions (game_id, player_username, score, levels_played) "
+                      "VALUES (:game_id, :player_username, :score, :levels_played)");
+        query.bindValue(":game_id", gameId);
+        query.bindValue(":player_username", playerUsername);
+        query.bindValue(":score", score);
+        query.bindValue(":levels_played", levelsPlayed);
 
-  query.exec ("Select * fro")
-
-  //Inserting into database
-
-
- // int newId = query.value(0) .toInt ()++;
-
-  query.exec ("Select  * from HighScore");
-  int newID = query.size()+1 */
-
-
-
-
+        if (!query.exec())
+        {
+            qDebug() << "Error inserting session: " << query.lastError().text();
+            return;
+        }
+    }
+    return;
+}
 
 void Dialog::configureServer()
 {
@@ -229,6 +190,7 @@ void Dialog::startGame()
 
     activeGame = true;
     ui->startButton->setEnabled(false);
+    currentGameId++;
 
     // add all connected clients to the game
     for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
@@ -453,6 +415,8 @@ void Dialog::rx()
                 }
             }
             broadcastActiveClients();
+
+            insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
         }
         else if (type == "LEVEL_OVER")
         {

@@ -30,7 +30,7 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
-    void TestDatabase ();
+
 private:
     Ui::Dialog *ui;
     void closeEvent(QCloseEvent *event) override;
@@ -46,7 +46,10 @@ private:
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
     bool activeGame;
-
+    QSqlDatabase db;
+    QSqlQuery query;
+    int currentGameId;
+    int currentSessionId;
 
 private slots:
     void rx();  // receive
@@ -60,6 +63,7 @@ private slots:
     QString getLocalIpAddress();
     void setLocalIpAddress();
     void startGame();
+    void setupDatabase();
 };
 
 #endif // DIALOG_H

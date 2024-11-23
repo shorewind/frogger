@@ -13,6 +13,11 @@
 #include <QJsonDocument>
 #include <QNetworkInterface>
 #include <QJsonArray>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QTableView>
+#include <QSqlError>
+#include <QSqlTableModel>
 
 class GraphicsDialog;
 
@@ -41,6 +46,7 @@ private:
     Ui::Dialog *ui;
 
     QUdpSocket* socket;
+    bool validConnection = false;
     GraphicsDialog *graphicsDialog = nullptr;
     int activeClientId;
     QString ip;
@@ -50,6 +56,13 @@ private:
 //    QList<QString> usedColors;
     QMap<int, QString> clientColors;
     QJsonArray clientDataArray;
+    QJsonObject clientData;
+    QSqlDatabase db;
+    QSqlQueryModel *tmLeaderboard, *tmHistory;
+
+    void showLeaderboard();
+    void showAllSessions();
+    void showSessionsForUser();
 
 private slots:
     void connectToServer();
