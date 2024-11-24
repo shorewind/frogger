@@ -66,13 +66,10 @@ public slots:
     void removePlayer(int clientId);
     void removePlayerFromScene(int clientId);
     void updatePlayerPositions(QJsonArray &playersArray);
-    void updateObstaclePositions(QJsonArray &obstaclesArray);
-    void sendObstaclePositions();
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
     void showEndScreen();
     void handlePlayerDeath();
-//    void setGameStats(bool isAlive, int score, int level);
 
 signals:
     void requestClose();

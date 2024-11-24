@@ -58,11 +58,12 @@ private:
     QJsonArray clientDataArray;
     QJsonObject clientData;
     QSqlDatabase db;
-    QSqlQueryModel *tmLeaderboard, *tmHistory;
+    QSqlQueryModel *qmLeaderboard, *qmHistory;
 
     void showLeaderboard();
     void showAllSessions();
     void showSessionsForUser();
+    void onTabClicked();
 
 private slots:
     void connectToServer();

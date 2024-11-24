@@ -30,9 +30,13 @@ void Dialog::setupDatabase()
     db.setDatabaseName("../froggy_game_data.db");
     db.open();
     QSqlQuery query;
+
+    // for clearing tables
+//    query.exec("DROP TABLE games");
+//    query.exec("DROP TABLE sessions");
     bool createdGamesTable = query.exec(
         "CREATE TABLE IF NOT EXISTS games ("
-        "id INTEGER PRIMARY KEY,"
+        "id INTEGER,"
         "timestamp TIMESTAMP DEFAULT (datetime('now', 'localtime')),"
         "winner_username TEXT NOT NULL,"
         "high_score INTEGER NOT NULL,"
@@ -290,6 +294,7 @@ void Dialog::rx()
                 clientIdsInGame.removeAll(clientId);
                 clientIdMap[clientKey].isInGame = false;
                 clientIdMap[clientKey].isAlive = false;
+                clientIdMap[clientKey].finishedLastLevel = false;
 
                 QStringList parts = clientKey.split(':');
 
@@ -420,20 +425,72 @@ void Dialog::rx()
         }
         else if (type == "LEVEL_OVER")
         {
-            ui->textBrowser->append("Level Over.");
 
             QJsonObject levelOverMsg;
             levelOverMsg["type"] = "LEVEL_OVER";
             levelOverMsg["message"] = "Level Over.";
             tx(levelOverMsg);
+            logGame();
         }
-//        else if (type == "OBSTACLE_POSITION")
-//        {
-//            obstaclesArray = jsonObj["obstacles"].toArray();
-//            broadcastObstaclePositions();
-//        }
     }
 }
+
+void Dialog::logGame()
+{
+    QSqlQuery checkQuery;
+
+    if (!checkQuery.exec(QString("SELECT COUNT(*) FROM games WHERE id = '%1'").arg(currentGameId)))
+    {
+        qDebug() << "Error checking if game exists: " << checkQuery.lastError().text();
+        return;
+    }
+
+    checkQuery.next();
+    int gameCount = checkQuery.value(0).toInt();
+
+    if (gameCount > 0)
+    {
+        qDebug() << "Game result for game_id: " << currentGameId << " already exists. Skipping insertion.";
+        return;
+    }
+
+    QSqlQuery query;
+    QString queryString = QString("SELECT player_username, score, levels_played FROM sessions WHERE game_id = '%1' ORDER BY score DESC LIMIT 1").arg(currentGameId);
+    if (!query.exec(queryString))
+    {
+        qDebug() << "Error determining winner: " << query.lastError().text();
+        return;
+    }
+
+    if (query.next())
+    {
+        QString winnerUsername = query.value("player_username").toString();
+        int highScore = query.value("score").toInt();
+        int maxLevel = query.value("levels_played").toInt();
+
+        QSqlQuery insertQuery;
+        insertQuery.prepare("INSERT INTO games (id, timestamp, winner_username, high_score, max_level) "
+                            "VALUES (:id, datetime('now', 'localtime'), :winner_username, :high_score, :max_level)");
+        insertQuery.bindValue(":id", currentGameId);
+        insertQuery.bindValue(":winner_username", winnerUsername);
+        insertQuery.bindValue(":high_score", highScore);
+        insertQuery.bindValue(":max_level", maxLevel);
+
+        if (!insertQuery.exec())
+        {
+            qDebug() << "Error inserting game result: " << insertQuery.lastError().text();
+        }
+        else
+        {
+            qDebug() << "Game result inserted successfully.";
+        }
+    }
+    else
+    {
+        qDebug() << "No sessions found for game_id: " << currentGameId;
+    }
+}
+
 
 void Dialog::updatePlayerPositions(QJsonArray playersArray)
 {

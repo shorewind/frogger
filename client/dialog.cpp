@@ -27,6 +27,8 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->allPlayersButton, &QPushButton::clicked, this, &Dialog::showAllSessions);
     connect(ui->currentUserButton, &QPushButton::clicked, this, &Dialog::showSessionsForUser);
 
+    connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &Dialog::onTabClicked);
+
     db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
     db.setDatabaseName("../froggy_game_data.db");
     if (!db.open()) {
@@ -37,31 +39,59 @@ Dialog::Dialog(QWidget *parent) :
     }
 }
 
+void Dialog::onTabClicked()
+{
+    if (ui->allPlayersButton->isChecked())
+    {
+        qmHistory->setQuery("SELECT timestamp, winner_username, high_score, max_level FROM games ORDER BY timestamp DESC");
+    }
+    else if (ui->currentUserButton->isChecked() && !playerUsername.isEmpty())
+    {
+        QString filteredQuery = QString("SELECT "
+                                        "g.timestamp, "
+                                        "s.score, "
+                                        "s.levels_played, "
+                                        "CASE "
+                                        "    WHEN g.winner_username = s.player_username THEN 'true' "
+                                        "    ELSE 'false' "
+                                        "END AS is_winner, "
+                                        "g.id AS game_id "
+                                        "FROM games g "
+                                        "JOIN sessions s ON g.id = s.game_id "
+                                        "WHERE s.player_username = '%1' "
+                                        "ORDER BY g.timestamp DESC").arg(playerUsername);
+        qmHistory->setQuery(filteredQuery);
+    }
+    qmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
+    ui->leaderboardTableView->resizeColumnsToContents();
+    ui->historyTableView->resizeColumnsToContents();
+}
+
 void Dialog::showLeaderboard()
 {
-    tmLeaderboard = new QSqlQueryModel;
-    tmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
+    qmLeaderboard = new QSqlQueryModel;
+    qmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
 
-    if (tmLeaderboard->lastError().isValid())
+    if (qmLeaderboard->lastError().isValid())
     {
-        qDebug() << "Error in query: " << tmLeaderboard->lastError().text();
+        qDebug() << "Error in query: " << qmLeaderboard->lastError().text();
     }
-
-    ui->leaderboardTableView->setModel(tmLeaderboard);
+    ui->leaderboardTableView->setModel(qmLeaderboard);
     ui->leaderboardTableView->resizeColumnsToContents();
+    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::showAllSessions()
 {
-    tmHistory = new QSqlQueryModel;
-    tmHistory->setQuery("SELECT * FROM sessions ORDER BY id DESC");
+    qmHistory = new QSqlQueryModel;
+    qmHistory->setQuery("SELECT timestamp, winner_username, high_score, max_level FROM games ORDER BY timestamp DESC");
 
-    if (tmHistory->lastError().isValid())
+    if (qmHistory->lastError().isValid())
     {
-        qDebug() << "Error in query: " << tmHistory->lastError().text();
+        qDebug() << "Error in query: " << qmHistory->lastError().text();
     }
 
-    ui->historyTableView->setModel(tmHistory);
+    ui->historyTableView->setModel(qmHistory);
     ui->historyTableView->resizeColumnsToContents();
 }
 
@@ -69,13 +99,26 @@ void Dialog::showSessionsForUser()
 {
     if (!playerUsername.isEmpty())
     {
-        QString filteredQuery = QString("SELECT * FROM sessions WHERE player_username = '%1' ORDER BY id DESC").arg(playerUsername);
-        tmHistory->setQuery(filteredQuery);
+        QString filteredQuery = QString("SELECT "
+                                        "g.timestamp, "
+                                        "s.score, "
+                                        "s.levels_played, "
+                                        "CASE "
+                                        "    WHEN g.winner_username = s.player_username THEN 'true' "
+                                        "    ELSE 'false' "
+                                        "END AS is_winner, "
+                                        "g.id AS game_id "
+                                        "FROM games g "
+                                        "JOIN sessions s ON g.id = s.game_id "
+                                        "WHERE s.player_username = '%1' "
+                                        "ORDER BY g.timestamp DESC").arg(playerUsername);
+        qmHistory->setQuery(filteredQuery);
 
-        if (tmHistory->lastError().isValid())
+        if (qmHistory->lastError().isValid())
         {
-            qDebug() << "Error in query: " << tmHistory->lastError().text();
+            qDebug() << "Error in query: " << qmHistory->lastError().text();
         }
+        ui->historyTableView->resizeColumnsToContents();
     }
 }
 
@@ -221,6 +264,7 @@ void Dialog::processMsg()
             ui->blueButton->setStyleSheet("background-color: blue");
             ui->yellowButton->setStyleSheet("background-color: yellow");
             ui->redButton->setStyleSheet("background-color: red");
+            ui->currentUserButton->setEnabled(true);
         }
         else if (type == "START")
         {
@@ -268,6 +312,7 @@ void Dialog::processMsg()
             ui->textBrowser->append(message);
             setLocalIpAddress();
             ui->portEdit->setText(QString::number(DEFAULT_PORT));
+            ui->currentUserButton->setEnabled(false);
         }
         else if (type == "REJECTION")
         {
@@ -398,8 +443,6 @@ void Dialog::processMsg()
                 graphicsDialog->handleLevelOver();
             }
             ui->textBrowser->append(message);
-            tmLeaderboard->setQuery("SELECT * FROM sessions ORDER BY score DESC LIMIT 10");
-            tmHistory->setQuery("SELECT * FROM sessions ORDER BY id DESC");
         }
         else
         {

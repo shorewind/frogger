@@ -50,6 +50,7 @@ private:
     QSqlQuery query;
     int currentGameId;
     int currentSessionId;
+    void logGame();
 
 private slots:
     void rx();  // receive

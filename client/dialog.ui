@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>463</width>
-    <height>511</height>
+    <width>600</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,7 +88,7 @@
      <property name="currentIndex">
       <number>2</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="gameTab">
       <attribute name="title">
        <string>Game</string>
       </attribute>
@@ -210,7 +210,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="leaderboardTab">
       <attribute name="title">
        <string>Leaderboard</string>
       </attribute>
@@ -220,7 +220,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="historyTab">
       <attribute name="title">
        <string>History</string>
       </attribute>
@@ -241,6 +241,9 @@
            </item>
            <item>
             <widget class="QRadioButton" name="currentUserButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Current User</string>
              </property>

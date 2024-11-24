@@ -289,7 +289,6 @@ void GraphicsDialog::checkRoundOver()
         roundOver = true;           // round has ended
         QJsonObject levelMsg;
         levelMsg["type"] = "LEVEL_OVER";
-        levelMsg["winnerUsername"] = "";
 
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
         if (parentDialog)
@@ -372,30 +371,6 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
     }
 }
 
-void GraphicsDialog::updateObstaclePositions(QJsonArray &obstaclesArray)
-{
-    for (const QJsonValue &value : obstaclesArray)
-    {
-        QJsonObject obstacleData = value.toObject();
-
-        int obstacleId = obstacleData["obstacleId"].toInt();
-        int x = obstacleData["x"].toInt();
-        int y = obstacleData["y"].toInt();
-        int speed = obstacleData["speed"].toInt();
-
-        if (obstacles.contains(obstacleId))
-        {
-            Obstacle* obstacle = obstacles[obstacleId];
-            obstacle->setPos(x, y);
-            obstacle->speed = speed;
-
-//            qDebug() << "Updated obstacle " << obstacleId << " to position: (" << x << ", " << y << ")";
-        } else {
-//            qDebug() << "Obstacle with ID " << obstacleId << " not found!";
-        }
-    }
-}
-
 void GraphicsDialog::showEndScreen()
 {
     QString OverIm;
@@ -472,36 +447,6 @@ void GraphicsDialog::drawScoreDisplay()
     endText->setPos(-150, 0);
     endText->setZValue(11);
     scene->addItem(endText);
-}
-
-void GraphicsDialog::sendObstaclePositions()
-{
-//    qDebug() << "sending all obstacle positions";
-
-     QJsonObject message;
-     message["type"] = "OBSTACLE_POSITION";
-
-     QJsonArray obstaclePosArray;
-
-     for (auto obstacle : obstacles)
-     {
-         QJsonObject obstaclePosData;
-         obstaclePosData["obstacleId"] = obstacle->getId();
-         obstaclePosData["obstacleType"] = obstacle->getType();
-         obstaclePosData["x"] = obstacle->x();
-         obstaclePosData["y"] = obstacle->y();
-         obstaclePosData["speed"] = obstacle->getSpeed();
-
-         obstaclePosArray.append(obstaclePosData);
-     }
-
-     message["obstacles"] = obstaclePosArray;
-
-     Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-     if (parentDialog)
-     {
-         parentDialog->sendJson(message);
-     }
 }
 
 void GraphicsDialog::closeEvent(QCloseEvent *event)
