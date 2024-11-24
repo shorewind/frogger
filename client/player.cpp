@@ -82,6 +82,23 @@ QPainterPath Player::shape() const
     return path;
 }
 
+void Player::handleplayerDeath()
+{
+    if (lives > 0) {
+        lives--;
+        //removeHeart();
+        resetPlayerPos();
+    }
+
+    // check if game over after removing the heart
+    if (lives == 0 && hearts.isEmpty())
+    {
+        resetPlayerPos();
+        qDebug() << "Game Over";
+    }
+}
+
+
 void Player::resetPlayerPos() {
    setPos(-SCENE_WIDTH/2 + clientId * PLAYER_XOFFSET, SCENE_HEIGHT/2 - PLAYER_YOFFSET); // DONE, Adjust position as needed
 }

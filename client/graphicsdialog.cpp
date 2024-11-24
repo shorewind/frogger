@@ -208,6 +208,22 @@ void GraphicsDialog::checkCollisions()
         }
     }
 
+    // Check if two players collide and handle the consequences
+    for (auto &otherPlayer : clientPlayers)
+    {
+        // Player* otherPlayer = activePlayer + 1;
+
+        if(!otherPlayer) continue;
+        if (activePlayer != otherPlayer && ( activePlayer->collidesWithItem(otherPlayer) || otherPlayer->collidesWithItem(activePlayer)) ) {
+            // Both players collide, lose a life
+            otherPlayer->handleplayerDeath();
+            handlePlayerDeath();
+
+            break;  // Stop after detecting one collision
+        }
+    }
+
+
     if (!collision) {
         activePlayer->onLog = false;
     }

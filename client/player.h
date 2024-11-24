@@ -27,6 +27,7 @@ public:
     void goUp();
     void goDown();
     void stop();
+    void handleplayerDeath();
     void setPos(qreal x, qreal y);
 
     QRectF boundingRect() const override;
