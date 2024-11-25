@@ -2,6 +2,7 @@
 #include "ui_dialog.h"
 #include "graphicsdialog.h"
 #include "defs.h"
+#include <QGraphicsDropShadowEffect>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -23,6 +24,13 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+
+    // Apply shadow effect to the title label
+          QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+          shadow->setBlurRadius(15);
+          shadow->setOffset(4, 4);
+          shadow->setColor(Qt::black);
+          ui->label->setGraphicsEffect(shadow);
 }
 
 void Dialog::connectToServer()
