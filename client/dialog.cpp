@@ -10,6 +10,17 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //textbox is kinda retro looking
+    ui->textBrowser->setStyleSheet(R"(
+            QTextBrowser {
+                background-color: #000000;
+                color: #00ff00;
+                border: 2px solid #00ff00;
+                font-family: "Courier New";
+                font-size: 12px;
+            }
+        )");
+
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
 
@@ -26,11 +37,20 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 
     // Apply shadow effect to the title label
-          QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-          shadow->setBlurRadius(15);
-          shadow->setOffset(4, 4);
-          shadow->setColor(Qt::black);
-          ui->label->setGraphicsEffect(shadow);
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(15);
+    shadow->setOffset(4, 4);
+    shadow->setColor(Qt::black);
+    ui->label->setGraphicsEffect(shadow);
+
+    //gradient background
+   // this->setStyleSheet("background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #1e1e1e, stop:1 #111111);");
+
+
+    ui->ipEdit->setStyleSheet("border: 2px solid #00ff00; border-radius: 5px; padding: 5px; background-color: #333333; color: white;");
+    ui->portEdit->setStyleSheet("border: 2px solid #00ff00; border-radius: 5px; padding: 5px; background-color: #333333; color: white;");
+
+
 }
 
 void Dialog::connectToServer()
@@ -82,7 +102,7 @@ void Dialog::disconnectFromServer()
 }
 
 void Dialog::leaveGame()
-{ 
+{
     QJsonObject disconnectMessage;
 
     disconnectMessage["type"] = "LEAVE";
