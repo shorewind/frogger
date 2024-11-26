@@ -3,6 +3,7 @@
 #include "graphicsdialog.h"
 #include "defs.h"
 #include <QGraphicsDropShadowEffect>
+#include <QFontDatabase>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -15,10 +16,23 @@ Dialog::Dialog(QWidget *parent) :
     palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/carbon.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
     this->setPalette(palette);
 
-    // Title label with neon gradient
-    QFont titleFont("Orbitron", 20, QFont::Bold);
-    ui->label->setFont(titleFont);
-    ui->label->setStyleSheet("color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #00ffff, stop:1 #ff0000);");
+    // Load Orbitron font from the resource file
+       int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
+       if (fontId != -1) {
+           QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+           QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+
+           // Apply to the title label
+           ui->label->setFont(orbitronFont);
+           ui->label->setStyleSheet(R"(
+               QLabel {
+                   color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #007FFF, stop:1 #00FF80);
+                   text-align: center;
+               }
+           )");
+       } else {
+           qDebug() << "Failed to load Orbitron font!";
+       }
 
     // Styling for the text browser (retro terminal look)
     ui->textBrowser->setStyleSheet(R"(
