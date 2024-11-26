@@ -10,19 +10,96 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //textbox is kinda retro looking
-    ui->textBrowser->setStyleSheet(R"(
-            QTextBrowser {
-                background-color: #000000;
-                color: #00ff00;
-                border: 2px solid #00ff00;
-                font-family: "Courier New";
-                font-size: 12px;
-            }
-        )");
+    // Set up carbon fiber texture or gradient background
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/carbon.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+    this->setPalette(palette);
 
+    // Title label with neon gradient
+    QFont titleFont("Orbitron", 20, QFont::Bold);
+    ui->label->setFont(titleFont);
+    ui->label->setStyleSheet("color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #00ffff, stop:1 #ff0000);");
+
+    // Styling for the text browser (retro terminal look)
+    ui->textBrowser->setStyleSheet(R"(
+        QTextBrowser {
+            background-color: #000000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            font-family: "Courier New";
+            font-size: 12px;
+        }
+    )");
+
+    // Styling for IP and Port input fields
+    QString inputFieldStyle = R"(
+        QLineEdit {
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #333333;
+            color: white;
+        }
+        QLineEdit:focus {
+            border-color: #ff4500;
+        }
+    )";
+    ui->ipEdit->setStyleSheet(inputFieldStyle);
+    ui->portEdit->setStyleSheet(inputFieldStyle);
+
+    // Styling for the connect button
+    ui->connectButton->setStyleSheet(R"(
+        QPushButton {
+            background-color: #222222;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font: bold 14px;
+        }
+        QPushButton:hover {
+            background-color: #00ffff;
+            color: #000000;
+        }
+    )");
+
+    // Set up button styles for color selection
+    QString buttonStyle = R"(
+        QPushButton {
+            border: 2px solid white;
+            border-radius: 10px;
+            font: bold 12px;
+        }
+        QPushButton:hover {
+            background-color: %1;
+            color: #000000;
+        }
+    )";
+    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
+    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
+    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
+    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
+
+    // Apply shadow effect to the title label
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(15);
+    shadow->setOffset(4, 4);
+    shadow->setColor(Qt::black);
+    ui->label->setGraphicsEffect(shadow);
+
+    // Shadow effects for buttons
+    auto addShadowEffect = [](QWidget *widget) {
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(widget);
+        shadow->setBlurRadius(15);
+        shadow->setOffset(4, 4);
+        shadow->setColor(Qt::black);
+        widget->setGraphicsEffect(shadow);
+    };
+    addShadowEffect(ui->connectButton);
+    addShadowEffect(ui->sendButton);
+
+    // Connect signals for functionality
     setLocalIpAddress();
-    ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
+    ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
 
     ui->textBrowser->append("Server should send a welcome message and clear the inputs on successful connection to active game server.");
 
@@ -35,23 +112,8 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
-
-    // Apply shadow effect to the title label
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(15);
-    shadow->setOffset(4, 4);
-    shadow->setColor(Qt::black);
-    ui->label->setGraphicsEffect(shadow);
-
-    //gradient background
-   // this->setStyleSheet("background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #1e1e1e, stop:1 #111111);");
-
-
-    ui->ipEdit->setStyleSheet("border: 2px solid #00ff00; border-radius: 5px; padding: 5px; background-color: #333333; color: white;");
-    ui->portEdit->setStyleSheet("border: 2px solid #00ff00; border-radius: 5px; padding: 5px; background-color: #333333; color: white;");
-
-
 }
+
 
 void Dialog::connectToServer()
 {
