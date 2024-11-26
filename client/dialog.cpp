@@ -2,6 +2,8 @@
 #include "ui_dialog.h"
 #include "graphicsdialog.h"
 #include "defs.h"
+#include <QGraphicsDropShadowEffect>
+#include <QFontDatabase>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -9,8 +11,110 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // Set up carbon fiber texture or gradient background
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/greenb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+    this->setPalette(palette);
+
+    // Load Orbitron font from the resource file
+       int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
+       if (fontId != -1) {
+           QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+           QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+
+           // Apply to the title label
+           ui->label->setFont(orbitronFont);
+           ui->label->setStyleSheet(R"(
+               QLabel {
+                   color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #007FFF, stop:1 #00FF80);
+                   text-align: center;
+               }
+           )");
+       } else {
+           qDebug() << "Failed to load Orbitron font!";
+       }
+
+    // Styling for the text browser (retro terminal look)
+    ui->textBrowser->setStyleSheet(R"(
+        QTextBrowser {
+            background-color: #000000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            font-family: "Courier New";
+            font-size: 12px;
+        }
+    )");
+
+    // Styling for IP and Port input fields
+    QString inputFieldStyle = R"(
+        QLineEdit {
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #333333;
+            color: white;
+        }
+        QLineEdit:focus {
+            border-color: #00ffff;
+            box-shadow: 0px 0px 10px #00ffff;
+        }
+    )";
+    ui->ipEdit->setStyleSheet(inputFieldStyle);
+    ui->portEdit->setStyleSheet(inputFieldStyle);
+
+    // Styling for the connect button
+    ui->connectButton->setStyleSheet(R"(
+        QPushButton {
+            background-color: #222222;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font: bold 14px;
+        }
+        QPushButton:hover {
+            background-color: #00ffff;
+            color: #000000;
+        }
+    )");
+
+    // Set up button styles for color selection
+    QString buttonStyle = R"(
+        QPushButton {
+            border: 2px solid white;
+            border-radius: 10px;
+            font: bold 12px;
+        }
+        QPushButton:hover {
+            background-color: %1;
+            color: #000000;
+        }
+    )";
+    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
+    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
+    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
+    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
+
+    // Apply shadow effect to the title label
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(15);
+    shadow->setOffset(4, 4);
+    shadow->setColor(Qt::black);
+    ui->label->setGraphicsEffect(shadow);
+
+    // Shadow effects for buttons
+    auto addShadowEffect = [](QWidget *widget) {
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(widget);
+        shadow->setBlurRadius(15);
+        shadow->setOffset(4, 4);
+        shadow->setColor(Qt::black);
+        widget->setGraphicsEffect(shadow);
+    };
+    addShadowEffect(ui->connectButton);
+    addShadowEffect(ui->sendButton);
+
+    // Connect signals for functionality
     setLocalIpAddress();
-    ui->portEdit->setText(QString::number(DEFAULT_PORT));  // default port set manually
+    ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
 
     ui->textBrowser->append("Server should send a welcome message and clear the inputs on successful connection to active game server.");
 
@@ -24,6 +128,7 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 }
+
 
 void Dialog::connectToServer()
 {
@@ -74,7 +179,7 @@ void Dialog::disconnectFromServer()
 }
 
 void Dialog::leaveGame()
-{ 
+{
     QJsonObject disconnectMessage;
 
     disconnectMessage["type"] = "LEAVE";
