@@ -13,7 +13,7 @@ Dialog::Dialog(QWidget *parent) :
 
     // Set up carbon fiber texture or gradient background
     QPalette palette = this->palette();
-    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/carbon.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/greenb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
     this->setPalette(palette);
 
     // Load Orbitron font from the resource file
@@ -55,7 +55,8 @@ Dialog::Dialog(QWidget *parent) :
             color: white;
         }
         QLineEdit:focus {
-            border-color: #ff4500;
+            border-color: #00ffff;
+            box-shadow: 0px 0px 10px #00ffff;
         }
     )";
     ui->ipEdit->setStyleSheet(inputFieldStyle);
