@@ -216,7 +216,7 @@ void GraphicsDialog::checkCollisions()
     qreal y = currentPos.y();
     if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
         if (!activePlayer->onLog) {
-            handlePlayerDeath();
+            handleWaterDeath();
         }
     }
 
@@ -251,6 +251,27 @@ void GraphicsDialog::handlePlayerDeath()
     }
 }
 
+void GraphicsDialog::handleWaterDeath()
+{
+    if (numLives > 0) {
+        numLives--;
+        removeHeart();
+        activePlayer->resetPlayerPos();
+    }
+
+    // check if game over after removing the heart
+    if (numLives == 0 && hearts.isEmpty())
+    {
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
+        activePlayer->resetPlayerPos();
+        activeGameState=false;
+//        scene->removeItem(activePlayer);
+        sendScoreToServer();
+        qDebug() << "Game Over!";
+        showWaterDeathScreen();
+    }
+}
+
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
@@ -274,7 +295,7 @@ void GraphicsDialog::checkRoundOver()
     if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
         activeGameState = false;    // lock player movement
-        showEndScreen();            // show end screen
+        //showEndScreen();            // show end screen
         roundOver = true;           // round has ended
     }
 }
@@ -399,11 +420,44 @@ void GraphicsDialog::showEndScreen()
     scene->addItem(overlay);
 
     // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!");
-    endText->setDefaultTextColor(Qt::white);
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
+    //endText->setDefaultTextColor(Qt::white);
     endText->setFont(QFont("Georgia", 36, QFont::Bold));
     endText->setDefaultTextColor(Qt::red);
     endText->setPos(-150, 0);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
+}
+
+void GraphicsDialog::showWaterDeathScreen()
+{
+    QString OvIm;
+
+    OvIm = ":/images/WaterDeath.png";
+    QPixmap ima(OvIm);
+
+    ima = ima.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(ima);
+    backgroundItem->setPos( -120, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
+    endText->setDefaultTextColor(Qt::blue);
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setPos(-150, 20);  // Adjust position as necessary
     endText->setZValue(11);  // Ensure text is above the overlay
     scene->addItem(endText);
 
