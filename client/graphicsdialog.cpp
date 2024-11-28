@@ -499,7 +499,7 @@ void GraphicsDialog::ReachGoalScreen()
 
     // Add a text label (you can customize the message as needed)
     QGraphicsTextItem *endText = new QGraphicsTextItem("Welcome To The Family!!");
-    endText->setDefaultTextColor(Qt::blue);
+    endText->setDefaultTextColor(Qt::magenta);
     endText->setFont(QFont("Georgia", 30, QFont::Bold));
     endText->setPos(-320, 20);  // Adjust position as necessary
     endText->setZValue(11);  // Ensure text is above the overlay
