@@ -1,6 +1,8 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "defs.h"
+#include <QFontDatabase>
+#include <QGraphicsDropShadowEffect>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -21,6 +23,8 @@ Dialog::Dialog(QWidget *parent) :
         qDebug () << query.lastError() .text ();
 
     TestDatabase();
+
+
 
 /*
    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
@@ -83,6 +87,108 @@ Dialog::Dialog(QWidget *parent) :
     {
         availableIds.append(i);
     }
+
+    //all my styling crap, css is so dumb and its not even css
+    // Set up carbon fiber texture, making it red and black
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/redb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+    this->setPalette(palette);
+
+        // Load Orbitron font from the resource file
+    int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
+            if (fontId != -1) {
+                QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+                QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+
+                // Apply to the title label
+                ui->label->setFont(orbitronFont);
+                ui->label->setStyleSheet(R"(
+                    QLabel {
+                        color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #FF4500, stop:1 #FF6347);
+                        text-align: center;
+                    }
+                )");
+            } else {
+                qDebug() << "Failed to load Orbitron font!";
+            }
+
+       // making the text browser look cool
+       ui->textBrowser->setStyleSheet(R"(
+                 QTextBrowser {
+                    background-color: #000000;
+                    color: #FF4500;
+                    border: 2px solid #FF4500;
+                    font-family: "Courier New";
+                    font-size: 12px;
+                  }
+            )");
+
+       // Styling for IP and Port input fields
+       QString inputFieldStyle = R"(
+            QLineEdit {
+                   border: 2px solid #FF4500;
+                   border-radius: 5px;
+                   padding: 5px;
+                   background-color: #333333;
+                   color: white;
+               }
+             QLineEdit:focus {
+                   border-color: #00ffff;
+                   box-shadow: 0px 0px 10px #FF6347;
+               }
+           )";
+        ui->ipEdit->setStyleSheet(inputFieldStyle);
+        ui->portEdit->setStyleSheet(inputFieldStyle);
+
+        // Styling for the configure button
+            ui->configureButton->setStyleSheet(R"(
+                QPushButton {
+                    background-color: #222222;
+                    color: white;
+                    border: 2px solid #00ffff;
+                    border-radius: 10px;
+                    font: bold 14px;
+                }
+                QPushButton:hover {
+                    background-color: #00ffff;
+                    color: #000000;
+                }
+            )");
+
+            // Styling for the start button
+            ui->startButton->setStyleSheet(R"(
+                QPushButton {
+                    background-color: #222222;
+                    color: white;
+                    border: 2px solid #00ffff;
+                    border-radius: 10px;
+                    font: bold 14px;
+                }
+                QPushButton:hover {
+                    background-color: #00ffff
+                    color: #000000;
+                }
+            )");
+
+            // Apply shadow effect to the title label
+            QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+            shadow->setBlurRadius(15);
+            shadow->setOffset(4, 4);
+            shadow->setColor(Qt::black);
+            ui->label->setGraphicsEffect(shadow);
+
+            // Shadow effects for buttons
+               auto addShadowEffect = [](QWidget *widget) {
+                   QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(widget);
+                   shadow->setBlurRadius(15);
+                   shadow->setOffset(4, 4);
+                   shadow->setColor(Qt::black);
+                   widget->setGraphicsEffect(shadow);
+               };
+               addShadowEffect(ui->configureButton);
+               addShadowEffect(ui->startButton);
+
+
 }
 
 void Dialog::TestDatabase() {
