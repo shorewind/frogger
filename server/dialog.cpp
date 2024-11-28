@@ -1,6 +1,7 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "defs.h"
+#include <QFontDatabase>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -87,10 +88,30 @@ Dialog::Dialog(QWidget *parent) :
     }
 
     //all my styling crap, css is so dumb and its not even css
-    // Set up carbon fiber texture or gradient background
-        QPalette palette = this->palette();
-        palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/redb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
-        this->setPalette(palette);
+    // Set up carbon fiber texture, making it red and black
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/redb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+    this->setPalette(palette);
+
+        // Load Orbitron font from the resource file
+    int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
+            if (fontId != -1) {
+                QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+                QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+
+                // Apply to the title label
+                ui->label->setFont(orbitronFont);
+                ui->label->setStyleSheet(R"(
+                    QLabel {
+                        color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #FF4500, stop:1 #FF6347);
+                        text-align: center;
+                    }
+                )");
+            } else {
+                qDebug() << "Failed to load Orbitron font!";
+            }
+
+
 
 }
 
