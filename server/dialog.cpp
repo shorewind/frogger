@@ -22,6 +22,8 @@ Dialog::Dialog(QWidget *parent) :
 
     TestDatabase();
 
+
+
 /*
    query.prepare ("INSERT INTO HighScore (id, playerName, score) "
             "VALUES (:id, :playerName, :score)");  //or newID newPlayerName  or newScore
@@ -83,6 +85,13 @@ Dialog::Dialog(QWidget *parent) :
     {
         availableIds.append(i);
     }
+
+    //all my styling crap, css is so dumb and its not even css
+    // Set up carbon fiber texture or gradient background
+        QPalette palette = this->palette();
+        palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/redb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+        this->setPalette(palette);
+
 }
 
 void Dialog::TestDatabase() {
