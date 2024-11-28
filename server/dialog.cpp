@@ -111,7 +111,16 @@ Dialog::Dialog(QWidget *parent) :
                 qDebug() << "Failed to load Orbitron font!";
             }
 
-
+       // making the text browser look cool
+       ui->textBrowser->setStyleSheet(R"(
+                 QTextBrowser {
+                    background-color: #000000;
+                    color: #FF4500;
+                    border: 2px solid #FF4500;
+                    font-family: "Courier New";
+                    font-size: 12px;
+                  }
+            )");
 
 }
 
