@@ -175,6 +175,8 @@ void GraphicsDialog::removeHeart()
 
 void GraphicsDialog::checkCollisions()
 {
+
+    int counter = 0;
     // Store the current position of the player before movement
     QPointF currentPos = activePlayer->pos();
 
@@ -225,9 +227,14 @@ void GraphicsDialog::checkCollisions()
         activePlayer->finished = true;
         qDebug() << "Player Finished";
         activeGameState = false;
+        ReachGoalScreen();
     }
     // Check if the round should end
     checkRoundOver();
+    if(activePlayer->finished){
+         ReachGoalScreen();
+
+    }
 }
 
 void GraphicsDialog::handlePlayerDeath()
@@ -278,6 +285,7 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::checkRoundOver()
 {
+    int count = 0;
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
@@ -290,7 +298,11 @@ void GraphicsDialog::checkRoundOver()
             done = false;
             break;  // only need one to throw false so exit early
         }
+
+
     }
+
+
 
     if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
@@ -421,7 +433,6 @@ void GraphicsDialog::showEndScreen()
 
     // Add a text label (you can customize the message as needed)
     QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
-    //endText->setDefaultTextColor(Qt::white);
     endText->setFont(QFont("Georgia", 36, QFont::Bold));
     endText->setDefaultTextColor(Qt::red);
     endText->setPos(-150, 0);  // Adjust position as necessary
@@ -458,6 +469,39 @@ void GraphicsDialog::showWaterDeathScreen()
     endText->setDefaultTextColor(Qt::blue);
     endText->setFont(QFont("Georgia", 36, QFont::Bold));
     endText->setPos(-150, 20);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
+}
+
+void GraphicsDialog::ReachGoalScreen()
+{
+    QString OveIm;
+
+    OveIm = ":/images/ReachGoal.png";
+    QPixmap imag(OveIm);
+
+    imag = imag.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(imag);
+    backgroundItem->setPos( -135, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("Welcome To The Family!!");
+    endText->setDefaultTextColor(Qt::blue);
+    endText->setFont(QFont("Georgia", 30, QFont::Bold));
+    endText->setPos(-320, 20);  // Adjust position as necessary
     endText->setZValue(11);  // Ensure text is above the overlay
     scene->addItem(endText);
 

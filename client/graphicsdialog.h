@@ -67,7 +67,7 @@ public slots:
     void sendObstaclePositions();
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
-    //void ReachGoalScreen();
+    void ReachGoalScreen();
     void handleWaterDeath();
     void showWaterDeathScreen();
     void showEndScreen();
