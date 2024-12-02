@@ -2,7 +2,7 @@
 #include "ui_dialog.h"
 #include "defs.h"
 #include <QFontDatabase>
-#include <QGraphicsDropShadowEffect>
+
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -134,7 +134,6 @@ Dialog::Dialog(QWidget *parent) :
                }
              QLineEdit:focus {
                    border-color: #00ffff;
-                   box-shadow: 0px 0px 10px #FF6347;
                }
            )";
         ui->ipEdit->setStyleSheet(inputFieldStyle);
@@ -165,29 +164,10 @@ Dialog::Dialog(QWidget *parent) :
                     font: bold 14px;
                 }
                 QPushButton:hover {
-                    background-color: #00ffff
+                    background-color: #00ffff;
                     color: #000000;
                 }
             )");
-
-            // Apply shadow effect to the title label
-            QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-            shadow->setBlurRadius(15);
-            shadow->setOffset(4, 4);
-            shadow->setColor(Qt::black);
-            ui->label->setGraphicsEffect(shadow);
-
-            // Shadow effects for buttons
-               auto addShadowEffect = [](QWidget *widget) {
-                   QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(widget);
-                   shadow->setBlurRadius(15);
-                   shadow->setOffset(4, 4);
-                   shadow->setColor(Qt::black);
-                   widget->setGraphicsEffect(shadow);
-               };
-               addShadowEffect(ui->configureButton);
-               addShadowEffect(ui->startButton);
-
 
 }
 
