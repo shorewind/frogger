@@ -85,8 +85,14 @@
    </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="gameTab">
       <attribute name="title">
@@ -211,6 +217,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="leaderboardTab">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <attribute name="title">
        <string>Leaderboard</string>
       </attribute>
@@ -221,6 +230,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="historyTab">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <attribute name="title">
        <string>History</string>
       </attribute>

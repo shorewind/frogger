@@ -129,7 +129,7 @@ Dialog::Dialog(QWidget *parent) :
 void Dialog::setupDatabase()
 {
     db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
-    db.setDatabaseName("../froggy_game_data.db");
+    db.setDatabaseName("froggy_game_data.db");
     db.open();
     QSqlQuery query;
 
@@ -386,6 +386,7 @@ void Dialog::rx()
             tx(broadcastMessage);
 
             broadcastActiveClients();
+            sendGameData();
         }
         else if (type == "LEAVE")
         {
@@ -524,6 +525,7 @@ void Dialog::rx()
             broadcastActiveClients();
 
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
+            sendGameData();
         }
         else if (type == "LEVEL_OVER")
         {
@@ -533,6 +535,7 @@ void Dialog::rx()
             levelOverMsg["message"] = "Level Over.";
             tx(levelOverMsg);
             logGame();
+            sendGameData();
         }
     }
 }
@@ -593,6 +596,47 @@ void Dialog::logGame()
     }
 }
 
+void Dialog::sendGameData()
+{
+    QSqlQuery query;
+
+    query.exec("SELECT * FROM games ORDER BY timestamp DESC");
+    QJsonArray gamesArray;
+
+    while (query.next())
+    {
+        QJsonObject gameObject;
+        gameObject["id"] = query.value("id").toInt();
+        gameObject["timestamp"] = query.value("timestamp").toString();
+        gameObject["winner_username"] = query.value("winner_username").toString();
+        gameObject["high_score"] = query.value("high_score").toInt();
+        gameObject["max_level"] = query.value("max_level").toInt();
+
+        gamesArray.append(gameObject);
+    }
+
+    query.exec("SELECT * FROM sessions ORDER BY score DESC");
+    QJsonArray sessionsArray;
+
+    while (query.next())
+    {
+        QJsonObject sessionObject;
+        sessionObject["id"] = query.value("id").toInt();
+        sessionObject["game_id"] = query.value("game_id").toInt();
+        sessionObject["player_username"] = query.value("player_username").toString();
+        sessionObject["score"] = query.value("score").toInt();
+        sessionObject["levels_played"] = query.value("levels_played").toInt();
+
+        sessionsArray.append(sessionObject);
+    }
+
+    QJsonObject finalData;
+    finalData["type"] = "GAMEDATA";
+    finalData["games"] = gamesArray;
+    finalData["sessions"] = sessionsArray;
+
+    tx(finalData);
+}
 
 void Dialog::updatePlayerPositions(QJsonArray playersArray)
 {

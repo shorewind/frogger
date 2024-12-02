@@ -13,11 +13,8 @@
 #include <QJsonDocument>
 #include <QNetworkInterface>
 #include <QJsonArray>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QTableView>
-#include <QSqlError>
-#include <QSqlTableModel>
+#include <QStandardItemModel>
 
 class GraphicsDialog;
 
@@ -57,13 +54,11 @@ private:
     QMap<int, QString> clientColors;
     QJsonArray clientDataArray;
     QJsonObject clientData;
-    QSqlDatabase db;
-    QSqlQueryModel *qmLeaderboard, *qmHistory;
+    QStandardItemModel *qmLeaderboard, *qmHistory, *qmUserHistory;
 
-    void showLeaderboard();
     void showAllSessions();
     void showSessionsForUser();
-    void onTabClicked();
+    void setGameData(QJsonObject& gameDataObj);
 
 private slots:
     void connectToServer();

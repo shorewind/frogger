@@ -51,6 +51,7 @@ private:
     int currentGameId;
     int currentSessionId;
     void logGame();
+    void sendGameData();
 
 private slots:
     void rx();  // receive

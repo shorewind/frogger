@@ -128,104 +128,115 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 
-    connect(ui->allPlayersButton, &QPushButton::clicked, this, &Dialog::showAllSessions);
-    connect(ui->currentUserButton, &QPushButton::clicked, this, &Dialog::showSessionsForUser);
+    qmHistory = new QStandardItemModel();
+    qmLeaderboard = new QStandardItemModel();
+    qmUserHistory = new QStandardItemModel();
 
-    connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &Dialog::onTabClicked);
-
-    db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
-    db.setDatabaseName("../froggy_game_data.db");
-    if (!db.open()) {
-        qDebug() << "Error opening database: " << db.lastError().text();
-    } else {
-        showAllSessions();
-        showLeaderboard();
-    }
+    qmHistory->setHorizontalHeaderLabels({"Timestamp", "Winner", "High Score", "Max Level"});
+    qmLeaderboard->setHorizontalHeaderLabels({"Username", "Score", "Levels Played", "Game ID"});
+    qmUserHistory->setHorizontalHeaderLabels({"Timestamp", "Score", "Levels Played", "Is Winner", "Game ID"});
+    connect(ui->allPlayersButton, &QRadioButton::clicked, this, &Dialog::showAllSessions);
+    connect(ui->currentUserButton, &QRadioButton::clicked, this, &Dialog::showSessionsForUser);
 }
 
-void Dialog::onTabClicked()
+void Dialog::setGameData(QJsonObject &data)
 {
-    if (ui->allPlayersButton->isChecked())
+    qDebug() << "setting game data";
+    QJsonArray gamesArray = data["games"].toArray();
+    QJsonArray sessionsArray = data["sessions"].toArray();
+
+    qmHistory->removeRows(0, qmHistory->rowCount());
+
+    // populate game history
+    for (const QJsonValue &value : gamesArray)
     {
-        qmHistory->setQuery("SELECT timestamp, winner_username, high_score, max_level FROM games ORDER BY timestamp DESC");
+        QJsonObject gameObject = value.toObject();
+        qDebug() << gameObject;
+        QString timestamp = gameObject["timestamp"].toString();
+        QString winnerUsername = gameObject["winner_username"].toString();
+        int highScore = gameObject["high_score"].toInt();
+        int maxLevel = gameObject["max_level"].toInt();
+
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(timestamp));
+        row.append(new QStandardItem(winnerUsername));
+        row.append(new QStandardItem(QString::number(highScore)));
+        row.append(new QStandardItem(QString::number(maxLevel)));
+        qmHistory->appendRow(row);
     }
-    else if (ui->currentUserButton->isChecked() && !playerUsername.isEmpty())
+
+    qmLeaderboard->removeRows(0, qmLeaderboard->rowCount());
+
+    // populate leaderboard
+    int leaderboardCount = 0;
+    for (const QJsonValue &value : sessionsArray)
     {
-        QString filteredQuery = QString("SELECT "
-                                        "g.timestamp, "
-                                        "s.score, "
-                                        "s.levels_played, "
-                                        "CASE "
-                                        "    WHEN g.winner_username = s.player_username THEN 'true' "
-                                        "    ELSE 'false' "
-                                        "END AS is_winner, "
-                                        "g.id AS game_id "
-                                        "FROM games g "
-                                        "JOIN sessions s ON g.id = s.game_id "
-                                        "WHERE s.player_username = '%1' "
-                                        "ORDER BY g.timestamp DESC").arg(playerUsername);
-        qmHistory->setQuery(filteredQuery);
+        if (leaderboardCount >= 10) break;
+        QJsonObject sessionObject = value.toObject();
+        QString playerUsername = sessionObject["player_username"].toString();
+        int score = sessionObject["score"].toInt();
+        int levelsPlayed = sessionObject["levels_played"].toInt();
+        int gameId = sessionObject["game_id"].toInt();
+
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(playerUsername));
+        row.append(new QStandardItem(QString::number(score)));
+        row.append(new QStandardItem(QString::number(levelsPlayed)));
+        row.append(new QStandardItem(QString::number(gameId)));
+
+        qmLeaderboard->appendRow(row);
+        leaderboardCount++;
     }
-    qmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
-    ui->leaderboardTableView->resizeColumnsToContents();
+
+    qmUserHistory->removeRows(0, qmUserHistory->rowCount());
+
+    // populate user history
+    for (const QJsonValue &value : sessionsArray)
+    {
+        QJsonObject sessionObject = value.toObject();
+        QString sessionPlayerUsername = sessionObject["player_username"].toString();
+
+        if (sessionPlayerUsername == playerUsername)
+        {
+            QString timestamp = sessionObject["timestamp"].toString();
+            int score = sessionObject["score"].toInt();
+            int levelsPlayed = sessionObject["levels_played"].toInt();
+            bool isWinner = sessionObject["is_winner"].toBool();
+            int gameId = sessionObject["game_id"].toInt();
+
+            QList<QStandardItem *> row;
+            row.append(new QStandardItem(timestamp));
+            row.append(new QStandardItem(QString::number(score)));
+            row.append(new QStandardItem(QString::number(levelsPlayed)));
+            row.append(new QStandardItem(isWinner ? "true" : "false"));
+            row.append(new QStandardItem(QString::number(gameId)));
+
+            qmUserHistory->appendRow(row);
+        }
+    }
+
+    if (ui->currentUserButton->isChecked() && !playerUsername.isEmpty())
+    {
+        ui->historyTableView->setModel(qmUserHistory);
+    }
+    else
+    {
+        ui->historyTableView->setModel(qmHistory);
+    }
     ui->historyTableView->resizeColumnsToContents();
-}
-
-void Dialog::showLeaderboard()
-{
-    qmLeaderboard = new QSqlQueryModel;
-    qmLeaderboard->setQuery("SELECT player_username, score, levels_played, game_id FROM sessions ORDER BY score DESC LIMIT 10");
-
-    if (qmLeaderboard->lastError().isValid())
-    {
-        qDebug() << "Error in query: " << qmLeaderboard->lastError().text();
-    }
     ui->leaderboardTableView->setModel(qmLeaderboard);
     ui->leaderboardTableView->resizeColumnsToContents();
-    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::showAllSessions()
 {
-    qmHistory = new QSqlQueryModel;
-    qmHistory->setQuery("SELECT timestamp, winner_username, high_score, max_level FROM games ORDER BY timestamp DESC");
-
-    if (qmHistory->lastError().isValid())
-    {
-        qDebug() << "Error in query: " << qmHistory->lastError().text();
-    }
-
     ui->historyTableView->setModel(qmHistory);
-    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::showSessionsForUser()
 {
-    if (!playerUsername.isEmpty())
-    {
-        QString filteredQuery = QString("SELECT "
-                                        "g.timestamp, "
-                                        "s.score, "
-                                        "s.levels_played, "
-                                        "CASE "
-                                        "    WHEN g.winner_username = s.player_username THEN 'true' "
-                                        "    ELSE 'false' "
-                                        "END AS is_winner, "
-                                        "g.id AS game_id "
-                                        "FROM games g "
-                                        "JOIN sessions s ON g.id = s.game_id "
-                                        "WHERE s.player_username = '%1' "
-                                        "ORDER BY g.timestamp DESC").arg(playerUsername);
-        qmHistory->setQuery(filteredQuery);
-
-        if (qmHistory->lastError().isValid())
-        {
-            qDebug() << "Error in query: " << qmHistory->lastError().text();
-        }
-        ui->historyTableView->resizeColumnsToContents();
-    }
+    ui->historyTableView->setModel(qmUserHistory);
 }
-
 
 void Dialog::connectToServer()
 {
@@ -258,17 +269,11 @@ void Dialog::connectToServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    if (db.isOpen())
-    {
-        db.close();
-    }
-
     if (validConnection)
     {
         leaveGame();
         disconnectFromServer();
     }
-
     event->accept();
 }
 
@@ -548,6 +553,10 @@ void Dialog::processMsg()
                 graphicsDialog->handleLevelOver();
             }
             ui->textBrowser->append(message);
+        }
+        else if (type == "GAMEDATA")
+        {
+            setGameData(jsonObj);
         }
         else
         {

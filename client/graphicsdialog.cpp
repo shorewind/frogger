@@ -10,7 +10,6 @@
 // 174 correct for hole 2
 // 40 fro left side
 // a box is 38
-
 // correct vertical start 55
 // bottom of line is 38
 //static float position_width = 174;
@@ -285,36 +284,12 @@ void GraphicsDialog::handleWaterDeath()
     }
 }
 
-void GraphicsDialog::handleWaterDeath()
-{
-    if (numLives > 0) {
-        numLives--;
-        removeHeart();
-        activePlayer->resetPlayerPos();
-    }
-
-    // check if game over after removing the heart
-    if (numLives == 0 && hearts.isEmpty())
-    {
-        activePlayer->dead = true;  // player done died bruh :( RIP bro...
-        activePlayer->resetPlayerPos();
-        activeGameState=false;
-//        scene->removeItem(activePlayer);
-        sendScoreToServer();
-//        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("YOU DIED");
-    }
-}
-
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
 
 void GraphicsDialog::checkRoundOver()
 {
-    int count = 0;
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
@@ -329,11 +304,7 @@ void GraphicsDialog::checkRoundOver()
             done = false;
             break;  // only need one to throw false so exit early
         }
-
-
     }
-
-
 
     if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
