@@ -34,6 +34,9 @@ Dialog::Dialog(QWidget *parent) :
            qDebug() << "Failed to load Orbitron font!";
        }
 
+    ui->groupBox->setStyleSheet("QGroupBox { color: white; }");
+
+
     // Styling for the text browser (retro terminal look)
     ui->textBrowser->setStyleSheet(R"(
         QTextBrowser {
