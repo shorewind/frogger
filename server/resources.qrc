@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/redb.jpg</file>
+        <file>images/Orbitron-VariableFont_wght.ttf</file>
+    </qresource>
+</RCC>

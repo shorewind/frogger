@@ -118,18 +118,17 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     // initialize round flag
     roundOver = false;
 
-
 }
 
 void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
 {
     QGraphicsRectItem* boundingLine = new QGraphicsRectItem(x, y, width, height);
-    boundingLine->setBrush(QBrush(Qt::red)); // Make it visible (red color)
-    boundingLine->setPen(Qt::NoPen);        // Remove the border for better aesthetics
-    boundingLine->setZValue(1);             // Ensure it appears above the background
-    boundingLine->setData(0, "boundingLine");
+    boundingLine->setBrush(Qt::transparent); // Make the fill transparent
+    boundingLine->setPen(Qt::NoPen);         // No border
+    boundingLine->setZValue(1);              // Ensure it appears above the background
+    boundingLine->setData(0, "boundingLine"); // Store some custom data (here, we label it as "boundingLine") to identify the item later
     scene->addItem(boundingLine);
-    boundingLines.append(boundingLine);     // Add to the list of bounding lines
+    boundingLines.append(boundingLine);      // Add to your list
 }
 
 
@@ -176,6 +175,8 @@ void GraphicsDialog::removeHeart()
 
 void GraphicsDialog::checkCollisions()
 {
+
+    int counter = 0;
     // Store the current position of the player before movement
     QPointF currentPos = activePlayer->pos();
 
@@ -260,12 +261,60 @@ void GraphicsDialog::handlePlayerDeath()
     }
 }
 
+void GraphicsDialog::handleWaterDeath()
+{
+    if (numLives > 0) {
+        numLives--;
+        removeHeart();
+        activePlayer->resetPlayerPos();
+    }
+
+    // check if game over after removing the heart
+    if (numLives == 0 && hearts.isEmpty())
+    {
+        qDebug() << "you died";
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
+        activePlayer->resetPlayerPos();
+        activeGameState=false;
+//        scene->removeItem(activePlayer);
+        sendScoreToServer();
+//        checkRoundOver();
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
+    }
+}
+
+void GraphicsDialog::handleWaterDeath()
+{
+    if (numLives > 0) {
+        numLives--;
+        removeHeart();
+        activePlayer->resetPlayerPos();
+    }
+
+    // check if game over after removing the heart
+    if (numLives == 0 && hearts.isEmpty())
+    {
+        activePlayer->dead = true;  // player done died bruh :( RIP bro...
+        activePlayer->resetPlayerPos();
+        activeGameState=false;
+//        scene->removeItem(activePlayer);
+        sendScoreToServer();
+//        checkRoundOver();
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
+    }
+}
+
 GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
 
 void GraphicsDialog::checkRoundOver()
 {
+    int count = 0;
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
@@ -280,7 +329,11 @@ void GraphicsDialog::checkRoundOver()
             done = false;
             break;  // only need one to throw false so exit early
         }
+
+
     }
+
+
 
     if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
     {
@@ -386,6 +439,72 @@ void GraphicsDialog::showEndScreen()
     scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
 
     overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+}
+
+void GraphicsDialog::showWaterDeathScreen()
+{
+    QString OvIm;
+
+    OvIm = ":/images/WaterDeath.png";
+    QPixmap ima(OvIm);
+
+    ima = ima.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(ima);
+    backgroundItem->setPos( -120, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
+    endText->setDefaultTextColor(Qt::blue);
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setPos(-150, 20);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
+}
+
+void GraphicsDialog::ReachGoalScreen()
+{
+    QString OveIm;
+
+    OveIm = ":/images/ReachGoal.png";
+    QPixmap imag(OveIm);
+
+    imag = imag.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(imag);
+    backgroundItem->setPos( -135, -120);  // Position the image at the center
+    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+
+
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
+    overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("Welcome To The Family!!");
+    endText->setDefaultTextColor(Qt::magenta);
+    endText->setFont(QFont("Georgia", 30, QFont::Bold));
+    endText->setPos(-320, 20);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
+
+    // Optionally, add a button or other interaction elements
 }
 
 void GraphicsDialog::sendScoreToServer()
