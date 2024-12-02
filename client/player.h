@@ -17,6 +17,7 @@ public:
     bool onLog;
     bool finished;
     bool dead;
+    bool inGame;
     QColor color;
     qreal x, y;
     int textWidth;

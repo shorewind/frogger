@@ -12,6 +12,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QNetworkInterface>
+#include <QJsonArray>
+#include <QTableView>
+#include <QStandardItemModel>
 
 class GraphicsDialog;
 
@@ -27,6 +30,7 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
     QString playerUsername;
+    bool isPlayerAlive(int clientId);
 
 public slots:
     void sendJson(QJsonObject data);
@@ -39,6 +43,7 @@ private:
     Ui::Dialog *ui;
 
     QUdpSocket* socket;
+    bool validConnection = false;
     GraphicsDialog *graphicsDialog = nullptr;
     int activeClientId;
     QString ip;
@@ -47,6 +52,13 @@ private:
     QString playerColor;
 //    QList<QString> usedColors;
     QMap<int, QString> clientColors;
+    QJsonArray clientDataArray;
+    QJsonObject clientData;
+    QStandardItemModel *qmLeaderboard, *qmHistory, *qmUserHistory;
+
+    void showAllSessions();
+    void showSessionsForUser();
+    void setGameData(QJsonObject& gameDataObj);
 
 private slots:
     void connectToServer();

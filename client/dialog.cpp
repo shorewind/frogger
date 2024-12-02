@@ -127,8 +127,116 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+
+    qmHistory = new QStandardItemModel();
+    qmLeaderboard = new QStandardItemModel();
+    qmUserHistory = new QStandardItemModel();
+
+    qmHistory->setHorizontalHeaderLabels({"Timestamp", "Winner", "High Score", "Max Level"});
+    qmLeaderboard->setHorizontalHeaderLabels({"Username", "Score", "Levels Played", "Game ID"});
+    qmUserHistory->setHorizontalHeaderLabels({"Timestamp", "Score", "Levels Played", "Is Winner", "Game ID"});
+    connect(ui->allPlayersButton, &QRadioButton::clicked, this, &Dialog::showAllSessions);
+    connect(ui->currentUserButton, &QRadioButton::clicked, this, &Dialog::showSessionsForUser);
 }
 
+void Dialog::setGameData(QJsonObject &data)
+{
+    qDebug() << "setting game data";
+    QJsonArray gamesArray = data["games"].toArray();
+    QJsonArray sessionsArray = data["sessions"].toArray();
+
+    qmHistory->removeRows(0, qmHistory->rowCount());
+
+    // populate game history
+    for (const QJsonValue &value : gamesArray)
+    {
+        QJsonObject gameObject = value.toObject();
+        qDebug() << gameObject;
+        QString timestamp = gameObject["timestamp"].toString();
+        QString winnerUsername = gameObject["winner_username"].toString();
+        int highScore = gameObject["high_score"].toInt();
+        int maxLevel = gameObject["max_level"].toInt();
+
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(timestamp));
+        row.append(new QStandardItem(winnerUsername));
+        row.append(new QStandardItem(QString::number(highScore)));
+        row.append(new QStandardItem(QString::number(maxLevel)));
+        qmHistory->appendRow(row);
+    }
+
+    qmLeaderboard->removeRows(0, qmLeaderboard->rowCount());
+
+    // populate leaderboard
+    int leaderboardCount = 0;
+    for (const QJsonValue &value : sessionsArray)
+    {
+        if (leaderboardCount >= 10) break;
+        QJsonObject sessionObject = value.toObject();
+        QString playerUsername = sessionObject["player_username"].toString();
+        int score = sessionObject["score"].toInt();
+        int levelsPlayed = sessionObject["levels_played"].toInt();
+        int gameId = sessionObject["game_id"].toInt();
+
+        QList<QStandardItem *> row;
+        row.append(new QStandardItem(playerUsername));
+        row.append(new QStandardItem(QString::number(score)));
+        row.append(new QStandardItem(QString::number(levelsPlayed)));
+        row.append(new QStandardItem(QString::number(gameId)));
+
+        qmLeaderboard->appendRow(row);
+        leaderboardCount++;
+    }
+
+    qmUserHistory->removeRows(0, qmUserHistory->rowCount());
+
+    // populate user history
+    for (const QJsonValue &value : sessionsArray)
+    {
+        QJsonObject sessionObject = value.toObject();
+        QString sessionPlayerUsername = sessionObject["player_username"].toString();
+
+        if (sessionPlayerUsername == playerUsername)
+        {
+            QString timestamp = sessionObject["timestamp"].toString();
+            int score = sessionObject["score"].toInt();
+            int levelsPlayed = sessionObject["levels_played"].toInt();
+            bool isWinner = sessionObject["is_winner"].toBool();
+            int gameId = sessionObject["game_id"].toInt();
+
+            QList<QStandardItem *> row;
+            row.append(new QStandardItem(timestamp));
+            row.append(new QStandardItem(QString::number(score)));
+            row.append(new QStandardItem(QString::number(levelsPlayed)));
+            row.append(new QStandardItem(isWinner ? "true" : "false"));
+            row.append(new QStandardItem(QString::number(gameId)));
+
+            qmUserHistory->appendRow(row);
+        }
+    }
+
+    if (ui->currentUserButton->isChecked() && !playerUsername.isEmpty())
+    {
+        ui->historyTableView->setModel(qmUserHistory);
+    }
+    else
+    {
+        ui->historyTableView->setModel(qmHistory);
+    }
+    ui->historyTableView->resizeColumnsToContents();
+    ui->leaderboardTableView->setModel(qmLeaderboard);
+    ui->leaderboardTableView->resizeColumnsToContents();
+}
+
+void Dialog::showAllSessions()
+{
+    ui->historyTableView->setModel(qmHistory);
+}
+
+void Dialog::showSessionsForUser()
+{
+    ui->historyTableView->setModel(qmUserHistory);
+}
 
 void Dialog::connectToServer()
 {
@@ -161,9 +269,11 @@ void Dialog::connectToServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    leaveGame();
-    disconnectFromServer();
-    close();
+    if (validConnection)
+    {
+        leaveGame();
+        disconnectFromServer();
+    }
     event->accept();
 }
 
@@ -247,6 +357,7 @@ void Dialog::processMsg()
 
         if (type == "WELCOME")
         {
+            validConnection = true;
             ui->textBrowser->setText("Connected to Server: " + ip + ":" + QString::number(port));
             ui->ipEdit->clear();
             ui->portEdit->clear();
@@ -263,6 +374,7 @@ void Dialog::processMsg()
             ui->blueButton->setStyleSheet("background-color: blue");
             ui->yellowButton->setStyleSheet("background-color: yellow");
             ui->redButton->setStyleSheet("background-color: red");
+            ui->currentUserButton->setEnabled(true);
         }
         else if (type == "START")
         {
@@ -293,7 +405,9 @@ void Dialog::processMsg()
         }
         else if (type == "DISCONNECT_ALL")
         {
+            validConnection = false;
             leaveGame();
+            ui->textBrowser->clear();
             ui->connectButton->setEnabled(true);
             ui->sendButton->setEnabled(false);
             ui->submitButton->setEnabled(false);
@@ -308,6 +422,7 @@ void Dialog::processMsg()
             ui->textBrowser->append(message);
             setLocalIpAddress();
             ui->portEdit->setText(QString::number(DEFAULT_PORT));
+            ui->currentUserButton->setEnabled(false);
         }
         else if (type == "REJECTION")
         {
@@ -319,9 +434,8 @@ void Dialog::processMsg()
         {
             // process the list of active client IDs received from the server
             QJsonArray clientIdsArray = jsonObj["clientIdsInGame"].toArray();
-            QJsonArray clientDataArray = jsonObj["clientData"].toArray();
+            clientDataArray = jsonObj["clientData"].toArray();
 
-            qDebug() << "DATA: " << clientDataArray;
             // set of current active client IDs received from the server
             QSet<int> newActiveClients;
 
@@ -334,7 +448,7 @@ void Dialog::processMsg()
 
             for (const QJsonValue &value : clientDataArray)
             {
-                QJsonObject clientData = value.toObject();
+                clientData = value.toObject();
                 int clientId = clientData["clientId"].toInt();
                 QString username = clientData["username"].toString();
                 QString colorString = clientData["color"].toString();
@@ -358,18 +472,22 @@ void Dialog::processMsg()
                     }
 
                     newActiveClients.insert(clientId);
-
-                    if (!activeClients.contains(clientId) && graphicsDialog)
+                    if (graphicsDialog)
                     {
-                        graphicsDialog->addPlayer(clientId, username, QColor(colorString));
+                        if (!activeClients.contains(clientId) && clientData["isAlive"].toBool())
+                        {
+                            graphicsDialog->addPlayer(clientId, username, QColor(colorString));
+                        }
+                        graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
                     }
                 }
 
             }
 
-           // enable/disable color buttons based on whether the color is taken
-           for (const QString &color : colorButtonMap.keys())
-           {
+            // enable/disable color buttons based on whether the color is taken
+            for (const QString &color : colorButtonMap.keys())
+            {
                bool colorTaken = false;
 
                for (int clientId : clientColors.keys())
@@ -391,15 +509,27 @@ void Dialog::processMsg()
                    colorButtonMap[color]->setEnabled(true);
                    colorButtonMap[color]->setStyleSheet("background-color: " + color);
                }
-           }
+            }
 
             // check for players that are no longer active
             for (int clientId : activeClients)
             {
-                if (!newActiveClients.contains(clientId) && graphicsDialog)
+                if (graphicsDialog)
                 {
-//                    qDebug() << "remove active player " << clientId;
-                    graphicsDialog->removePlayer(clientId);
+                    if (!newActiveClients.contains(clientId))
+                    {
+                        qDebug() << "removing player " << clientId;
+                        graphicsDialog->removePlayer(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
+                    }
+                    else if (!isPlayerAlive(clientId))
+                    {
+                        qDebug() << "removing dead player " << clientId;
+                        graphicsDialog->removePlayerFromScene(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        graphicsDialog->checkRoundOver();
+                    }
                 }
             }
 
@@ -416,19 +546,38 @@ void Dialog::processMsg()
                 graphicsDialog->updatePlayerPositions(playersArray);
             }
         }
-//        else if (type == "OBSTACLE_POSITION")
-//        {
-//            QJsonArray obstaclesArray = jsonObj["obstacles"].toArray();
-//            if (graphicsDialog)
-//            {
-////                graphicsDialog->updateObstaclePositions(obstaclesArray);
-//            }
-//        }
+        else if (type == "LEVEL_OVER")
+        {
+            if (graphicsDialog)
+            {
+                graphicsDialog->handleLevelOver();
+            }
+            ui->textBrowser->append(message);
+        }
+        else if (type == "GAMEDATA")
+        {
+            setGameData(jsonObj);
+        }
         else
         {
             ui->textBrowser->append(message);
         }
     }
+}
+
+bool Dialog::isPlayerAlive(int clientId)
+{
+    for (const QJsonValue &value : clientDataArray)
+    {
+        QJsonObject clientData = value.toObject();
+
+        if (clientData["clientId"].toInt() == clientId)
+        {
+            return clientData["isAlive"].toBool();
+        }
+    }
+
+    return false;
 }
 
 int Dialog::parseClientIdFromMsg(const QString &msg)
