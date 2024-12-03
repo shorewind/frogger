@@ -92,10 +92,12 @@ Dialog::Dialog(QWidget *parent) :
             color: #000000;
         }
     )";
-    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
-    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
-    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
-    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
+
+
+//    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
+//    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
+//    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
+//    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
 
     // Apply shadow effect to the title label
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
@@ -267,6 +269,8 @@ void Dialog::connectToServer()
         sendJson(connectMessage);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
+
+
     }
 }
 
