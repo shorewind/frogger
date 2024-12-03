@@ -46,12 +46,14 @@ private:
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
     bool activeGame;
+    bool roundOver = false;
     QSqlDatabase db;
     QSqlQuery query;
     int currentGameId;
     int currentSessionId;
     void logGame();
     void sendGameData();
+    void checkGameState();
 
 private slots:
     void rx();  // receive

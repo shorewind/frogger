@@ -228,7 +228,7 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
-        checkRoundOver();
+//        checkRoundOver();
         ReachGoalScreen();
         //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         //endText->setPlainText("LEVEL FINISHED");
@@ -252,7 +252,7 @@ void GraphicsDialog::handlePlayerDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-        checkRoundOver();
+//        checkRoundOver();
         showEndScreen();
         //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         // endText->setPlainText("YOU DIED");
@@ -276,7 +276,7 @@ void GraphicsDialog::handleWaterDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-        checkRoundOver();
+//        checkRoundOver();
         showWaterDeathScreen();
         //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         //endText->setPlainText("YOU DIED");
@@ -289,6 +289,34 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::checkRoundOver()
 {
+    bool allPlayersDead = true;
+
+    for (auto &player : clientPlayers.values())
+    {
+        if (!player->dead)  // if a player is not dead, set the flag to false and exit the loop
+        {
+            allPlayersDead = false;
+            break;   // exit early, no need to check the rest of the players
+        }
+    }
+
+    if (allPlayersDead && !roundOver)
+    {
+        qDebug() << "game over";
+        activeGameState = false;
+        roundOver = true;
+
+        QJsonObject levelMsg;
+        levelMsg["type"] = "GAME_OVER";
+
+        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+        if (parentDialog)
+        {
+            parentDialog->sendJson(levelMsg);
+        }
+        return;   // exit early if the game is over
+    }
+
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
@@ -513,7 +541,16 @@ void GraphicsDialog::handleLevelOver()
 {
     //showEndScreen();
     //endText->setPlainText("LEVEL OVER");
+    activeGameState = false;
     qDebug() << "Level Over";
+}
+
+void GraphicsDialog::handleGameOver()
+{
+    //showEndScreen();
+    //endText->setPlainText("Game OVER");
+    activeGameState = false;
+    qDebug() << "Game Over";
 }
 
 void GraphicsDialog::drawScoreDisplay()

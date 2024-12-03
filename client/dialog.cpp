@@ -482,7 +482,7 @@ void Dialog::processMsg()
                             graphicsDialog->addPlayer(clientId, username, QColor(colorString));
                         }
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                 }
 
@@ -524,14 +524,14 @@ void Dialog::processMsg()
                         qDebug() << "removing player " << clientId;
                         graphicsDialog->removePlayer(clientId);
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                     else if (!isPlayerAlive(clientId))
                     {
                         qDebug() << "removing dead player " << clientId;
                         graphicsDialog->removePlayerFromScene(clientId);
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                 }
             }
@@ -554,6 +554,14 @@ void Dialog::processMsg()
             if (graphicsDialog)
             {
                 graphicsDialog->handleLevelOver();
+            }
+            ui->textBrowser->append(message);
+        }
+        else if (type == "GAME_OVER")
+        {
+            if (graphicsDialog)
+            {
+                graphicsDialog->handleGameOver();
             }
             ui->textBrowser->append(message);
         }

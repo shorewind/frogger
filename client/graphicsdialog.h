@@ -26,6 +26,7 @@ public:
     ~GraphicsDialog();
     void setPlayerState(QJsonObject clientData);
     void handleLevelOver();
+    void handleGameOver();
     void checkRoundOver();
 
 protected:

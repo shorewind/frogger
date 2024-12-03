@@ -409,15 +409,16 @@ void Dialog::rx()
                 {
                     activeGame = false;
                     ui->startButton->setEnabled(true);
-                    ui->textBrowser->append("Game Over.");
+                    ui->textBrowser->append("Game Closed.");
 
-                    QJsonObject gameOverMessage;
-                    gameOverMessage["type"] = "GAME_OVER";
-                    gameOverMessage["message"] = "Game Over.";
-                    tx(gameOverMessage);
+                    QJsonObject gameClosedMessage;
+                    gameClosedMessage["type"] = "GAME_CLOSED";
+                    gameClosedMessage["message"] = "Game Closed.";
+                    tx(gameClosedMessage);
                 }
             }
             broadcastActiveClients();
+            checkGameState();
             return;
         }
         else if (type == "MESSAGE")
@@ -504,20 +505,77 @@ void Dialog::rx()
                 }
             }
             broadcastActiveClients();
-
+            checkGameState();
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
             sendGameData();
         }
-        else if (type == "LEVEL_OVER")
-        {
+//        else if (type == "LEVEL_OVER")
+//        {
 
-            QJsonObject levelOverMsg;
-            levelOverMsg["type"] = "LEVEL_OVER";
-            levelOverMsg["message"] = "Level Over.";
-            tx(levelOverMsg);
-            logGame();
-            sendGameData();
+//            QJsonObject levelOverMsg;
+//            levelOverMsg["type"] = "LEVEL_OVER";
+//            levelOverMsg["message"] = "Level Over.";
+//            tx(levelOverMsg);
+//            logGame();
+//            sendGameData();
+//        }
+    }
+}
+
+void Dialog::checkGameState()
+{
+    qDebug() << "checking game state";
+    bool allPlayersDead = true;
+
+    for (auto &player : clientIdMap.values())
+    {
+        if (player.isAlive)  // if a player is not dead, set the flag to false and exit the loop
+        {
+            qDebug() << player.username << " is alive";
+            allPlayersDead = false;
+            break;   // exit early, no need to check the rest of the players
         }
+    }
+
+    if (allPlayersDead && !roundOver)
+    {
+        qDebug() << "game over";
+        roundOver = true;
+        QJsonObject gameOverMsg;
+        gameOverMsg["type"] = "GAME_OVER";
+        gameOverMsg["message"] = "Game Over.";
+        ui->textBrowser->append(gameOverMsg["message"].toString());
+        tx(gameOverMsg);
+        logGame();
+        sendGameData();
+        return;   // exit early if the game is over
+    }
+
+    bool done = true;
+    for(auto &player : clientIdMap.values())
+    {
+        if (player.finishedLastLevel || !player.isAlive || !player.isInGame) // Player is either dead or at the lily pads
+        {
+            done = true;
+        }
+        else    // player is either not dead or not to the lily pads yet, keep round running
+        {
+            done = false;
+            break;  // only need one to throw false so exit early
+        }
+    }
+
+    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
+    {
+        qDebug() << "level over";
+        roundOver = true;
+        QJsonObject levelOverMsg;
+        levelOverMsg["type"] = "LEVEL_OVER";
+        levelOverMsg["message"] = "Level Over.";
+        ui->textBrowser->append(levelOverMsg["message"].toString());
+        tx(levelOverMsg);
+        logGame();
+        sendGameData();
     }
 }
 
