@@ -175,7 +175,6 @@ void GraphicsDialog::removeHeart()
 void GraphicsDialog::checkCollisions()
 {
 
-    int counter = 0;
     // Store the current position of the player before movement
     QPointF currentPos = activePlayer->pos();
 
@@ -219,7 +218,7 @@ void GraphicsDialog::checkCollisions()
     if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
         if (!activePlayer->onLog) {
             qDebug() << "water death";
-            handlePlayerDeath();
+            handleWaterDeath();
         }
     }
 
@@ -229,10 +228,10 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
-//        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("LEVEL FINISHED");
+        checkRoundOver();
+        ReachGoalScreen();
+        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        //endText->setPlainText("LEVEL FINISHED");
     }
 }
 
@@ -253,10 +252,10 @@ void GraphicsDialog::handlePlayerDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-//        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("YOU DIED");
+        checkRoundOver();
+        showEndScreen();
+        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        // endText->setPlainText("YOU DIED");
     }
 }
 
@@ -277,10 +276,10 @@ void GraphicsDialog::handleWaterDeath()
         activeGameState=false;
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
-//        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("YOU DIED");
+        checkRoundOver();
+        showWaterDeathScreen();
+        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        //endText->setPlainText("YOU DIED");
     }
 }
 
@@ -409,7 +408,20 @@ void GraphicsDialog::showEndScreen()
     backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
     scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
 
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
     overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
+    endText->setDefaultTextColor(Qt::red);
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setPos(-150, 20);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
 }
 
 void GraphicsDialog::showWaterDeathScreen()
@@ -499,8 +511,9 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-    showEndScreen();
-    endText->setPlainText("LEVEL OVER");
+    //showEndScreen();
+    //endText->setPlainText("LEVEL OVER");
+    qDebug() << "Level Over";
 }
 
 void GraphicsDialog::drawScoreDisplay()
