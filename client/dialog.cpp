@@ -93,7 +93,7 @@ Dialog::Dialog(QWidget *parent) :
         }
     )";
 
-
+//i dont know why this is being dumb but now the buttons should be the same
 //    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
 //    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
 //    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
