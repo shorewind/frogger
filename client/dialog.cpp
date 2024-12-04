@@ -504,7 +504,7 @@ void Dialog::processMsg()
                             graphicsDialog->addPlayer(clientId, username, QColor(colorString));
                         }
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                 }
 
@@ -546,14 +546,14 @@ void Dialog::processMsg()
                         qDebug() << "removing player " << clientId;
                         graphicsDialog->removePlayer(clientId);
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                     else if (!isPlayerAlive(clientId))
                     {
                         qDebug() << "removing dead player " << clientId;
                         graphicsDialog->removePlayerFromScene(clientId);
                         graphicsDialog->setPlayerState(clientData);
-                        graphicsDialog->checkRoundOver();
+//                        graphicsDialog->checkRoundOver();
                     }
                 }
             }
@@ -579,9 +579,27 @@ void Dialog::processMsg()
             }
             ui->textBrowser->append(message);
         }
+        else if (type == "GAME_OVER")
+        {
+            if (graphicsDialog)
+            {
+                graphicsDialog->handleGameOver();
+            }
+            ui->textBrowser->append(message);
+        }
         else if (type == "GAMEDATA")
         {
             setGameData(jsonObj);
+        }
+        else if (type == "PLAYER_FINISHED")
+        {
+            if (graphicsDialog && activeClientId == jsonObj["clientId"].toInt())
+            {
+                qDebug() << "updating score";
+                graphicsDialog->score = jsonObj["score"].toInt();
+                graphicsDialog->display->setPlainText(QString::number(jsonObj["score"].toInt()));
+            }
+            ui->textBrowser->append(message);
         }
         else
         {
