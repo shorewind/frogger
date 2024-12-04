@@ -244,13 +244,18 @@ void Dialog::configureServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    QJsonObject disconnectAllMessage;
-    disconnectAllMessage["type"] = "DISCONNECT_ALL";
-    disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
+    if (availableIds.size() != MAX_CLIENTS)
+    {
+        qDebug() << availableIds.size() << MAX_CLIENTS;
+        QJsonObject disconnectAllMessage;
+        disconnectAllMessage["type"] = "DISCONNECT_ALL";
+        disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
 
-    tx(disconnectAllMessage);
+        tx(disconnectAllMessage);
+    }
 
     if (socket && socket->isOpen()) {
+        qDebug() << "closing socket";
         socket->close();
         qDebug() << "Server socket disconnected.";
     }

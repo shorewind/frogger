@@ -35,7 +35,7 @@ private:
     Ui::Dialog *ui;
     void closeEvent(QCloseEvent *event) override;
 
-    QUdpSocket* socket;
+    QUdpSocket* socket = nullptr;
     QNetworkDatagram msg;
     QList<QHostAddress> clientAddresses;
     QList<quint16> clientPorts;
