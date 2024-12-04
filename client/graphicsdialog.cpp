@@ -228,8 +228,6 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
-//        checkRoundOver();
-//        showEndScreen();
         overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         endText->setPlainText("YOU FINISHED!");
     }
@@ -360,6 +358,7 @@ void GraphicsDialog::startNextLevel()
             activeGameState = true;
             roundOver = false;
 //            endScreen->hide();
+//            scene->removeItem(endScreen);
             overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
             endText->setPlainText("");
             player->resetPlayerPos();
@@ -558,10 +557,12 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-    //showEndScreen();
-    //endText->setPlainText("LEVEL OVER");
+    //showEndScreen();  // major issues with this... image cannot be modified after initially showing...
     activeGameState = false;
     qDebug() << "Level Over";
+    levelCount++;
+    QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
+    endText->setPlainText(lvlMsg);
 }
 
 void GraphicsDialog::handleGameOver()
