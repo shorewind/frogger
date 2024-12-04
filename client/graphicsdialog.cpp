@@ -175,7 +175,6 @@ void GraphicsDialog::removeHeart()
 void GraphicsDialog::checkCollisions()
 {
 
-    int counter = 0;
     // Store the current position of the player before movement
     QPointF currentPos = activePlayer->pos();
 
@@ -219,7 +218,7 @@ void GraphicsDialog::checkCollisions()
     if (y == -21 || y == -59 || y == -97 || y == -135 || y == -173) {
         if (!activePlayer->onLog) {
             qDebug() << "water death";
-            handlePlayerDeath();
+            handleWaterDeath();
         }
     }
 
@@ -254,9 +253,9 @@ void GraphicsDialog::handlePlayerDeath()
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
 //        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("YOU DIED");
+        showEndScreen();
+        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        // endText->setPlainText("YOU DIED");
     }
 }
 
@@ -278,9 +277,9 @@ void GraphicsDialog::handleWaterDeath()
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
 //        checkRoundOver();
-//        showEndScreen();
-        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("YOU DIED");
+        showWaterDeathScreen();
+        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        //endText->setPlainText("YOU DIED");
     }
 }
 
@@ -290,6 +289,34 @@ GraphicsDialog::~GraphicsDialog() {
 
 void GraphicsDialog::checkRoundOver()
 {
+    bool allPlayersDead = true;
+
+    for (auto &player : clientPlayers.values())
+    {
+        if (!player->dead)  // if a player is not dead, set the flag to false and exit the loop
+        {
+            allPlayersDead = false;
+            break;   // exit early, no need to check the rest of the players
+        }
+    }
+
+    if (allPlayersDead && !roundOver)
+    {
+        qDebug() << "game over";
+        activeGameState = false;
+        roundOver = true;
+
+        QJsonObject levelMsg;
+        levelMsg["type"] = "GAME_OVER";
+
+        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+        if (parentDialog)
+        {
+            parentDialog->sendJson(levelMsg);
+        }
+        return;   // exit early if the game is over
+    }
+
     bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
     for(auto &player : clientPlayers.values())
     {
@@ -428,7 +455,20 @@ void GraphicsDialog::showEndScreen()
     endScreen->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
     scene->addItem(endScreen);    // Create a semi-transparent overlay using QGraphicsRectItem
 
+    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
     overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    overlay->setZValue(10);  // Ensure the overlay is above game items
+
+    // Add the overlay to the scene
+    scene->addItem(overlay);
+
+    // Add a text label (you can customize the message as needed)
+    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
+    endText->setDefaultTextColor(Qt::red);
+    endText->setFont(QFont("Georgia", 36, QFont::Bold));
+    endText->setPos(-150, 20);  // Adjust position as necessary
+    endText->setZValue(11);  // Ensure text is above the overlay
+    scene->addItem(endText);
 }
 
 void GraphicsDialog::showWaterDeathScreen()
@@ -518,10 +558,18 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-//    showEndScreen();  // This is broken... Image cannot be removed after showing....
-    levelCount++;
-    QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
-    endText->setPlainText(lvlMsg);
+    //showEndScreen();
+    //endText->setPlainText("LEVEL OVER");
+    activeGameState = false;
+    qDebug() << "Level Over";
+}
+
+void GraphicsDialog::handleGameOver()
+{
+    //showEndScreen();
+    //endText->setPlainText("Game OVER");
+    activeGameState = false;
+    qDebug() << "Game Over";
 }
 
 void GraphicsDialog::drawScoreDisplay()

@@ -1,16 +1,11 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "defs.h"
-#include <QFontDatabase>
-
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
 {
-
-    setupDatabase();
-
     ui->setupUi(this);
 
     setLocalIpAddress();
@@ -20,96 +15,101 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->configureButton, &QPushButton::clicked, this, &Dialog::configureServer);
     connect(ui->startButton, &QPushButton::clicked, this, &Dialog::startGame);
 
-    for (int i = 1; i <= 4; ++i)
+    for (int i = 1; i <= MAX_CLIENTS; ++i)
     {
         availableIds.append(i);
     }
-    //all my styling crap, css is so dumb and its not even css
-    // Set up carbon fiber texture, making it red and black
+
+    setupDatabase();
+
+    // set up carbon fiber texture, making it red and black
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/redb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
     this->setPalette(palette);
 
-        // Load Orbitron font from the resource file
+    // custom font from the resource file
     int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
-            if (fontId != -1) {
-                QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-                QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+    if (fontId != -1)
+    {
+        QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+        QFont orbitronFont(fontFamily, 24, QFont::Bold);
 
-                // Apply to the title label
-                ui->label->setFont(orbitronFont);
-                ui->label->setStyleSheet(R"(
-                    QLabel {
-                        color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #FF4500, stop:1 #FF6347);
-                        text-align: center;
-                    }
-                )");
-            } else {
-                qDebug() << "Failed to load Orbitron font!";
+        // apply to the title label
+        ui->label->setFont(orbitronFont);
+        ui->label->setStyleSheet(R"(
+            QLabel {
+                color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #FF4500, stop:1 #FF6347);
+                text-align: center;
             }
+        )");
+    }
+    else
+    {
+        qDebug() << "Failed to load Orbitron font!";
+    }
 
-       // making the text browser look cool
-       ui->textBrowser->setStyleSheet(R"(
-                 QTextBrowser {
-                    background-color: #000000;
-                    color: #FF4500;
-                    border: 2px solid #FF4500;
-                    font-family: "Courier New";
-                    font-size: 12px;
-                  }
-            )");
+   // making the text browser look cool
+   ui->textBrowser->setStyleSheet(R"(
+             QTextBrowser {
+                background-color: #000000;
+                color: #FF4500;
+                border: 2px solid #FF4500;
+                font-family: "Courier New";
+                font-size: 12px;
+              }
+        )");
 
-       // Styling for IP and Port input fields
-       QString inputFieldStyle = R"(
-            QLineEdit {
-                   border: 2px solid #FF4500;
-                   border-radius: 5px;
-                   padding: 5px;
-                   background-color: #333333;
-                   color: white;
-               }
-             QLineEdit:focus {
-                   border-color: #00ffff;
-               }
-           )";
-        ui->ipEdit->setStyleSheet(inputFieldStyle);
-        ui->portEdit->setStyleSheet(inputFieldStyle);
+   // styling for IP and Port input fields
+   QString inputFieldStyle = R"(
+        QLineEdit {
+               border: 2px solid #FF4500;
+               border-radius: 5px;
+               padding: 5px;
+               background-color: #333333;
+               color: white;
+           }
+         QLineEdit:focus {
+               border-color: #00ffff;
+           }
+       )";
+    ui->ipEdit->setStyleSheet(inputFieldStyle);
+    ui->portEdit->setStyleSheet(inputFieldStyle);
 
-        // Styling for the configure button
-            ui->configureButton->setStyleSheet(R"(
-                QPushButton {
-                    background-color: #222222;
-                    color: white;
-                    border: 2px solid #00ffff;
-                    border-radius: 10px;
-                    font: bold 14px;
-                }
-                QPushButton:hover {
-                    background-color: #00ffff;
-                    color: #000000;
-                }
-            )");
+    // styling for the configure button
+    ui->configureButton->setStyleSheet(R"(
+        QPushButton {
+            background-color: #222222;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font: bold 14px;
+        }
+        QPushButton:hover {
+            background-color: #00ffff;
+            color: #000000;
+        }
+    )");
 
-            // Styling for the start button
-            ui->startButton->setStyleSheet(R"(
-                QPushButton {
-                    background-color: #222222;
-                    color: white;
-                    border: 2px solid #00ffff;
-                    border-radius: 10px;
-                    font: bold 14px;
-                }
-                QPushButton:hover {
-                    background-color: #00ffff;
-                    color: #000000;
-                }
-            )");
+    // styling for the start button
+    ui->startButton->setStyleSheet(R"(
+        QPushButton {
+            background-color: #222222;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font: bold 14px;
+        }
+        QPushButton:hover {
+            background-color: #00ffff;
+            color: #000000;
+        }
+    )");
 
 }
 
 void Dialog::setupDatabase()
 {
-    db = QSqlDatabase::addDatabase("QSQLITE");  //creates a DB connection
+    db = QSqlDatabase::addDatabase("QSQLITE");  // creates a DB connection
     db.setDatabaseName("froggy_game_data.db");
     db.open();
     QSqlQuery query;
@@ -140,15 +140,6 @@ void Dialog::setupDatabase()
     );
     if (!createdSessionsTable)
         qDebug () << "Error Creating Sessions Table: " << query.lastError().text();
-
-//    query.exec("SELECT MAX(id) FROM games");
-//    if (query.next()) {
-//        currentGameId = query.value(0).toInt();
-//    }
-//    else
-//    {
-//        currentGameId = 1;
-//    }
 
     query.exec("SELECT MAX(game_id) FROM sessions");
     if (query.next()) {
@@ -253,13 +244,18 @@ void Dialog::configureServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
-    QJsonObject disconnectAllMessage;
-    disconnectAllMessage["type"] = "DISCONNECT_ALL";
-    disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
+    if (availableIds.size() != MAX_CLIENTS)
+    {
+        qDebug() << availableIds.size() << MAX_CLIENTS;
+        QJsonObject disconnectAllMessage;
+        disconnectAllMessage["type"] = "DISCONNECT_ALL";
+        disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
 
-    tx(disconnectAllMessage);
+        tx(disconnectAllMessage);
+    }
 
     if (socket && socket->isOpen()) {
+        qDebug() << "closing socket";
         socket->close();
         qDebug() << "Server socket disconnected.";
     }
@@ -276,6 +272,7 @@ void Dialog::startGame()
     tx(startMessage);
 
     activeGame = true;
+    gameOver = false;
     ui->startButton->setEnabled(false);
     currentGameId++;
 
@@ -288,8 +285,6 @@ void Dialog::startGame()
     }
 
     broadcastActiveClients();
-//    broadcastPlayerPositions();
-//    broadcastObstaclePositions();  // no longer need to sync obstacles
 }
 
 
@@ -314,8 +309,6 @@ void Dialog::rx()
 
         qDebug() << "rx";
         qDebug() << jsonObj;
-//        qDebug() << senderAddress;
-//        qDebug() << type;
 
         if (type == "DISCONNECT")
         {
@@ -409,15 +402,18 @@ void Dialog::rx()
                 {
                     activeGame = false;
                     ui->startButton->setEnabled(true);
-                    ui->textBrowser->append("Game Over.");
+                    ui->textBrowser->append("Game Closed.");
 
-                    QJsonObject gameOverMessage;
-                    gameOverMessage["type"] = "GAME_OVER";
-                    gameOverMessage["message"] = "Game Over.";
-                    tx(gameOverMessage);
+                    QJsonObject gameClosedMessage;
+                    gameClosedMessage["type"] = "GAME_CLOSED";
+                    gameClosedMessage["message"] = "Game Closed.";
+                    tx(gameClosedMessage);
                 }
             }
             broadcastActiveClients();
+            checkGameState();
+            insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
+            sendGameData();
             return;
         }
         else if (type == "MESSAGE")
@@ -495,29 +491,119 @@ void Dialog::rx()
                 }
                 else if (clientIdMap[clientKey].isAlive && clientIdMap[clientKey].finishedLastLevel)
                 {
-                    QString playerFinishedMsg = QString("%1 finished the level.").arg(clientIdMap[clientKey].username);
-                    QJsonObject outgoingMessage;
-                    outgoingMessage["type"] = "MESSAGE";
-                    outgoingMessage["message"] = playerFinishedMsg;
-                    ui->textBrowser->append(playerFinishedMsg);
-                    tx(outgoingMessage);
+                    playersFinished.append(clientIdMap[clientKey].clientId);
+                    QJsonObject playerFinishedMsg;
+                    playerFinishedMsg["type"] = "PLAYER_FINISHED";
+                    playerFinishedMsg["clientId"] = clientIdMap[clientKey].clientId;
+                    playerFinishedMsg["placement"] = playersFinished.indexOf(clientIdMap[clientKey].clientId) + 1;  // 1-based placement
+                    QList<int> pointsForPlacement = {250, 200, 150, 100};
+                    int placementPoints = (playerFinishedMsg["placement"].toInt() < pointsForPlacement.size()) ? pointsForPlacement[playerFinishedMsg["placement"].toInt()] : 0;
+                    clientIdMap[clientKey].score += placementPoints;
+                    playerFinishedMsg["score"] = clientIdMap[clientKey].score;
+                    playerFinishedMsg["message"] = QString("%1 finished level in %2 place earning %3 bonus points. Total score: %4")
+                                                 .arg(clientIdMap[clientKey].username)
+                                                 .arg(playerFinishedMsg["placement"].toInt())
+                                                 .arg(placementPoints)
+                                                 .arg(playerFinishedMsg["score"].toInt());
+                    ui->textBrowser->append(playerFinishedMsg["message"].toString());
+                    tx(playerFinishedMsg);
                 }
             }
             broadcastActiveClients();
-
+            checkGameState();
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
             sendGameData();
         }
-        else if (type == "LEVEL_OVER")
-        {
+    }
+}
 
-            QJsonObject levelOverMsg;
-            levelOverMsg["type"] = "LEVEL_OVER";
-            levelOverMsg["message"] = "Level Over.";
-            tx(levelOverMsg);
-            logGame();
-            sendGameData();
+void Dialog::checkGameState()
+{
+    qDebug() << "checking game state";
+    bool allPlayersDead = true;
+
+    for (auto &player : clientIdMap.values())
+    {
+        if (player.isAlive)  // if a player is not dead, set the flag to false and exit the loop
+        {
+            qDebug() << player.username << " is alive";
+            allPlayersDead = false;
+            break;   // exit early, no need to check the rest of the players
         }
+    }
+
+    if (allPlayersDead && !gameOver)
+    {
+        QList<ClientData> playersResults;
+        qDebug() << "game over";
+        gameOver = true;
+        roundOver = true;
+
+        for (auto &player : clientIdMap.values())
+        {
+            playersResults.append(player);
+        }
+
+        std::sort(playersResults.begin(), playersResults.end(), [](const ClientData &a, const ClientData &b)
+            {
+                return a.score > b.score;   // sort by score descending
+            }
+        );
+
+        QJsonObject gameOverMsg;
+        gameOverMsg["type"] = "GAME_OVER";
+        gameOverMsg["message"] = QString("Game Over!\n%1 won with a score of %2 after %3 level(s).")
+                                    .arg(playersResults.first().username)
+                                    .arg(QString::number(playersResults.first().score))
+                                    .arg(QString::number(playersResults.first().levelsPlayed));
+
+        QJsonArray resultsArray;
+        int placement = 1;
+        for (const ClientData &player : playersResults)
+        {
+            QJsonObject playerResult;
+            playerResult["client_id"] = player.clientId;
+            playerResult["username"] = player.username;
+            playerResult["score"] = player.score;
+            playerResult["levels_played"] = player.levelsPlayed;
+            playerResult["placement"] = placement++;
+            resultsArray.append(playerResult);
+        }
+        gameOverMsg["results"] = resultsArray;
+
+        ui->textBrowser->append(gameOverMsg["message"].toString());
+        tx(gameOverMsg);
+        logGame();
+        sendGameData();
+        playersFinished.clear();
+        return;   // exit early if the game is over
+    }
+
+    bool done = true;
+    for(auto &player : clientIdMap.values())
+    {
+        if (player.finishedLastLevel || !player.isAlive || !player.isInGame)  // player is either dead or at the lily pads
+        {
+            done = true;
+        }
+        else    // player is either not dead or not to the lily pads yet, keep round running
+        {
+            done = false;
+            break;  // only need one to throw false so exit early
+        }
+    }
+
+    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
+    {
+        qDebug() << "level over";
+        roundOver = true;
+        QJsonObject levelOverMsg;
+        levelOverMsg["type"] = "LEVEL_OVER";
+        levelOverMsg["message"] = "Level Over.";
+        ui->textBrowser->append(levelOverMsg["message"].toString());
+        tx(levelOverMsg);
+        sendGameData();
+        playersFinished.clear();
     }
 }
 
