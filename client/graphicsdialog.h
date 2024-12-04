@@ -47,6 +47,7 @@ private:
     bool roundOver;
     QList<QGraphicsPixmapItem*> hearts;
     int numLives = 3;
+    int levelCount = 0;
     void initializeHearts();
     void removeHeart();
     void sendScoreToServer();

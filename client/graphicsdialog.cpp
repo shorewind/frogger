@@ -232,7 +232,7 @@ void GraphicsDialog::checkCollisions()
 //        checkRoundOver();
 //        showEndScreen();
         overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        endText->setPlainText("LEVEL FINISHED");
+        endText->setPlainText("YOU FINISHED!");
     }
 }
 
@@ -332,7 +332,7 @@ void GraphicsDialog::startNextLevel()
             player->finished = false;
             activeGameState = true;
             roundOver = false;
-            endScreen->hide();
+//            endScreen->hide();
             overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
             endText->setPlainText("");
             player->resetPlayerPos();
@@ -518,8 +518,10 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-    showEndScreen();
-    endText->setPlainText("LEVEL OVER");
+//    showEndScreen();  // This is broken... Image cannot be removed after showing....
+    levelCount++;
+    QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
+    endText->setPlainText(lvlMsg);
 }
 
 void GraphicsDialog::drawScoreDisplay()
