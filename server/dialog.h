@@ -11,7 +11,6 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QMap>
-#include <QPoint>
 #include <QNetworkInterface>
 #include <QSqlDatabase>
 #include <QSqlQuery>
