@@ -97,6 +97,33 @@ Dialog::Dialog(QWidget *parent) :
     ui->ipEdit->setStyleSheet(inputFieldStyle);
     ui->portEdit->setStyleSheet(inputFieldStyle);
 
+
+
+       // Styling for the allPlayersButton to have white text
+       ui->allPlayersButton->setStyleSheet(R"(
+           QRadioButton {
+               color: white;
+           }
+              QRadioButton::indicator {
+               width: 16px;
+               height: 16px;
+           }
+
+       )");
+
+
+       // Styling for the allPlayersButton to have white text
+       ui->currentUserButton->setStyleSheet(R"(
+           QRadioButton {
+               color: white;
+           }
+           QRadioButton::indicator {
+               width: 16px;
+               height: 16px;
+           }
+       )");
+
+
     // Styling for the connect button
     ui->connectButton->setStyleSheet(R"(
         QPushButton {
