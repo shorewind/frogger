@@ -98,30 +98,43 @@ Dialog::Dialog(QWidget *parent) :
     ui->portEdit->setStyleSheet(inputFieldStyle);
 
 //styling
+    // Styling for the allPlayersButton to have white text
+    // stuff for the allPlayersButton to have Orbitron font, white text initially, and neon blue text when clicked
+    ui->allPlayersButton->setStyleSheet(R"(
+        QRadioButton {
+            color: white;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QRadioButton:checked {
+            color: #00ffff;
+        }
+        QRadioButton::indicator {
+            width: 16px;
+            height: 16px;
+        }
+    )");
 
-       // Styling for the allPlayersButton to have white text
-       ui->allPlayersButton->setStyleSheet(R"(
-           QRadioButton {
-               color: white;
-           }
-              QRadioButton::indicator {
-               width: 16px;
-               height: 16px;
-           }
-
-       )");
 
 
-       // Styling for the allPlayersButton to have white text
-       ui->currentUserButton->setStyleSheet(R"(
-           QRadioButton {
-               color: white;
-           }
-           QRadioButton::indicator {
-               width: 16px;
-               height: 16px;
-           }
-       )");
+    // Styling for the currentUserButton to have white text + other features that i have above
+    ui->currentUserButton->setStyleSheet(R"(
+        QRadioButton {
+            color: white;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        QRadioButton:checked {
+            color: #00ffff;
+        }
+        QRadioButton::indicator {
+            width: 16px;
+            height: 16px;
+        }
+    )");
 
 
     // Styling for the connect button
