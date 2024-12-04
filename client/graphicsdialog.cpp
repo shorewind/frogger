@@ -229,9 +229,9 @@ void GraphicsDialog::checkCollisions()
         activeGameState = false;
         sendScoreToServer();
 //        checkRoundOver();
-        ReachGoalScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        //endText->setPlainText("LEVEL FINISHED");
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU FINISHED!");
     }
 }
 
@@ -346,6 +346,24 @@ void GraphicsDialog::checkRoundOver()
         {
             parentDialog->sendJson(levelMsg);
         }
+        QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
+    }
+}
+
+void GraphicsDialog::startNextLevel()
+{
+    for(auto &player : clientPlayers.values())
+    {
+        if (!player->dead)
+        {
+            player->finished = false;
+            activeGameState = true;
+            roundOver = false;
+//            endScreen->hide();
+            overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
+            endText->setPlainText("");
+            player->resetPlayerPos();
+        }
     }
 }
 
@@ -431,10 +449,11 @@ void GraphicsDialog::showEndScreen()
 
     im = im.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(im);
-    backgroundItem->setPos( -120, -120);  // Position the image at the center
-    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
-    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
+    endScreen = new QGraphicsPixmapItem();
+    endScreen->setPixmap(im);
+    endScreen->setPos( -120, -120);  // Position the image at the center
+    endScreen->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
+    scene->addItem(endScreen);    // Create a semi-transparent overlay using QGraphicsRectItem
 
     QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
     overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)

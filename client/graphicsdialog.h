@@ -50,10 +50,13 @@ private:
     bool roundOver;
     QList<QGraphicsPixmapItem*> hearts;
     int numLives = 3;
+    int levelCount = 0;
     void initializeHearts();
     void removeHeart();
     void sendScoreToServer();
     int obstacleId = 0;
+
+    QGraphicsPixmapItem* endScreen;
 
     bool activeGameState=true;
 
@@ -74,6 +77,7 @@ public slots:
     void showWaterDeathScreen();
     void showEndScreen();
     void handlePlayerDeath();
+    void startNextLevel();
 
 signals:
     void requestClose();
