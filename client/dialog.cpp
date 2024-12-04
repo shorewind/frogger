@@ -97,7 +97,7 @@ Dialog::Dialog(QWidget *parent) :
     ui->ipEdit->setStyleSheet(inputFieldStyle);
     ui->portEdit->setStyleSheet(inputFieldStyle);
 
-
+//styling
 
        // Styling for the allPlayersButton to have white text
        ui->allPlayersButton->setStyleSheet(R"(
