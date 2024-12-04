@@ -30,7 +30,6 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
     QString playerUsername;
-    bool isPlayerAlive(int clientId);
 
 public slots:
     void sendJson(QJsonObject data);
@@ -50,30 +49,32 @@ private:
     quint16 port;
     QSet<int> activeClients;
     QString playerColor;
-//    QList<QString> usedColors;
     QMap<int, QString> clientColors;
     QJsonArray clientDataArray;
     QJsonObject clientData;
-    QStandardItemModel *qmLeaderboard, *qmHistory, *qmUserHistory;
+    QStandardItemModel *leaderboardModel, *historyModel, *userHistoryModel;
 
     void showAllSessions();
     void showSessionsForUser();
     void setGameData(QJsonObject& gameDataObj);
 
+    void disconnectFromServer();
+    QString getLocalIpAddress();
+    void setLocalIpAddress();
+    void setPlayerColor(QString &color);
+    int parseClientIdFromMsg(const QString &msg);
+    bool isPlayerAlive(int clientId);
+
 private slots:
     void connectToServer();
-    void disconnectFromServer();
     void leaveGame();
     void processMsg();
     void sendMsg();
-    QString getLocalIpAddress();
-    void setLocalIpAddress();
-    int parseClientIdFromMsg(const QString &msg);
+
     void onColorButtonClick();
     void onSubmitButtonClick();
     void onSendButtonClick();
     void submitUsername();
-    void setPlayerColor(QString &color);
 };
 
 #endif // DIALOG_H

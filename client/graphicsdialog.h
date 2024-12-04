@@ -4,8 +4,6 @@
 #include <QDialog>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QGraphicsPixmapItem>
-#include <QGraphicsRectItem>
 #include <QMap>
 #include <QVBoxLayout>
 #include <QKeyEvent>
@@ -23,19 +21,21 @@ class GraphicsDialog : public QDialog {
 
 public:
     explicit GraphicsDialog(QWidget *parent = nullptr, QUdpSocket *socket = nullptr);
+    void closeEvent(QCloseEvent *event) override;
     ~GraphicsDialog();
+    void addActivePlayer(int clientId, QString username, const QColor &color);
+    void addPlayer(int clientId, QString username, const QColor &color);
+    void removePlayer(int clientId);
+    void removePlayerFromScene(int clientId);
+    void updatePlayerPositions(QJsonArray &playersArray);
     void setPlayerState(QJsonObject clientData);
     void handleLevelOver();
     void handleGameOver();
-    void checkRoundOver();
     int score = 0;
     QGraphicsTextItem *header,*display, *endText;
 
-protected:
-    void keyPressEvent(QKeyEvent *e) override;
-    void closeEvent(QCloseEvent *event) override;
-
 private:
+    void keyPressEvent(QKeyEvent *e) override;
     QGraphicsScene *scene;
     Player *activePlayer;
     QMap<int, Player*> clientPlayers;
@@ -44,36 +44,31 @@ private:
     quint16 serverPort;
     QMap<int, Obstacle*> obstacles;
     QList<QGraphicsRectItem*> boundingLines;
-    void createBoundingLine(int x, int y, int width, int height); // Declare here
     QList<QGraphicsItem *> obstacleList;
-    void checkCollisions();
-    bool roundOver;
     QList<QGraphicsPixmapItem*> hearts;
-    int numLives = 3;
+    QGraphicsRectItem *overlay;
+
+    void createBoundingLine(int x, int y, int width, int height);
     void initializeHearts();
     void removeHeart();
     void sendScoreToServer();
-    int obstacleId = 0;
-
-    bool activeGameState=true;
-
-    QGraphicsRectItem *overlay;
-    int level = 1;
-    int winnerClientId = 0;
-
-public slots:
-    void addActivePlayer(int clientId, QString username, const QColor &color);
-    void addPlayer(int clientId, QString username, const QColor &color);
-    void removePlayer(int clientId);
-    void removePlayerFromScene(int clientId);
-    void updatePlayerPositions(QJsonArray &playersArray);
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
-    void ReachGoalScreen();
+    void reachGoalScreen();
     void handleWaterDeath();
     void showWaterDeathScreen();
     void showEndScreen();
     void handlePlayerDeath();
+
+    int numLives = 3;
+    int obstacleId = 0;
+    int level = 1;
+
+    bool levelOver;
+    bool activeGameState=true;
+
+private slots:
+    void checkCollisions();
 
 signals:
     void requestClose();
