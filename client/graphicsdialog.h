@@ -52,6 +52,8 @@ private:
     void sendScoreToServer();
     int obstacleId = 0;
 
+    QGraphicsPixmapItem* endScreen;
+
     bool activeGameState=true;
 
     QGraphicsTextItem *header,*display, *endText;
@@ -73,6 +75,7 @@ public slots:
     void showWaterDeathScreen();
     void showEndScreen();
     void handlePlayerDeath();
+    void startNextLevel();
 
 signals:
     void requestClose();
