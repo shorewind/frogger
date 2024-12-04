@@ -13,10 +13,10 @@
 #include <QMap>
 #include <QPoint>
 #include <QNetworkInterface>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlQuery>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlTableModel>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QFontDatabase>
 #include "clientdata.h"
 
 namespace Ui {
@@ -35,31 +35,28 @@ private:
     Ui::Dialog *ui;
     void closeEvent(QCloseEvent *event) override;
 
-    QUdpSocket* socket;
+    QUdpSocket* socket = nullptr;
     QNetworkDatagram msg;
     QList<QHostAddress> clientAddresses;
     QList<quint16> clientPorts;
     QList<int> availableIds;
     QList<int> clientIdsInGame;
+    QList<int>playersFinished;
     QMap<QString, ClientData> clientIdMap;  // holds clientKey, clientId, and in_game bool
     QMap<int, QPoint> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
     bool activeGame;
     bool roundOver = false;
+    bool gameOver = false;
     QSqlDatabase db;
     QSqlQuery query;
     int currentGameId;
     int currentSessionId;
+
     void logGame();
     void sendGameData();
     void checkGameState();
-    QList<int>playersFinished;
-
-private slots:
-    void rx();  // receive
-    void tx(QJsonObject message);  // transmit
-    void configureServer();
     void removeClient(QString& clientKey);
     void updatePlayerPositions(QJsonArray playersArray);
     void broadcastPlayerPositions();
@@ -67,8 +64,13 @@ private slots:
     void broadcastObstaclePositions();
     QString getLocalIpAddress();
     void setLocalIpAddress();
-    void startGame();
     void setupDatabase();
+
+private slots:
+    void rx();  // receive
+    void tx(QJsonObject message);  // transmit
+    void configureServer();
+    void startGame();
 };
 
 #endif // DIALOG_H
