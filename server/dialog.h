@@ -54,6 +54,7 @@ private:
     void logGame();
     void sendGameData();
     void checkGameState();
+    QList<int>playersFinished;
 
 private slots:
     void rx();  // receive

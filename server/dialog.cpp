@@ -496,12 +496,22 @@ void Dialog::rx()
                 }
                 else if (clientIdMap[clientKey].isAlive && clientIdMap[clientKey].finishedLastLevel)
                 {
-                    QString playerFinishedMsg = QString("%1 finished the level.").arg(clientIdMap[clientKey].username);
-                    QJsonObject outgoingMessage;
-                    outgoingMessage["type"] = "MESSAGE";
-                    outgoingMessage["message"] = playerFinishedMsg;
-                    ui->textBrowser->append(playerFinishedMsg);
-                    tx(outgoingMessage);
+                    playersFinished.append(clientIdMap[clientKey].clientId);
+                    QJsonObject playerFinishedMsg;
+                    playerFinishedMsg["type"] = "PLAYER_FINISHED";
+                    playerFinishedMsg["clientId"] = clientIdMap[clientKey].clientId;
+                    playerFinishedMsg["placement"] = playersFinished.indexOf(clientIdMap[clientKey].clientId) + 1;  // 1-based placement
+                    QList<int> pointsForPlacement = {250, 200, 150, 100};
+                    int placementPoints = (playerFinishedMsg["placement"].toInt() < pointsForPlacement.size()) ? pointsForPlacement[playerFinishedMsg["placement"].toInt()] : 0;
+                    clientIdMap[clientKey].score += placementPoints;
+                    playerFinishedMsg["score"] = clientIdMap[clientKey].score;
+                    playerFinishedMsg["message"] = QString("%1 finished level in %2 place earning %3 bonus points. Total score: %4")
+                                                 .arg(clientIdMap[clientKey].username)
+                                                 .arg(playerFinishedMsg["placement"].toInt())
+                                                 .arg(placementPoints)
+                                                 .arg(playerFinishedMsg["score"].toInt());
+                    ui->textBrowser->append(playerFinishedMsg["message"].toString());
+                    tx(playerFinishedMsg);
                 }
             }
             broadcastActiveClients();
@@ -576,6 +586,7 @@ void Dialog::checkGameState()
         tx(levelOverMsg);
         logGame();
         sendGameData();
+        playersFinished.clear();
     }
 }
 

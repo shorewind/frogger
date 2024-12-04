@@ -28,6 +28,8 @@ public:
     void handleLevelOver();
     void handleGameOver();
     void checkRoundOver();
+    int score = 0;
+    QGraphicsTextItem *header,*display, *endText;
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
@@ -55,9 +57,7 @@ private:
 
     bool activeGameState=true;
 
-    QGraphicsTextItem *header,*display, *endText;
     QGraphicsRectItem *overlay;
-    int score = 0;
     int level = 1;
     int winnerClientId = 0;
 

@@ -569,6 +569,16 @@ void Dialog::processMsg()
         {
             setGameData(jsonObj);
         }
+        else if (type == "PLAYER_FINISHED")
+        {
+            if (graphicsDialog && activeClientId == jsonObj["clientId"].toInt())
+            {
+                qDebug() << "updating score";
+                graphicsDialog->score = jsonObj["score"].toInt();
+                graphicsDialog->display->setPlainText(QString::number(jsonObj["score"].toInt()));
+            }
+            ui->textBrowser->append(message);
+        }
         else
         {
             ui->textBrowser->append(message);
