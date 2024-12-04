@@ -564,6 +564,22 @@ void Dialog::processMsg()
                 graphicsDialog->handleGameOver();
             }
             ui->textBrowser->append(message);
+
+            QJsonArray resultsArray = jsonObj["results"].toArray();
+            for (const QJsonValue &value : resultsArray)
+            {
+                QJsonObject playerResult = value.toObject();
+
+                if (playerResult["client_id"].toInt() == activeClientId)
+                {
+                    QString playerDetails = QString("Placement: %1, Score: %2, Levels Played: %3")
+                                               .arg(QString::number(playerResult["placement"].toInt()))
+                                               .arg(QString::number(playerResult["score"].toInt()))
+                                               .arg(QString::number(playerResult["levels_played"].toInt()));
+                    ui->textBrowser->append(playerDetails);
+                    break;
+                }
+            }
         }
         else if (type == "GAMEDATA")
         {

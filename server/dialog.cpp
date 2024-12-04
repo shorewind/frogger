@@ -276,6 +276,7 @@ void Dialog::startGame()
     tx(startMessage);
 
     activeGame = true;
+    gameOver = false;
     ui->startButton->setEnabled(false);
     currentGameId++;
 
@@ -419,6 +420,8 @@ void Dialog::rx()
             }
             broadcastActiveClients();
             checkGameState();
+            insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
+            sendGameData();
             return;
         }
         else if (type == "MESSAGE")
@@ -519,16 +522,6 @@ void Dialog::rx()
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
             sendGameData();
         }
-//        else if (type == "LEVEL_OVER")
-//        {
-
-//            QJsonObject levelOverMsg;
-//            levelOverMsg["type"] = "LEVEL_OVER";
-//            levelOverMsg["message"] = "Level Over.";
-//            tx(levelOverMsg);
-//            logGame();
-//            sendGameData();
-//        }
     }
 }
 
@@ -547,24 +540,57 @@ void Dialog::checkGameState()
         }
     }
 
-    if (allPlayersDead && !roundOver)
+    if (allPlayersDead && !gameOver)
     {
+        QList<ClientData> playersResults;
         qDebug() << "game over";
+        gameOver = true;
         roundOver = true;
+
+        for (auto &player : clientIdMap.values())
+        {
+            playersResults.append(player);
+        }
+
+        std::sort(playersResults.begin(), playersResults.end(), [](const ClientData &a, const ClientData &b)
+            {
+                return a.score > b.score;   // sort by score descending
+            }
+        );
+
         QJsonObject gameOverMsg;
         gameOverMsg["type"] = "GAME_OVER";
-        gameOverMsg["message"] = "Game Over.";
+        gameOverMsg["message"] = QString("Game Over!\n%1 won with a score of %2 after %3 level(s).")
+                                    .arg(playersResults.first().username)
+                                    .arg(QString::number(playersResults.first().score))
+                                    .arg(QString::number(playersResults.first().levelsPlayed));
+
+        QJsonArray resultsArray;
+        int placement = 1;
+        for (const ClientData &player : playersResults)
+        {
+            QJsonObject playerResult;
+            playerResult["client_id"] = player.clientId;
+            playerResult["username"] = player.username;
+            playerResult["score"] = player.score;
+            playerResult["levels_played"] = player.levelsPlayed;
+            playerResult["placement"] = placement++;
+            resultsArray.append(playerResult);
+        }
+        gameOverMsg["results"] = resultsArray;
+
         ui->textBrowser->append(gameOverMsg["message"].toString());
         tx(gameOverMsg);
         logGame();
         sendGameData();
+        playersFinished.clear();
         return;   // exit early if the game is over
     }
 
     bool done = true;
     for(auto &player : clientIdMap.values())
     {
-        if (player.finishedLastLevel || !player.isAlive || !player.isInGame) // Player is either dead or at the lily pads
+        if (player.finishedLastLevel || !player.isAlive || !player.isInGame)  // player is either dead or at the lily pads
         {
             done = true;
         }
@@ -584,7 +610,6 @@ void Dialog::checkGameState()
         levelOverMsg["message"] = "Level Over.";
         ui->textBrowser->append(levelOverMsg["message"].toString());
         tx(levelOverMsg);
-        logGame();
         sendGameData();
         playersFinished.clear();
     }

@@ -47,6 +47,7 @@ private:
     QJsonArray obstaclesArray;
     bool activeGame;
     bool roundOver = false;
+    bool gameOver = false;
     QSqlDatabase db;
     QSqlQuery query;
     int currentGameId;
