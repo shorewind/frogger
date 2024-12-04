@@ -156,7 +156,7 @@ Dialog::Dialog(QWidget *parent) :
     qmUserHistory = new QStandardItemModel();
 
     qmHistory->setHorizontalHeaderLabels({"Timestamp", "Winner", "High Score", "Max Level"});
-    qmLeaderboard->setHorizontalHeaderLabels({"Username", "Score", "Levels Played", "Game ID"});
+    qmLeaderboard->setHorizontalHeaderLabels({"Timestamp", "Username", "Score", "Levels Played", "Game ID"});
     qmUserHistory->setHorizontalHeaderLabels({"Timestamp", "Score", "Levels Played", "Is Winner", "Game ID"});
     connect(ui->allPlayersButton, &QRadioButton::clicked, this, &Dialog::showAllSessions);
     connect(ui->currentUserButton, &QRadioButton::clicked, this, &Dialog::showSessionsForUser);
@@ -200,8 +200,10 @@ void Dialog::setGameData(QJsonObject &data)
         int score = sessionObject["score"].toInt();
         int levelsPlayed = sessionObject["levels_played"].toInt();
         int gameId = sessionObject["game_id"].toInt();
+        QString timestamp = sessionObject["timestamp"].toString();
 
         QList<QStandardItem *> row;
+        row.append(new QStandardItem(timestamp));
         row.append(new QStandardItem(playerUsername));
         row.append(new QStandardItem(QString::number(score)));
         row.append(new QStandardItem(QString::number(levelsPlayed)));
@@ -221,11 +223,11 @@ void Dialog::setGameData(QJsonObject &data)
 
         if (sessionPlayerUsername == playerUsername)
         {
-            QString timestamp = sessionObject["timestamp"].toString();
             int score = sessionObject["score"].toInt();
             int levelsPlayed = sessionObject["levels_played"].toInt();
             bool isWinner = sessionObject["is_winner"].toBool();
             int gameId = sessionObject["game_id"].toInt();
+            QString timestamp = sessionObject["timestamp"].toString();
 
             QList<QStandardItem *> row;
             row.append(new QStandardItem(timestamp));
@@ -254,11 +256,13 @@ void Dialog::setGameData(QJsonObject &data)
 void Dialog::showAllSessions()
 {
     ui->historyTableView->setModel(qmHistory);
+    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::showSessionsForUser()
 {
     ui->historyTableView->setModel(qmUserHistory);
+    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::connectToServer()
@@ -704,7 +708,7 @@ void Dialog::submitUsername()
     ui->textBrowser->append("You submitted the username: " + playerUsername);
 }
 
-void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
+void Dialog::sendPlayerPosition(int clientId, int x, int y)
 {
 //    qDebug() << "sending player position";
 
