@@ -2,7 +2,6 @@
 #include "ui_dialog.h"
 #include "graphicsdialog.h"
 #include "defs.h"
-#include <QGraphicsDropShadowEffect>
 #include <QFontDatabase>
 
 Dialog::Dialog(QWidget *parent) :
@@ -34,7 +33,41 @@ Dialog::Dialog(QWidget *parent) :
            qDebug() << "Failed to load Orbitron font!";
        }
 
-    ui->groupBox->setStyleSheet("QGroupBox { color: white; }");
+
+    //player profile text being white, orbitron, and bold
+       ui->groupBox->setStyleSheet("QGroupBox { color: white; font-family: 'Orbitron'; font-weight: bold; }");
+
+       //making the tabwidget coooleerrrr
+       ui->tabWidget->setStyleSheet(R"(
+           QTabWidget::pane {
+               border: none;
+           }
+
+           QTabBar::tab {
+               background-color: #333333;
+               color: white;
+               padding: 10px;
+               border-radius: 5px;
+               font: bold 14px 'Orbitron', sans-serif;
+               min-width: 120px; /* Adjust this value to make the tab wider */
+           }
+
+           QTabBar::tab:selected {
+               background-color: #00FF00; /* Neon green */
+               color: black;
+           }
+
+           QTabBar::tab:hover {
+               background-color: #00FFFF; /* Neon blue */
+           }
+
+           QTabWidget::tab-bar {
+               alignment: center;
+           }
+       )");
+
+
+
 
 
     // Styling for the text browser (retro terminal look)
@@ -59,7 +92,6 @@ Dialog::Dialog(QWidget *parent) :
         }
         QLineEdit:focus {
             border-color: #00ffff;
-            box-shadow: 0px 0px 10px #00ffff;
         }
     )";
     ui->ipEdit->setStyleSheet(inputFieldStyle);
@@ -81,39 +113,27 @@ Dialog::Dialog(QWidget *parent) :
     )");
 
     // Set up button styles for color selection
-    QString buttonStyle = R"(
-        QPushButton {
-            border: 2px solid white;
-            border-radius: 10px;
-            font: bold 12px;
-        }
-        QPushButton:hover {
-            background-color: %1;
-            color: #000000;
-        }
-    )";
-    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
-    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
-    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
-    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
+//    QString buttonStyle = R"(
+//        QPushButton {
+//            border: 2px solid white;
+//            border-radius: 10px;
+//            font: bold 12px;
+//        }
+//        QPushButton:hover {
+//            background-color: %1;
+//            color: #000000;
+//        }
+//    )";
 
-    // Apply shadow effect to the title label
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(15);
-    shadow->setOffset(4, 4);
-    shadow->setColor(Qt::black);
-    ui->label->setGraphicsEffect(shadow);
+//i dont know why this is being dumb but now the buttons should be the same
+//    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
+//    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
+//    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
+//    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
 
-    // Shadow effects for buttons
-    auto addShadowEffect = [](QWidget *widget) {
-        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(widget);
-        shadow->setBlurRadius(15);
-        shadow->setOffset(4, 4);
-        shadow->setColor(Qt::black);
-        widget->setGraphicsEffect(shadow);
-    };
-    addShadowEffect(ui->connectButton);
-    addShadowEffect(ui->sendButton);
+
+
+
 
     // Connect signals for functionality
     setLocalIpAddress();
@@ -267,6 +287,8 @@ void Dialog::connectToServer()
         sendJson(connectMessage);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
+
+
     }
 }
 
