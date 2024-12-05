@@ -10,67 +10,65 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Set up carbon fiber texture or gradient background
+    // set up carbon fiber texture or gradient background
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Background, QBrush(QPixmap(":/images/greenb.jpg").scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
     this->setPalette(palette);
 
-    // Load Orbitron font from the resource file
-       int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
-       if (fontId != -1) {
-           QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-           QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
+    // load Orbitron font from the resource file
+    int fontId = QFontDatabase::addApplicationFont(":/images/Orbitron-VariableFont_wght.ttf");
+    if (fontId != -1)
+    {
+       QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+       QFont orbitronFont(fontFamily, 24, QFont::Bold); // Font size 24, Bold weight
 
-           // Apply to the title label
-           ui->label->setFont(orbitronFont);
-           ui->label->setStyleSheet(R"(
-               QLabel {
-                   color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #007FFF, stop:1 #00FF80);
-                   text-align: center;
-               }
-           )");
-       } else {
-           qDebug() << "Failed to load Orbitron font!";
-       }
-
-
-    //player profile text being white, orbitron, and bold
-       ui->groupBox->setStyleSheet("QGroupBox { color: white; font-family: 'Orbitron'; font-weight: bold; }");
-
-       //making the tabwidget coooleerrrr
-       ui->tabWidget->setStyleSheet(R"(
-           QTabWidget::pane {
-               border: none;
-           }
-
-           QTabBar::tab {
-               background-color: #333333;
-               color: white;
-               padding: 10px;
-               border-radius: 5px;
-               font: bold 14px 'Orbitron', sans-serif;
-               min-width: 120px; /* Adjust this value to make the tab wider */
-           }
-
-           QTabBar::tab:selected {
-               background-color: #00FF00; /* Neon green */
-               color: black;
-           }
-
-           QTabBar::tab:hover {
-               background-color: #00FFFF; /* Neon blue */
-           }
-
-           QTabWidget::tab-bar {
-               alignment: center;
+       // apply to the title label
+       ui->label->setFont(orbitronFont);
+       ui->label->setStyleSheet(R"(
+           QLabel {
+               color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #007FFF, stop:1 #00FF80);
+               text-align: center;
            }
        )");
+    }
+    else
+    {
+       qDebug() << "Failed to load Orbitron font!";
+    }
 
+    // player profile text being white, orbitron, and bold
+    ui->groupBox->setStyleSheet("QGroupBox { color: white; font-family: 'Orbitron'; font-weight: bold; }");
 
+    //making the tabwidget coooleerrrr
+    ui->tabWidget->setStyleSheet(R"(
+       QTabWidget::pane {
+           border: none;
+       }
 
+       QTabBar::tab {
+           background-color: #333333;
+           color: white;
+           padding: 10px;
+           border-radius: 5px;
+           font: bold 14px 'Orbitron', sans-serif;
+           min-width: 120px; /* Adjust this value to make the tab wider */
+       }
 
+       QTabBar::tab:selected {
+           background-color: #00FF00; /* Neon green */
+           color: black;
+       }
 
-    // Styling for the text browser (retro terminal look)
+       QTabBar::tab:hover {
+           background-color: #00FFFF; /* Neon blue */
+       }
+
+       QTabWidget::tab-bar {
+           alignment: center;
+       }
+    )");
+
+    // styling for the text browser (retro terminal look)
     ui->textBrowser->setStyleSheet(R"(
         QTextBrowser {
             background-color: #000000;
@@ -81,7 +79,7 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
-    // Styling for IP and Port input fields
+    // styling for IP and Port input fields
     QString inputFieldStyle = R"(
         QLineEdit {
             border: 2px solid #00ff00;
@@ -97,9 +95,7 @@ Dialog::Dialog(QWidget *parent) :
     ui->ipEdit->setStyleSheet(inputFieldStyle);
     ui->portEdit->setStyleSheet(inputFieldStyle);
 
-//styling
-    // Styling for the allPlayersButton to have white text
-    // stuff for the allPlayersButton to have Orbitron font, white text initially, and neon blue text when clicked
+    // styling for the allPlayersButton to have Orbitron font, white text initially, and neon blue text when clicked
     ui->allPlayersButton->setStyleSheet(R"(
         QRadioButton {
             color: white;
@@ -116,9 +112,7 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
-
-
-    // Styling for the currentUserButton to have white text + other features that i have above
+    // styling for the currentUserButton to have white text + other features
     ui->currentUserButton->setStyleSheet(R"(
         QRadioButton {
             color: white;
@@ -136,8 +130,7 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
-
-    // Styling for the connect button
+    // styling for the connect button
     ui->connectButton->setStyleSheet(R"(
         QPushButton {
             background-color: #222222;
@@ -152,30 +145,6 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
-    // Set up button styles for color selection
-//    QString buttonStyle = R"(
-//        QPushButton {
-//            border: 2px solid white;
-//            border-radius: 10px;
-//            font: bold 12px;
-//        }
-//        QPushButton:hover {
-//            background-color: %1;
-//            color: #000000;
-//        }
-//    )";
-
-//i dont know why this is being dumb but now the buttons should be the same
-//    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
-//    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
-//    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
-//    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
-
-
-
-
-
-    // Connect signals for functionality
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
 
@@ -191,13 +160,13 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
 
-    qmHistory = new QStandardItemModel();
-    qmLeaderboard = new QStandardItemModel();
-    qmUserHistory = new QStandardItemModel();
+    historyModel = new QStandardItemModel();
+    leaderboardModel = new QStandardItemModel();
+    userHistoryModel = new QStandardItemModel();
 
-    qmHistory->setHorizontalHeaderLabels({"Timestamp", "Winner", "High Score", "Max Level"});
-    qmLeaderboard->setHorizontalHeaderLabels({"Username", "Score", "Levels Played", "Game ID"});
-    qmUserHistory->setHorizontalHeaderLabels({"Timestamp", "Score", "Levels Played", "Is Winner", "Game ID"});
+    historyModel->setHorizontalHeaderLabels({"Timestamp", "Winner", "High Score", "Max Level"});
+    leaderboardModel->setHorizontalHeaderLabels({"Timestamp", "Username", "Score", "Levels Played", "Game ID"});
+    userHistoryModel->setHorizontalHeaderLabels({"Timestamp", "Score", "Levels Played", "Is Winner", "Game ID"});
     connect(ui->allPlayersButton, &QRadioButton::clicked, this, &Dialog::showAllSessions);
     connect(ui->currentUserButton, &QRadioButton::clicked, this, &Dialog::showSessionsForUser);
 }
@@ -208,7 +177,7 @@ void Dialog::setGameData(QJsonObject &data)
     QJsonArray gamesArray = data["games"].toArray();
     QJsonArray sessionsArray = data["sessions"].toArray();
 
-    qmHistory->removeRows(0, qmHistory->rowCount());
+    historyModel->removeRows(0, historyModel->rowCount());
 
     // populate game history
     for (const QJsonValue &value : gamesArray)
@@ -225,10 +194,10 @@ void Dialog::setGameData(QJsonObject &data)
         row.append(new QStandardItem(winnerUsername));
         row.append(new QStandardItem(QString::number(highScore)));
         row.append(new QStandardItem(QString::number(maxLevel)));
-        qmHistory->appendRow(row);
+        historyModel->appendRow(row);
     }
 
-    qmLeaderboard->removeRows(0, qmLeaderboard->rowCount());
+    leaderboardModel->removeRows(0, leaderboardModel->rowCount());
 
     // populate leaderboard
     int leaderboardCount = 0;
@@ -240,18 +209,20 @@ void Dialog::setGameData(QJsonObject &data)
         int score = sessionObject["score"].toInt();
         int levelsPlayed = sessionObject["levels_played"].toInt();
         int gameId = sessionObject["game_id"].toInt();
+        QString timestamp = sessionObject["timestamp"].toString();
 
         QList<QStandardItem *> row;
+        row.append(new QStandardItem(timestamp));
         row.append(new QStandardItem(playerUsername));
         row.append(new QStandardItem(QString::number(score)));
         row.append(new QStandardItem(QString::number(levelsPlayed)));
         row.append(new QStandardItem(QString::number(gameId)));
 
-        qmLeaderboard->appendRow(row);
+        leaderboardModel->appendRow(row);
         leaderboardCount++;
     }
 
-    qmUserHistory->removeRows(0, qmUserHistory->rowCount());
+    userHistoryModel->removeRows(0, userHistoryModel->rowCount());
 
     // populate user history
     for (const QJsonValue &value : sessionsArray)
@@ -261,11 +232,11 @@ void Dialog::setGameData(QJsonObject &data)
 
         if (sessionPlayerUsername == playerUsername)
         {
-            QString timestamp = sessionObject["timestamp"].toString();
             int score = sessionObject["score"].toInt();
             int levelsPlayed = sessionObject["levels_played"].toInt();
             bool isWinner = sessionObject["is_winner"].toBool();
             int gameId = sessionObject["game_id"].toInt();
+            QString timestamp = sessionObject["timestamp"].toString();
 
             QList<QStandardItem *> row;
             row.append(new QStandardItem(timestamp));
@@ -274,31 +245,33 @@ void Dialog::setGameData(QJsonObject &data)
             row.append(new QStandardItem(isWinner ? "true" : "false"));
             row.append(new QStandardItem(QString::number(gameId)));
 
-            qmUserHistory->appendRow(row);
+            userHistoryModel->appendRow(row);
         }
     }
 
     if (ui->currentUserButton->isChecked() && !playerUsername.isEmpty())
     {
-        ui->historyTableView->setModel(qmUserHistory);
+        ui->historyTableView->setModel(userHistoryModel);
     }
     else
     {
-        ui->historyTableView->setModel(qmHistory);
+        ui->historyTableView->setModel(historyModel);
     }
     ui->historyTableView->resizeColumnsToContents();
-    ui->leaderboardTableView->setModel(qmLeaderboard);
+    ui->leaderboardTableView->setModel(leaderboardModel);
     ui->leaderboardTableView->resizeColumnsToContents();
 }
 
 void Dialog::showAllSessions()
 {
-    ui->historyTableView->setModel(qmHistory);
+    ui->historyTableView->setModel(historyModel);
+    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::showSessionsForUser()
 {
-    ui->historyTableView->setModel(qmUserHistory);
+    ui->historyTableView->setModel(userHistoryModel);
+    ui->historyTableView->resizeColumnsToContents();
 }
 
 void Dialog::connectToServer()
@@ -306,10 +279,7 @@ void Dialog::connectToServer()
     bool ipHasText = !ui->ipEdit->text().isEmpty();
     bool portHasText = !ui->portEdit->text().isEmpty();
 
-    if (!ipHasText || !portHasText)
-    {
-        return;
-    }
+    if (!ipHasText || !portHasText) { return; }
 
     socket = new QUdpSocket(this);
 
@@ -323,12 +293,9 @@ void Dialog::connectToServer()
     {
         QJsonObject connectMessage;
         connectMessage["type"] = "CONNECT";
-
         sendJson(connectMessage);
 
         connect(ui->sendButton, &QPushButton::clicked, this, &Dialog::sendMsg);
-
-
     }
 }
 
@@ -392,7 +359,6 @@ void Dialog::sendMsg()
 
 void Dialog::sendJson(QJsonObject data)
 {
-//    qDebug() << data;
     QJsonDocument doc(data);
     QByteArray ba = doc.toJson();
 
@@ -401,7 +367,6 @@ void Dialog::sendJson(QJsonObject data)
 
 void Dialog::processMsg()
 {
-//    qDebug() << "processing message";
     while (socket->hasPendingDatagrams())
     {
         QByteArray ba;
@@ -461,9 +426,7 @@ void Dialog::processMsg()
                 {
                     color = QColor("white");
                 }
-
                 graphicsDialog->addActivePlayer(activeClientId, playerUsername, color);
-//                qDebug() << "add player " << activeClientId;
             }
             ui->submitButton->setEnabled(false);
             ui->textBrowser->append(message);
@@ -491,9 +454,7 @@ void Dialog::processMsg()
         }
         else if (type == "REJECTION")
         {
-            qDebug() << "rejection";
             ui->textBrowser->append("Server: " + message);
-//            disconnectFromServer();
         }
         else if (type == "ACTIVE_CLIENTS")
         {
@@ -544,12 +505,10 @@ void Dialog::processMsg()
                             graphicsDialog->addPlayer(clientId, username, QColor(colorString));
                         }
                         graphicsDialog->setPlayerState(clientData);
-//                        graphicsDialog->checkRoundOver();
                     }
                 }
 
             }
-
             // enable/disable color buttons based on whether the color is taken
             for (const QString &color : colorButtonMap.keys())
             {
@@ -583,28 +542,22 @@ void Dialog::processMsg()
                 {
                     if (!newActiveClients.contains(clientId))
                     {
-                        qDebug() << "removing player " << clientId;
                         graphicsDialog->removePlayer(clientId);
                         graphicsDialog->setPlayerState(clientData);
-//                        graphicsDialog->checkRoundOver();
                     }
                     else if (!isPlayerAlive(clientId))
                     {
-                        qDebug() << "removing dead player " << clientId;
                         graphicsDialog->removePlayerFromScene(clientId);
                         graphicsDialog->setPlayerState(clientData);
-//                        graphicsDialog->checkRoundOver();
                     }
                 }
             }
 
             activeClients = newActiveClients;
-
 //            ui->textBrowser->append("Server: Active clients updated.");
         }
         else if (type == "POSITION")
         {
-//            qDebug() << "updating player positions";
             QJsonArray playersArray = jsonObj["players"].toArray();
             if (graphicsDialog)
             {
@@ -642,6 +595,7 @@ void Dialog::processMsg()
                     break;
                 }
             }
+            ui->textBrowser->append("Close game dialog to return to game lobby.");
         }
         else if (type == "GAMEDATA")
         {
@@ -669,13 +623,11 @@ bool Dialog::isPlayerAlive(int clientId)
     for (const QJsonValue &value : clientDataArray)
     {
         QJsonObject clientData = value.toObject();
-
         if (clientData["clientId"].toInt() == clientId)
         {
             return clientData["isAlive"].toBool();
         }
     }
-
     return false;
 }
 
@@ -697,16 +649,22 @@ void Dialog::onColorButtonClick()
 
     QString color;
 
-    if (button == ui->greenButton) {
+    if (button == ui->greenButton)
+    {
         color = "green";
-    } else if (button == ui->blueButton) {
+    }
+    else if (button == ui->blueButton)
+    {
         color = "blue";
-    } else if (button == ui->yellowButton) {
+    }
+    else if (button == ui->yellowButton)
+    {
         color = "yellow";
-    } else if (button == ui->redButton) {
+    }
+    else if (button == ui->redButton)
+    {
         color = "red";
     }
-
     setPlayerColor(color);
 }
 
@@ -719,7 +677,6 @@ void Dialog::setPlayerColor(QString &color)
     colorMessage["type"] = "PLAYER_COLOR";
     colorMessage["clientId"] = activeClientId;
     colorMessage["color"] = playerColor;
-
     sendJson(colorMessage);
 
     ui->textBrowser->append("You selected the color: " + playerColor);
@@ -738,16 +695,13 @@ void Dialog::submitUsername()
     usernameMessage["type"] = "USERNAME";
     usernameMessage["clientId"] = activeClientId;
     usernameMessage["username"] = playerUsername;
-
     sendJson(usernameMessage);
 
     ui->textBrowser->append("You submitted the username: " + playerUsername);
 }
 
-void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
+void Dialog::sendPlayerPosition(int clientId, int x, int y)
 {
-//    qDebug() << "sending player position";
-
     QJsonObject message;
     message["type"] = "POSITION";
     QJsonArray playerPosArray;
@@ -756,24 +710,28 @@ void Dialog::sendPlayerPosition(int clientId, qreal x, qreal y)
     playerPosData["clientId"] = clientId;
     playerPosData["x"] = x;
     playerPosData["y"] = y;
-
     playerPosArray.append(playerPosData);
     message["players"] = playerPosArray;
 
     sendJson(message);
 }
 
-QString Dialog::getLocalIpAddress() {
+QString Dialog::getLocalIpAddress()
+{
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
 
-    for (const QNetworkInterface &interface : interfaces) {
-        if (interface.flags() & QNetworkInterface::IsUp) {
+    for (const QNetworkInterface &interface : interfaces)
+    {
+        if (interface.flags() & QNetworkInterface::IsUp)
+        {
             QList<QNetworkAddressEntry> entries = interface.addressEntries();
 
-            for (const QNetworkAddressEntry &entry : entries) {
+            for (const QNetworkAddressEntry &entry : entries)
+            {
                 QHostAddress ip = entry.ip();
 
-                if (ip.protocol() == QAbstractSocket::IPv4Protocol && ip != QHostAddress("127.0.0.1")) {
+                if (ip.protocol() == QAbstractSocket::IPv4Protocol && ip != QHostAddress("127.0.0.1"))
+                {
                     return ip.toString();
                 }
             }
@@ -782,9 +740,11 @@ QString Dialog::getLocalIpAddress() {
     return QString();
 }
 
-void Dialog::setLocalIpAddress() {
+void Dialog::setLocalIpAddress()
+{
     QString localIp = getLocalIpAddress();
-    if (!localIp.isEmpty()) {
+    if (!localIp.isEmpty())
+    {
         ui->ipEdit->setText(localIp);
     }
 }

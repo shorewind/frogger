@@ -688,17 +688,26 @@ void Dialog::sendGameData()
         gamesArray.append(gameObject);
     }
 
-    query.exec("SELECT * FROM sessions ORDER BY score DESC");
+    query.exec(R"(
+                   SELECT sessions.id, sessions.game_id, sessions.player_username, sessions.score,
+                          sessions.levels_played, games.timestamp,
+                          (sessions.player_username = games.winner_username) AS is_winner
+                   FROM sessions
+                   INNER JOIN games ON sessions.game_id = games.id
+                   ORDER BY sessions.score DESC
+               )");
     QJsonArray sessionsArray;
 
     while (query.next())
     {
         QJsonObject sessionObject;
         sessionObject["id"] = query.value("id").toInt();
+        sessionObject["timestamp"] = query.value("timestamp").toString();
         sessionObject["game_id"] = query.value("game_id").toInt();
         sessionObject["player_username"] = query.value("player_username").toString();
         sessionObject["score"] = query.value("score").toInt();
         sessionObject["levels_played"] = query.value("levels_played").toInt();
+        sessionObject["is_winner"] = query.value("is_winner").toBool();
 
         sessionsArray.append(sessionObject);
     }

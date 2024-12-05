@@ -1,20 +1,22 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#include <QString>
+// centralized list of parameters
 
-// Centralized list of parameters
-
-const int SCENE_WIDTH = 800;        // Scene dimensions
+const int SCENE_WIDTH = 800;
 const int SCENE_HEIGHT = 600;
 
-const int PLAYER_WIDTH = 30;        // Player dimensions
+const int PLAYER_WIDTH = 30;
 const int PLAYER_HEIGHT = 30;
 
-// Time interval between frames in milliseconds
-// 24 is correct!!!!
+const int LOG_WIDTH = 100;
+const int LOG_HEIGHT = 50;
+
+const int CAR_WIDTH = 100;
+const int CAR_HEIGHT = 38;
+
+// time interval between frames in milliseconds
 const int FRAME_RATE = 24;
-//const int FRAME_RATE = 100;
 
 const int DEFAULT_PORT = 5678;
 
@@ -23,5 +25,8 @@ const int PLAYER_YOFFSET = 55;
 
 const int USERTEXT_PADDING = 4;
 const int MOVE_OFFSET = 38;
+
+const int MOVEMENT_INTERVAL = 16;
+const int COLLISION_INTERVAL = 16;
 
 #endif // DEFS_H

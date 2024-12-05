@@ -1,8 +1,5 @@
 #include "player.h"
 #include "defs.h"
-#include <QDebug>
-#include <QGraphicsScene>
-#include <QGraphicsPixmapItem>
 
 Player::Player(int id, QString username, QColor color, QGraphicsItem *parent)
     : QGraphicsItem(parent), clientId(id), username(username), color(color), x(0), y(0) {
@@ -12,46 +9,54 @@ Player::Player(int id, QString username, QColor color, QGraphicsItem *parent)
     inGame = false;
 }
 
-void Player::goLeft() {
+void Player::goLeft()
+{
     if (x - PLAYER_WIDTH > -SCENE_WIDTH / 2) // check left boundary
         setPos(x - MOVE_OFFSET, y);
 }
 
-void Player::goRight() {
+void Player::goRight()
+{
     if (x + PLAYER_WIDTH < SCENE_WIDTH / 2) // check right boundary
         setPos(x + MOVE_OFFSET, y);
 }
 
-void Player::goUp() {
+void Player::goUp()
+{
     if (y - PLAYER_HEIGHT > -SCENE_HEIGHT / 2) // check top boundary
         setPos(x, y - MOVE_OFFSET);
 }
 
-void Player::goDown() {
+void Player::goDown()
+{
     if (y + PLAYER_HEIGHT < SCENE_HEIGHT / 2) // check bottom boundary
         setPos(x, y + MOVE_OFFSET);
 }
 
-void Player::stop() {
-    // logic to stop movement can be implemented if needed
+void Player::stop()
+{
+    return;
 }
 
-void Player::setPos(qreal newX, qreal newY) {
+void Player::setPos(int newX, int newY)
+{
     x = newX;
     y = newY;
 
     QGraphicsItem::setPos(x, y);
-    update(); // Request a repaint
+    update();  // request a repaint
     emit positionChanged();
 }
 
 // for repainting
-QRectF Player::boundingRect() const {
+QRectF Player::boundingRect() const
+{
     int maxWidth = std::max(PLAYER_WIDTH, textWidth);
     return QRectF(-maxWidth/2, -PLAYER_HEIGHT/2, maxWidth, PLAYER_HEIGHT+textHeight+USERTEXT_PADDING);
 }
 
-void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -83,6 +88,7 @@ QPainterPath Player::shape() const
     return path;
 }
 
-void Player::resetPlayerPos() {
-   setPos(-SCENE_WIDTH/2 + clientId * PLAYER_XOFFSET, SCENE_HEIGHT/2 - PLAYER_YOFFSET); // DONE, Adjust position as needed
+void Player::resetPlayerPos()
+{
+   setPos(-SCENE_WIDTH/2 + clientId * PLAYER_XOFFSET, SCENE_HEIGHT/2 - PLAYER_YOFFSET);
 }
