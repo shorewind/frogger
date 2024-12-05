@@ -477,8 +477,8 @@ void GraphicsDialog::handleLevelOver()
 
 void GraphicsDialog::handleGameOver()
 {
-    //showEndScreen();
-    //endText->setPlainText("Game OVER");
+//    showEndScreen();
+    endText->setPlainText("Game OVER");
     activeGameState = false;
     qDebug() << "Game Over";
 }

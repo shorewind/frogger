@@ -606,9 +606,17 @@ void Dialog::checkGameState()
         sendGameData();
         playersFinished.clear();
 
-        for(auto &player : clientIdMap.values())
+//        for(auto &player : clientIdMap.values())
+//        {
+//            player.finishedLastLevel = false;
+//        }
+        for (int i = 0; i < clientAddresses.size(); ++i)
         {
-            player.finishedLastLevel = false;
+            QString clientKey = QString("%1:%2").arg(clientAddresses[i].toString()).arg(clientPorts[i]);
+            if (clientIdMap.contains(clientKey))
+            {
+                clientIdMap[clientKey].finishedLastLevel = false;
+            }
         }
     }
 }
