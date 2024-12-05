@@ -469,8 +469,8 @@ void GraphicsDialog::handleLevelOver()
     //showEndScreen();  // major issues with this... image cannot be modified after initially showing...
     activeGameState = false;
     qDebug() << "Level Over";
-    levelCount++;
-    QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
+    QString lvlMsg = QString("LEVEL %1 OVER").arg(level);
+    level++;
     endText->setPlainText(lvlMsg);
     QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
 }

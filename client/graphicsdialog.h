@@ -60,6 +60,7 @@ private:
     void showWaterDeathScreen();
     void showEndScreen();
     void handlePlayerDeath();
+    void startNextLevel();
 
     int numLives = 3;
     int obstacleId = 0;
