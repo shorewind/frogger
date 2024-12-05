@@ -33,6 +33,7 @@ public:
     void handleGameOver();
     int score = 0;
     QGraphicsTextItem *header,*display, *endText;
+    QGraphicsPixmapItem *endScreen;
 
 private:
     void keyPressEvent(QKeyEvent *e) override;
@@ -49,26 +50,9 @@ private:
     QGraphicsRectItem *overlay;
 
     void createBoundingLine(int x, int y, int width, int height);
-    int levelCount = 0;
     void initializeHearts();
     void removeHeart();
     void sendScoreToServer();
-    int obstacleId = 0;
-
-    QGraphicsPixmapItem* endScreen;
-
-    bool activeGameState=true;
-
-    QGraphicsRectItem *overlay;
-    int level = 1;
-    int winnerClientId = 0;
-
-public slots:
-    void addActivePlayer(int clientId, QString username, const QColor &color);
-    void addPlayer(int clientId, QString username, const QColor &color);
-    void removePlayer(int clientId);
-    void removePlayerFromScene(int clientId);
-    void updatePlayerPositions(QJsonArray &playersArray);
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
     void reachGoalScreen();
@@ -76,17 +60,6 @@ public slots:
     void showWaterDeathScreen();
     void showEndScreen();
     void handlePlayerDeath();
-    void startNextLevel();
-    
-    int numLives = 3;
-    int obstacleId = 0;
-    int level = 1;
-
-    bool levelOver;
-    bool activeGameState=true;
-
-private slots:
-    void checkCollisions();
 
     int numLives = 3;
     int obstacleId = 0;
@@ -101,5 +74,6 @@ private slots:
 signals:
     void requestClose();
 };
+
 
 #endif // GRAPHICS_H

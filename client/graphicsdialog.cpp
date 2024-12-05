@@ -101,8 +101,6 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createBoundingLine(-SCENE_WIDTH / 2 + 655, -SCENE_HEIGHT / 2 + 100, 65, 10);
     // 7th
     createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
-
-    levelOver = false;
 }
 
 void GraphicsDialog::createBoundingLine(int x, int y, int width, int height)
