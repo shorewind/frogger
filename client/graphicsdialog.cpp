@@ -219,9 +219,8 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
-        reachGoalScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        //endText->setPlainText("LEVEL FINISHED");
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU FINISHED!");
     }
 }
 
@@ -241,9 +240,9 @@ void GraphicsDialog::handlePlayerDeath()
         activePlayer->resetPlayerPos();
         activeGameState=false;
         sendScoreToServer();
-        showEndScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        // endText->setPlainText("YOU DIED");
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
     }
 }
 
@@ -272,6 +271,26 @@ void GraphicsDialog::handleWaterDeath()
 GraphicsDialog::~GraphicsDialog()
 {
     delete scene;
+}
+
+void GraphicsDialog::startNextLevel()
+{
+    qDebug() << "Start next round called";
+    for(auto &player : clientPlayers.values())
+    {
+        if (!player->dead)
+        {
+            qDebug() << "Player not dead";
+            player->finished = false;
+            activeGameState = true;
+//            roundOver = false;
+//            endScreen->hide();
+//            scene->removeItem(endScreen);
+            overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
+            endText->setPlainText("");
+            player->resetPlayerPos();
+        }
+    }
 }
 
 // top is -211 and bottom is 245
@@ -447,10 +466,13 @@ void GraphicsDialog::sendScoreToServer()
 
 void GraphicsDialog::handleLevelOver()
 {
-    //showEndScreen();
-    //endText->setPlainText("LEVEL OVER");
+    //showEndScreen();  // major issues with this... image cannot be modified after initially showing...
     activeGameState = false;
     qDebug() << "Level Over";
+    levelCount++;
+    QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
+    endText->setPlainText(lvlMsg);
+    QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
 }
 
 void GraphicsDialog::handleGameOver()
