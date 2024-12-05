@@ -95,6 +95,41 @@ Dialog::Dialog(QWidget *parent) :
     ui->ipEdit->setStyleSheet(inputFieldStyle);
     ui->portEdit->setStyleSheet(inputFieldStyle);
 
+    // styling for the allPlayersButton to have Orbitron font, white text initially, and neon blue text when clicked
+    ui->allPlayersButton->setStyleSheet(R"(
+        QRadioButton {
+            color: white;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QRadioButton:checked {
+            color: #00ffff;
+        }
+        QRadioButton::indicator {
+            width: 16px;
+            height: 16px;
+        }
+    )");
+
+    // styling for the currentUserButton to have white text + other features
+    ui->currentUserButton->setStyleSheet(R"(
+        QRadioButton {
+            color: white;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        QRadioButton:checked {
+            color: #00ffff;
+        }
+        QRadioButton::indicator {
+            width: 16px;
+            height: 16px;
+        }
+    )");
+
     // styling for the connect button
     ui->connectButton->setStyleSheet(R"(
         QPushButton {
@@ -109,25 +144,6 @@ Dialog::Dialog(QWidget *parent) :
             color: #000000;
         }
     )");
-
-    // Set up button styles for color selection
-//    QString buttonStyle = R"(
-//        QPushButton {
-//            border: 2px solid white;
-//            border-radius: 10px;
-//            font: bold 12px;
-//        }
-//        QPushButton:hover {
-//            background-color: %1;
-//            color: #000000;
-//        }
-//    )";
-
-//i dont know why this is being dumb but now the buttons should be the same
-//    ui->greenButton->setStyleSheet(buttonStyle.arg("green"));
-//    ui->blueButton->setStyleSheet(buttonStyle.arg("blue"));
-//    ui->yellowButton->setStyleSheet(buttonStyle.arg("yellow"));
-//    ui->redButton->setStyleSheet(buttonStyle.arg("red"));
 
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
