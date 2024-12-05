@@ -115,7 +115,7 @@ GraphicsDialog::GraphicsDialog(QWidget *parent, QUdpSocket *socket) :
     createBoundingLine(-SCENE_WIDTH / 2 + 770, -SCENE_HEIGHT / 2 + 100, 30, 10);
 
     // initialize round flag
-    roundOver = false;
+//    roundOver = false;
 
 }
 
@@ -251,9 +251,9 @@ void GraphicsDialog::handlePlayerDeath()
 //        scene->removeItem(activePlayer);
         sendScoreToServer();
 //        checkRoundOver();
-        showEndScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        // endText->setPlainText("YOU DIED");
+//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
     }
 }
 
@@ -285,78 +285,106 @@ GraphicsDialog::~GraphicsDialog() {
     delete scene;
 }
 
-void GraphicsDialog::checkRoundOver()
-{
-    bool allPlayersDead = true;
+//void GraphicsDialog::checkRoundOver()
+//{
+//    bool allPlayersDead = true;
 
-    for (auto &player : clientPlayers.values())
-    {
-        if (!player->dead)  // if a player is not dead, set the flag to false and exit the loop
-        {
-            allPlayersDead = false;
-            break;   // exit early, no need to check the rest of the players
-        }
-    }
+//    for (auto &player : clientPlayers.values())
+//    {
+//        if (!player->dead)  // if a player is not dead, set the flag to false and exit the loop
+//        {
+//            allPlayersDead = false;
+//            break;   // exit early, no need to check the rest of the players
+//        }
+//    }
 
-    if (allPlayersDead && !roundOver)
-    {
-        qDebug() << "game over";
-        activeGameState = false;
-        roundOver = true;
+//    if (allPlayersDead && !roundOver)
+//    {
+//        qDebug() << "game over";
+//        activeGameState = false;
+//        roundOver = true;
 
-        QJsonObject levelMsg;
-        levelMsg["type"] = "GAME_OVER";
+//        QJsonObject levelMsg;
+//        levelMsg["type"] = "GAME_OVER";
 
-        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog)
-        {
-            parentDialog->sendJson(levelMsg);
-        }
-        return;   // exit early if the game is over
-    }
+//        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+//        if (parentDialog)
+//        {
+//            parentDialog->sendJson(levelMsg);
+//        }
+//        return;   // exit early if the game is over
+//    }
 
-    bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
-    for(auto &player : clientPlayers.values())
-    {
-//        qDebug() << player->username << player->finished << player->dead << player->inGame;
+//    bool done = true;   // If any of the players are still playing, not finished or dead, this will get set to false
+//    for(auto &player : clientPlayers.values())
+//    {
+////        qDebug() << player->username << player->finished << player->dead << player->inGame;
 
-        if ( player->finished || player->dead || !player->inGame) // Player is either dead or at the lily pads
-        {
-            done = true;
-        }
-        else    // player is either not dead or not to the lily pads yet, keep round running
-        {
-            done = false;
-            break;  // only need one to throw false so exit early
-        }
-    }
+//        if ( player->finished || player->dead || !player->inGame) // Player is either dead or at the lily pads
+//        {
+//            done = true;
+//        }
+//        else    // player is either not dead or not to the lily pads yet, keep round running
+//        {
+//            done = false;
+//            break;  // only need one to throw false so exit early
+//        }
+//    }
 
-    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
-    {
-        qDebug() << "round over";
-        activeGameState = false;    // lock player movement
-        roundOver = true;           // round has ended
-        QJsonObject levelMsg;
-        levelMsg["type"] = "LEVEL_OVER";
+//    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
+//    {
+//        qDebug() << "round over";
+//        activeGameState = false;    // lock player movement    bool allPlayersDead = true;
 
-        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
-        if (parentDialog)
-        {
-            parentDialog->sendJson(levelMsg);
-        }
-        QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
-    }
-}
+//        for (auto &player : clientPlayers.values())
+//        {
+//            if (!player->dead)  // if a player is not dead, set the flag to false and exit the loop
+//            {
+//                allPlayersDead = false;
+//                break;   // exit early, no need to check the rest of the players
+//            }
+//        }
+
+//        if (allPlayersDead && !roundOver)
+//        {
+//            qDebug() << "game over";
+//            activeGameState = false;
+//            roundOver = true;
+
+//            QJsonObject levelMsg;
+//            levelMsg["type"] = "GAME_OVER";
+
+//            Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+//            if (parentDialog)
+//            {
+//                parentDialog->sendJson(levelMsg);
+//            }
+//            return;   // exit early if the game is over
+//        }
+//        roundOver = true;           // round has ended
+//        QJsonObject levelMsg;
+//        levelMsg["type"] = "LEVEL_OVER";
+
+//        Dialog *parentDialog = qobject_cast<Dialog*>(parent());
+//        if (parentDialog)
+//        {
+//            parentDialog->sendJson(levelMsg);
+//        }
+//        QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
+//    }
+//}
 
 void GraphicsDialog::startNextLevel()
 {
+    qDebug() << "Start next round called";
     for(auto &player : clientPlayers.values())
     {
         if (!player->dead)
         {
+            qDebug() << "Player not dead";
             player->finished = false;
             activeGameState = true;
-            roundOver = false;
+//            roundOver = false;
 //            endScreen->hide();
 //            scene->removeItem(endScreen);
             overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
@@ -563,6 +591,7 @@ void GraphicsDialog::handleLevelOver()
     levelCount++;
     QString lvlMsg = QString("LEVEL %1 OVER").arg(levelCount);
     endText->setPlainText(lvlMsg);
+    QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
 }
 
 void GraphicsDialog::handleGameOver()

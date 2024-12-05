@@ -537,7 +537,7 @@ void Dialog::checkGameState()
         QList<ClientData> playersResults;
         qDebug() << "game over";
         gameOver = true;
-        roundOver = true;
+//        roundOver = true;
 
         for (auto &player : clientIdMap.values())
         {
@@ -593,17 +593,23 @@ void Dialog::checkGameState()
         }
     }
 
-    if (done && !roundOver) // if none of the players are still playing and the round hasn't already ended
+    if (done) // if none of the players are still playing and the round hasn't already ended
     {
         qDebug() << "level over";
-        roundOver = true;
+//        roundOver = true;
         QJsonObject levelOverMsg;
         levelOverMsg["type"] = "LEVEL_OVER";
+
         levelOverMsg["message"] = "Level Over.";
         ui->textBrowser->append(levelOverMsg["message"].toString());
         tx(levelOverMsg);
         sendGameData();
         playersFinished.clear();
+
+        for(auto &player : clientIdMap.values())
+        {
+            player.finishedLastLevel = false;
+        }
     }
 }
 
