@@ -208,7 +208,7 @@ void GraphicsDialog::checkCollisions()
     {
         if (!activePlayer->onLog) {
             qDebug() << "water death";
-            handleWaterDeath();
+//            handleWaterDeath();
         }
     }
 
@@ -471,8 +471,12 @@ void GraphicsDialog::handleLevelOver()
     qDebug() << "Level Over";
     QString lvlMsg = QString("LEVEL %1 OVER").arg(level);
     level++;
+    for (auto& obstacle : obstacles.values())
+    {
+        obstacle->speed *= 1.1;
+    }
     endText->setPlainText(lvlMsg);
-    QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
+    QTimer::singleShot(3000, this, &GraphicsDialog::startNextLevel);
 }
 
 void GraphicsDialog::handleGameOver()
