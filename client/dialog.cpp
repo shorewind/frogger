@@ -691,6 +691,12 @@ void Dialog::submitUsername()
         return;
     }
 
+    if (isUsernameTaken(playerUsername))
+    {
+        ui->textBrowser->append("The username '" + playerUsername + "' is already taken. Please choose another.");
+        return;
+    }
+
     QJsonObject usernameMessage;
     usernameMessage["type"] = "USERNAME";
     usernameMessage["clientId"] = activeClientId;
@@ -698,6 +704,19 @@ void Dialog::submitUsername()
     sendJson(usernameMessage);
 
     ui->textBrowser->append("You submitted the username: " + playerUsername);
+}
+
+bool Dialog::isUsernameTaken(QString username)
+{
+    for (const QJsonValue &value : clientDataArray)
+    {
+        QJsonObject clientData = value.toObject();
+        if (clientData["username"].toString() == username)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Dialog::sendPlayerPosition(int clientId, int x, int y)

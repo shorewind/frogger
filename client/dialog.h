@@ -64,6 +64,7 @@ private:
     void setPlayerColor(QString &color);
     int parseClientIdFromMsg(const QString &msg);
     bool isPlayerAlive(int clientId);
+    bool isUsernameTaken(QString username);
 
 private slots:
     void connectToServer();

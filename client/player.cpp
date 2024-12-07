@@ -95,14 +95,19 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
         playerImage = QPixmap(":images/white_frog.png");
     }
 
-    playerImage = playerImage.scaled(PLAYER_WIDTH, PLAYER_HEIGHT, Qt::KeepAspectRatio);
-    painter->save();
-    painter->rotate(angle);
-    painter->drawPixmap(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, playerImage);
-    painter->restore();
-
-//    painter->setBrush(color);
-//    painter->drawRect(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT);
+    if (!playerImage.isNull())
+    {
+        playerImage = playerImage.scaled(PLAYER_WIDTH, PLAYER_HEIGHT, Qt::KeepAspectRatio);
+        painter->save();
+        painter->rotate(angle);
+        painter->drawPixmap(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, playerImage);
+        painter->restore();
+    }
+    else  // default rectangle
+    {
+        painter->setBrush(color);
+        painter->drawRect(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT);
+    }
 
     // add player username beneath player icon of size of username text
     painter->setPen(QPen(Qt::white));
