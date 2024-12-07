@@ -7,28 +7,33 @@ Player::Player(int id, QString username, QColor color, QGraphicsItem *parent)
     finished = false;
     dead = false;
     inGame = false;
+    angle = 0;
 }
 
 void Player::goLeft()
 {
+    angle = -90;
     if (x - PLAYER_WIDTH > -SCENE_WIDTH / 2) // check left boundary
         setPos(x - MOVE_OFFSET, y);
 }
 
 void Player::goRight()
 {
+    angle = 90;
     if (x + PLAYER_WIDTH < SCENE_WIDTH / 2) // check right boundary
         setPos(x + MOVE_OFFSET, y);
 }
 
 void Player::goUp()
 {
+    angle = 0;
     if (y - PLAYER_HEIGHT > -SCENE_HEIGHT / 2) // check top boundary
         setPos(x, y - MOVE_OFFSET);
 }
 
 void Player::goDown()
 {
+    angle = 180;
     if (y + PLAYER_HEIGHT < SCENE_HEIGHT / 2) // check bottom boundary
         setPos(x, y + MOVE_OFFSET);
 }
@@ -67,12 +72,41 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 //    painter->setPen(QPen(Qt::blue, 1, Qt::DotLine));
 //    painter->drawPath(shape());
 
-    painter->setBrush(color);
-    painter->drawRect(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT);
-    painter->setPen(QPen(Qt::white));
-    painter->setFont(QFont("Arial", 8));
+    QPixmap playerImage;
+
+    if (color == QColor("red"))
+    {
+        playerImage = QPixmap(":images/red_frog.png");
+    }
+    else if (color == QColor("blue"))
+    {
+        playerImage = QPixmap(":images/blue_frog.png");
+    }
+    else if (color == QColor("green"))
+    {
+        playerImage = QPixmap(":images/green_frog.png");
+    }
+    else if (color == QColor("yellow"))
+    {
+        playerImage = QPixmap(":images/yellow_frog.png");
+    }
+    else
+    {
+        playerImage = QPixmap(":images/white_frog.png");
+    }
+
+    playerImage = playerImage.scaled(PLAYER_WIDTH, PLAYER_HEIGHT, Qt::KeepAspectRatio);
+    painter->save();
+    painter->rotate(angle);
+    painter->drawPixmap(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, playerImage);
+    painter->restore();
+
+//    painter->setBrush(color);
+//    painter->drawRect(-PLAYER_WIDTH/2, -PLAYER_HEIGHT/2, PLAYER_WIDTH, PLAYER_HEIGHT);
 
     // add player username beneath player icon of size of username text
+    painter->setPen(QPen(Qt::white));
+    painter->setFont(QFont("Arial", 8));
     QFontMetrics metrics(painter->font());
     textWidth = metrics.horizontalAdvance(username);
     textHeight = metrics.height();

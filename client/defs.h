@@ -6,8 +6,8 @@
 const int SCENE_WIDTH = 800;
 const int SCENE_HEIGHT = 600;
 
-const int PLAYER_WIDTH = 30;
-const int PLAYER_HEIGHT = 30;
+const int PLAYER_WIDTH = 35;
+const int PLAYER_HEIGHT = 35;
 
 const int LOG_WIDTH = 100;
 const int LOG_HEIGHT = 50;
