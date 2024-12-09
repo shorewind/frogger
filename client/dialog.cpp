@@ -145,6 +145,13 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
+    // styling for ready checkbox
+    ui->checkBox->setStyleSheet(R"(
+        QCheckBox {
+            color: white;
+        }
+    )");
+
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
 
@@ -159,6 +166,8 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, &Dialog::setPlayerReady);
 
     historyModel = new QStandardItemModel();
     leaderboardModel = new QStandardItemModel();
@@ -319,6 +328,17 @@ void Dialog::disconnectFromServer()
     delete socket;
 }
 
+void Dialog::setPlayerReady()
+{
+    if (ui->checkBox->isChecked())
+    {
+        QJsonObject readyMsg;
+        readyMsg["type"] = "READY";
+        readyMsg["message"] = QString("%1 is ready.").arg(playerUsername);
+        sendJson(readyMsg);
+    }
+}
+
 void Dialog::leaveGame()
 {
     QJsonObject disconnectMessage;
@@ -428,6 +448,7 @@ void Dialog::processMsg()
                 graphicsDialog->addActivePlayer(activeClientId, playerUsername, color);
             }
             ui->submitButton->setEnabled(false);
+            ui->checkBox->setChecked(false);
             ui->textBrowser->append(message);
         }
         else if (type == "DISCONNECT_ALL" || type == "KICKED")

@@ -359,6 +359,16 @@ void Dialog::closeEvent(QCloseEvent *event)
 
 void Dialog::startGame()
 {
+    if (activeGame) return;
+    // break if not all players ready
+    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
+    {
+        if (it.value().clientId != -1 && it.value().isReady == false)
+        {
+            return;
+        }
+    }
+
     QJsonObject startMessage;
     startMessage["type"] = "START";
     startMessage["message"] = "Game Started.";
@@ -377,6 +387,7 @@ void Dialog::startGame()
         {
             it.value().isInGame = true;  // mark client as in the game
             it.value().isAlive = true;
+            it.value().isReady = false;
             clientIdsInGame.append(it.value().clientId);
         }
     }
@@ -513,6 +524,11 @@ void Dialog::rx()
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
             sendGameData();
             return;
+        }
+        else if (type == "READY")
+        {
+            clientIdMap[clientKey].isReady = true;
+            startGame();
         }
         else if (type == "MESSAGE")
         {

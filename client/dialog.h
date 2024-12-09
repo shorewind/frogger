@@ -15,6 +15,7 @@
 #include <QJsonArray>
 #include <QTableView>
 #include <QStandardItemModel>
+#include <QCheckBox>
 
 class GraphicsDialog;
 
@@ -76,6 +77,7 @@ private slots:
     void onSubmitButtonClick();
     void onSendButtonClick();
     void submitUsername();
+    void setPlayerReady();
 };
 
 #endif // DIALOG_H

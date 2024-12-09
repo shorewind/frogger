@@ -11,6 +11,7 @@ struct ClientData
     bool isInGame;
     bool isAlive;
     bool finishedLastLevel;
+    bool isReady;
     int levelsPlayed;
     int score;
 
@@ -20,6 +21,7 @@ struct ClientData
                bool inGame = false,
                bool isAlive = false,
                bool finished = false,
+               bool ready = false,
                int level = 1,
                int score = 0)  :   clientId(id),
                                    username(user),
@@ -27,6 +29,7 @@ struct ClientData
                                    isInGame(inGame),
                                    isAlive(isAlive),
                                    finishedLastLevel(finished),
+                                   isReady(ready),
                                    levelsPlayed(level),
                                    score(score)
                                    {}

@@ -208,7 +208,7 @@ void GraphicsDialog::checkCollisions()
     {
         if (!activePlayer->onLog) {
             qDebug() << "water death";
-//            handleWaterDeath();
+            handleWaterDeath();
         }
     }
 
@@ -262,9 +262,9 @@ void GraphicsDialog::handleWaterDeath()
         activePlayer->resetPlayerPos();
         activeGameState=false;
         sendScoreToServer();
-        showWaterDeathScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        //endText->setPlainText("YOU DIED");
+//        showWaterDeathScreen();
+        overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
+        endText->setPlainText("YOU DIED");
     }
 }
 
