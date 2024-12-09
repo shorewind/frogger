@@ -42,7 +42,7 @@ private:
     QList<int> clientIdsInGame;
     QList<int>playersFinished;
     QMap<QString, ClientData> clientIdMap;  // holds clientKey, clientId, and in_game bool
-    QMap<int, QPoint> playerPositions;
+    QMap<int, QJsonObject> playerPositions;
     QJsonArray playersArray;
     QJsonArray obstaclesArray;
     bool activeGame;
@@ -64,6 +64,10 @@ private:
     QString getLocalIpAddress();
     void setLocalIpAddress();
     void setupDatabase();
+    void setActiveClient(ClientData clientData);
+    void removeActiveClient(ClientData clientData);
+    void kickClient();
+    QString getClientKeyFromClientId(int clientId);
 
 private slots:
     void rx();  // receive

@@ -33,7 +33,7 @@ public:
 
 public slots:
     void sendJson(QJsonObject data);
-    void sendPlayerPosition(int clientId, int x, int y);
+    void sendPlayerPosition(int clientId, int x, int y, int angle);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

@@ -334,6 +334,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         int clientId = playerData["clientId"].toInt();
         int x = playerData["x"].toInt();
         int y = playerData["y"].toInt();
+        int angle = playerData["angle"].toInt();
 
         if (clientId == activePlayer->clientId)
         {
@@ -344,6 +345,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
+            clientPlayers[clientId]->angle = angle;
         }
     }
 }
@@ -555,7 +557,7 @@ void GraphicsDialog::addActivePlayer(int clientId, QString username, const QColo
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
         if (parentDialog)
         {
-            parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
+            parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y, activePlayer->angle);
         }
     });
 }
