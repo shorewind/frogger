@@ -183,7 +183,7 @@ void Dialog::kickClient()
 
             QJsonDocument kickedJson(kickedMsg);
 
-            ui->textBrowser->append(kickedMsg["message"].toString());
+//            ui->textBrowser->append(kickedMsg["message"].toString());
             socket->writeDatagram(kickedJson.toJson(), address, port);
         }
     }
@@ -361,11 +361,17 @@ void Dialog::startGame()
 {
     if (activeGame) return;
     // break if not all players ready
-    for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
+
+    QPushButton *button = qobject_cast<QPushButton*>(sender());
+
+    if (!button || button != ui->startButton)
     {
-        if (it.value().clientId != -1 && it.value().isReady == false)
+        for (auto it = clientIdMap.begin(); it != clientIdMap.end(); ++it)
         {
-            return;
+            if (it.value().clientId != -1 && it.value().isReady == false)
+            {
+                return;
+            }
         }
     }
 
@@ -529,6 +535,14 @@ void Dialog::rx()
         {
             clientIdMap[clientKey].isReady = true;
             startGame();
+            ui->textBrowser->append(QString("%1 ready!")
+                                     .arg(clientIdMap[clientKey].username));
+
+            QJsonObject outgoingMessage;
+            outgoingMessage["type"] = "MESSAGE";
+            outgoingMessage["message"] = QString("%1 ready!")
+                    .arg(clientIdMap[clientKey].username);
+            tx(outgoingMessage);
         }
         else if (type == "MESSAGE")
         {
@@ -709,7 +723,7 @@ void Dialog::checkGameState()
         }
     }
 
-    if (done && clientIdsInGame.size() >0) // if none of the players are still playing and the round hasn't already ended
+    if (done && clientIdsInGame.size() > 0 && !gameOver) // if none of the players are still playing and the round hasn't already ended
     {
         qDebug() << "level over";
         QJsonObject levelOverMsg;

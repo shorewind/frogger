@@ -481,10 +481,27 @@ void GraphicsDialog::handleLevelOver()
     QTimer::singleShot(3000, this, &GraphicsDialog::startNextLevel);
 }
 
-void GraphicsDialog::handleGameOver()
+void GraphicsDialog::handleGameOver(QJsonArray resultsArray)
 {
 //    showEndScreen();
-    endText->setPlainText("Game OVER");
+    int y = -150;
+    for (const QJsonValue &value : resultsArray)
+    {
+        QJsonObject playerResult = value.toObject();
+        QString text = QString("%1\t%2\t%3\t%4\n")
+                       .arg(QString::number(playerResult["placement"].toInt()))
+                       .arg(playerResult["username"].toString())
+                       .arg(QString::number(playerResult["score"].toInt()))
+                       .arg(QString::number(playerResult["levels_played"].toInt()));
+        QGraphicsTextItem *textItem = new QGraphicsTextItem(text);
+        textItem->setFont(QFont("Georgia", 36, QFont::Bold));
+        textItem->setDefaultTextColor(Qt::red);
+        textItem->setZValue(11);
+        textItem->setPos(-200, y);
+        scene->addItem(textItem);
+        y += 25;
+    }
+    endText->setPlainText("GAME OVER!!");
     activeGameState = false;
     qDebug() << "Game Over";
 }
@@ -520,7 +537,7 @@ void GraphicsDialog::drawScoreDisplay()
     endText->setDefaultTextColor(Qt::white);
     endText->setFont(QFont("Georgia", 36, QFont::Bold));
     endText->setDefaultTextColor(Qt::red);
-    endText->setPos(-150, 0);
+    endText->setPos(-170, -170);
     endText->setZValue(11);
     scene->addItem(endText);
 }

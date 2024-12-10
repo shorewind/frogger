@@ -30,7 +30,7 @@ public:
     void updatePlayerPositions(QJsonArray &playersArray);
     void setPlayerState(QJsonObject clientData);
     void handleLevelOver();
-    void handleGameOver();
+    void handleGameOver(QJsonArray resultsArray);
     int score = 0;
     QGraphicsTextItem *header,*display, *endText;
     QGraphicsPixmapItem *endScreen;

@@ -509,7 +509,7 @@ void Dialog::processMsg()
                 }
 
                 // track taken colors
-                if (clientId != activeClientId && !colorString.isEmpty())
+                if (clientId != -1 && clientId != activeClientId && !colorString.isEmpty())
                 {
                     clientColors[clientId] = colorString;
                 }
@@ -533,6 +533,29 @@ void Dialog::processMsg()
                 }
 
             }
+
+            // check for players that are no longer active
+            for (int clientId : activeClients)
+            {
+                if (graphicsDialog)
+                {
+                    if (!newActiveClients.contains(clientId))
+                    {
+                        graphicsDialog->removePlayer(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        clientColors.remove(clientId);
+                    }
+                    else if (!isPlayerAlive(clientId))
+                    {
+                        graphicsDialog->removePlayerFromScene(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        clientColors.remove(clientId);
+                    }
+                }
+            }
+
+            activeClients = newActiveClients;
+
             // enable/disable color buttons based on whether the color is taken
             for (const QString &color : colorButtonMap.keys())
             {
@@ -558,26 +581,6 @@ void Dialog::processMsg()
                    colorButtonMap[color]->setStyleSheet("background-color: " + color);
                }
             }
-
-            // check for players that are no longer active
-            for (int clientId : activeClients)
-            {
-                if (graphicsDialog)
-                {
-                    if (!newActiveClients.contains(clientId))
-                    {
-                        graphicsDialog->removePlayer(clientId);
-                        graphicsDialog->setPlayerState(clientData);
-                    }
-                    else if (!isPlayerAlive(clientId))
-                    {
-                        graphicsDialog->removePlayerFromScene(clientId);
-                        graphicsDialog->setPlayerState(clientData);
-                    }
-                }
-            }
-
-            activeClients = newActiveClients;
 //            ui->textBrowser->append("Server: Active clients updated.");
         }
         else if (type == "POSITION")
@@ -598,18 +601,19 @@ void Dialog::processMsg()
         }
         else if (type == "GAME_OVER")
         {
+            QJsonArray resultsArray = jsonObj["results"].toArray();
+
             if (graphicsDialog)
             {
-                graphicsDialog->handleGameOver();
+                graphicsDialog->handleGameOver(resultsArray);
             }
             ui->textBrowser->append(message);
 
-            QJsonArray resultsArray = jsonObj["results"].toArray();
             for (const QJsonValue &value : resultsArray)
             {
                 QJsonObject playerResult = value.toObject();
 
-                if (playerResult["client_id"].toInt() == activeClientId)
+                if (playerResult["username"].toString() == playerUsername)
                 {
                     QString playerDetails = QString("Placement: %1, Score: %2, Levels Played: %3")
                                                .arg(QString::number(playerResult["placement"].toInt()))
