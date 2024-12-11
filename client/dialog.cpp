@@ -288,6 +288,26 @@ void Dialog::connectToServer()
 
     if (!ipHasText || !portHasText) { return; }
 
+    if (validConnection)
+    {
+        validConnection = false;
+        leaveGame();
+        disconnectFromServer();
+        ui->textBrowser->clear();
+//        ui->connectButton->setEnabled(true);
+        ui->sendButton->setEnabled(false);
+        ui->submitButton->setEnabled(false);
+        ui->greenButton->setEnabled(false);
+        ui->blueButton->setEnabled(false);
+        ui->yellowButton->setEnabled(false);
+        ui->redButton->setEnabled(false);
+        ui->greenButton->setStyleSheet("");
+        ui->blueButton->setStyleSheet("");
+        ui->yellowButton->setStyleSheet("");
+        ui->redButton->setStyleSheet("");
+        ui->currentUserButton->setEnabled(false);
+    }
+
     socket = new QUdpSocket(this);
 
     ip = ui->ipEdit->text();
@@ -324,6 +344,7 @@ void Dialog::disconnectFromServer()
     disconnectMessage["type"] = "DISCONNECT";
     sendJson(disconnectMessage);
 
+    clientColors.clear();
     socket->disconnectFromHost();
     delete socket;
 }
@@ -334,7 +355,16 @@ void Dialog::setPlayerReady()
     {
         QJsonObject readyMsg;
         readyMsg["type"] = "READY";
-        readyMsg["message"] = QString("%1 is ready.").arg(playerUsername);
+        readyMsg["status"] = true;
+        readyMsg["message"] = QString("%1 ready!").arg(playerUsername);
+        sendJson(readyMsg);
+    }
+    else
+    {
+        QJsonObject readyMsg;
+        readyMsg["type"] = "READY";
+        readyMsg["status"] = false;
+        readyMsg["message"] = QString("%1 not ready!").arg(playerUsername);
         sendJson(readyMsg);
     }
 }
@@ -354,6 +384,7 @@ void Dialog::leaveGame()
         graphicsDialog = nullptr;
     }
     ui->submitButton->setEnabled(true);
+    ui->connectButton->setEnabled(true);
 }
 
 void Dialog::onSubmitButtonClick()
@@ -408,12 +439,13 @@ void Dialog::processMsg()
         {
             validConnection = true;
             ui->textBrowser->setText("Connected to Server: " + ip + ":" + QString::number(port));
+            clientColors.clear();
             ui->ipEdit->clear();
             ui->portEdit->clear();
             activeClientId = parseClientIdFromMsg(message);
             ui->textBrowser->append("Server: " + message);
             ui->sendButton->setEnabled(true);
-            ui->connectButton->setEnabled(false);
+//            ui->connectButton->setEnabled(false);
             ui->submitButton->setEnabled(true);
             ui->greenButton->setEnabled(true);
             ui->blueButton->setEnabled(true);
@@ -448,6 +480,7 @@ void Dialog::processMsg()
                 graphicsDialog->addActivePlayer(activeClientId, playerUsername, color);
             }
             ui->submitButton->setEnabled(false);
+            ui->connectButton->setEnabled(false);
             ui->checkBox->setChecked(false);
             ui->textBrowser->append(message);
         }
@@ -471,10 +504,6 @@ void Dialog::processMsg()
             setLocalIpAddress();
             ui->portEdit->setText(QString::number(DEFAULT_PORT));
             ui->currentUserButton->setEnabled(false);
-        }
-        else if (type == "KICKED")
-        {
-
         }
         else if (type == "REJECTION")
         {

@@ -170,8 +170,6 @@ void Dialog::kickClient()
 
     if (clientKey != "")
     {
-        removeClient(clientKey);
-        broadcastActiveClients();
         QStringList parts = clientKey.split(":");
         if (parts.size() == 2)
         {
@@ -183,9 +181,11 @@ void Dialog::kickClient()
 
             QJsonDocument kickedJson(kickedMsg);
 
-//            ui->textBrowser->append(kickedMsg["message"].toString());
+            ui->textBrowser->append(QString("%1 got kicked!").arg(clientIdMap[clientKey].username));
             socket->writeDatagram(kickedJson.toJson(), address, port);
         }
+        removeClient(clientKey);
+        broadcastActiveClients();
     }
 }
 
@@ -263,6 +263,9 @@ bool sessionExists(int gameId, const QString &playerUsername)
 void insertOrUpdateSession(int gameId, const QString &playerUsername, int score, int levelsPlayed)
 {
     QSqlQuery query;
+
+    if (score == 0) return;
+
     if (sessionExists(gameId, playerUsername))
     {
         query.prepare("UPDATE sessions SET score = :score, levels_played = :levels_played "
@@ -301,9 +304,22 @@ void Dialog::configureServer()
     bool ipHasText = !ui->ipEdit->text().isEmpty();
     bool portHasText = !ui->portEdit->text().isEmpty();
 
-    if (!ipHasText || !portHasText)
+    if (!ipHasText || !portHasText) { return; }
+
+    if (availableIds.size() != MAX_CLIENTS)
     {
-        return;
+        qDebug() << availableIds.size() << MAX_CLIENTS;
+        QJsonObject disconnectAllMessage;
+        disconnectAllMessage["type"] = "DISCONNECT_ALL";
+        disconnectAllMessage["message"] = "Server is shutting down. Disconnecting all clients.";
+
+        tx(disconnectAllMessage);
+    }
+
+    if (socket && socket->isOpen()) {
+        qDebug() << "closing socket";
+        socket->close();
+        qDebug() << "Server socket disconnected.";
     }
 
     socket = new QUdpSocket(this);
@@ -330,7 +346,7 @@ void Dialog::configureServer()
     {
         ui->textBrowser->append("Server Active: " + ip + ":" + QString::number(port));
         ui->textBrowser->append("Connect at least one client to start game.");
-        ui->configureButton->setEnabled(false);
+//        ui->configureButton->setEnabled(false);
     }
 
     activeGame = false;
@@ -384,6 +400,7 @@ void Dialog::startGame()
     activeGame = true;
     gameOver = false;
     ui->startButton->setEnabled(false);
+    ui->configureButton->setEnabled(false);
     currentGameId++;
 
     // add all connected clients to the game
@@ -517,6 +534,7 @@ void Dialog::rx()
                 {
                     activeGame = false;
                     ui->startButton->setEnabled(true);
+                    ui->configureButton->setEnabled(false);
                     ui->textBrowser->append("Game Closed.");
 
                     QJsonObject gameClosedMessage;
@@ -533,15 +551,20 @@ void Dialog::rx()
         }
         else if (type == "READY")
         {
-            clientIdMap[clientKey].isReady = true;
-            startGame();
-            ui->textBrowser->append(QString("%1 ready!")
-                                     .arg(clientIdMap[clientKey].username));
+            if (jsonObj["status"].toBool() == true)
+            {
+                clientIdMap[clientKey].isReady = true;
+                startGame();
+            }
+            else if (jsonObj["status"].toBool() == false)
+            {
+                clientIdMap[clientKey].isReady = false;
+            }
+            ui->textBrowser->append(jsonObj["message"].toString());
 
             QJsonObject outgoingMessage;
             outgoingMessage["type"] = "MESSAGE";
-            outgoingMessage["message"] = QString("%1 ready!")
-                    .arg(clientIdMap[clientKey].username);
+            outgoingMessage["message"] = jsonObj["message"];
             tx(outgoingMessage);
         }
         else if (type == "MESSAGE")
@@ -586,6 +609,7 @@ void Dialog::rx()
                                          .arg(username));
             }
             broadcastActiveClients();
+            sendGameData();
         }
         else if (type == "PLAYER_COLOR")
         {
@@ -625,10 +649,10 @@ void Dialog::rx()
                     playerFinishedMsg["clientId"] = clientIdMap[clientKey].clientId;
                     playerFinishedMsg["placement"] = playersFinished.indexOf(clientIdMap[clientKey].clientId) + 1;  // 1-based placement
                     QList<int> pointsForPlacement = {250, 200, 150, 100};
-                    int placementPoints = (playerFinishedMsg["placement"].toInt() < pointsForPlacement.size()) ? pointsForPlacement[playerFinishedMsg["placement"].toInt()] : 0;
+                    int placementPoints = (playerFinishedMsg["placement"].toInt() < pointsForPlacement.size()) ? pointsForPlacement[playerFinishedMsg["placement"].toInt()-1] : 0;
                     clientIdMap[clientKey].score += placementPoints;
                     playerFinishedMsg["score"] = clientIdMap[clientKey].score;
-                    playerFinishedMsg["message"] = QString("%1 finished level in %2 place earning %3 bonus points. Total score: %4")
+                    playerFinishedMsg["message"] = QString("%1 finished level in rank %2 earning %3 bonus points. Total score: %4")
                                                  .arg(clientIdMap[clientKey].username)
                                                  .arg(playerFinishedMsg["placement"].toInt())
                                                  .arg(placementPoints)
@@ -638,8 +662,8 @@ void Dialog::rx()
                 }
             }
             broadcastActiveClients();
-            checkGameState();
             insertOrUpdateSession(currentGameId, clientIdMap[clientKey].username, clientIdMap[clientKey].score, clientIdMap[clientKey].levelsPlayed);
+            checkGameState();
             sendGameData();
         }
     }
@@ -648,6 +672,9 @@ void Dialog::rx()
 void Dialog::checkGameState()
 {
     qDebug() << "checking game state";
+
+    if (clientIdsInGame.size() == 0) { return; }
+
     bool allPlayersDead = true;
 
     if (!clientIdMap.isEmpty())
@@ -723,7 +750,7 @@ void Dialog::checkGameState()
         }
     }
 
-    if (done && clientIdsInGame.size() > 0 && !gameOver) // if none of the players are still playing and the round hasn't already ended
+    if (done && !gameOver) // if none of the players are still playing and the round hasn't already ended
     {
         qDebug() << "level over";
         QJsonObject levelOverMsg;
