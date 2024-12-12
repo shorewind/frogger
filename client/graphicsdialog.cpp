@@ -360,31 +360,81 @@ void GraphicsDialog::handleLevelOver()
     QTimer::singleShot(3000, this, &GraphicsDialog::startNextLevel);
 }
 
+
 void GraphicsDialog::handleGameOver(QJsonArray resultsArray)
 {
-//    showEndScreen();
-    int y = -100;
+    // Define constants for layout
+    const int itemHeight = 50; // Vertical spacing between rows
+    const int columnWidth = 400; // Width allocated for each column
+    const int maxItemsPerColumn = (scene->height() - 350) / itemHeight; // Adjusted padding
+    const int startX = -scene->width() / 2 + 50; // Start near the left edge of the scene
+    const int startY = -scene->height() / 2 + 200; // Start further down the scene
+
+    int column = 0; // Current column index
+    int row = 0; // Current row index
+
+    // Column widths for alignment
+    const int placementWidth = 10;
+    const int usernameWidth = 20;
+    const int scoreWidth = 10;
+
+    // Use a monospaced font for alignment
+    QFont font("Courier", 24, QFont::Bold);
+
+    // Add a header row
+    QString header = QString("%1%2%3")
+                     .arg("Placement", -placementWidth)
+                     .arg("Username", -usernameWidth)
+                     .arg("Score", -scoreWidth);
+    QGraphicsTextItem *headerItem = new QGraphicsTextItem(header);
+    headerItem->setFont(font);
+    headerItem->setDefaultTextColor(Qt::yellow);
+    headerItem->setZValue(12);
+    headerItem->setPos(startX, startY - itemHeight); // Position header above the first row
+    scene->addItem(headerItem);
+
+    // Iterate through results and add text items
     for (const QJsonValue &value : resultsArray)
     {
         QJsonObject playerResult = value.toObject();
-        QString text = QString("%1\t%2\t%3\n")
-                       .arg(QString::number(playerResult["placement"].toInt()))
-                       .arg(playerResult["username"].toString())
-                       .arg(QString::number(playerResult["score"].toInt()));
+        QString text = QString("%1%2%3")
+                       .arg(QString::number(playerResult["placement"].toInt()), -placementWidth)
+                       .arg(playerResult["username"].toString(), -usernameWidth)
+                       .arg(QString::number(playerResult["score"].toInt()), -scoreWidth);
+
         QGraphicsTextItem *textItem = new QGraphicsTextItem(text);
-        textItem->setFont(QFont("Georgia", 36, QFont::Bold));
+        textItem->setFont(font);
         textItem->setDefaultTextColor(Qt::red);
         textItem->setZValue(11);
-        textItem->setPos(-200, y);
+
+        // Calculate position
+        int x = startX + (column * columnWidth);
+        int y = startY + (row * itemHeight);
+        textItem->setPos(x, y);
+
         scene->addItem(textItem);
-        y += 50;
+
+        row++;
+        if (row >= maxItemsPerColumn)
+        {
+            row = 0; // Reset row
+            column++; // Move to the next column
+        }
     }
-    overlay->setBrush(QColor(0, 0, 0, 0));
-    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+
+    // Set the "GAME OVER!!" text
+    // Set the "GAME OVER!!" text
     endText->setPlainText("GAME OVER!!");
+    endText->setFont(QFont("Georgia", 48, QFont::Bold));
+    endText->setDefaultTextColor(Qt::red); // Make the text red
+    endText->setPos(-endText->boundingRect().width() / 2, -scene->height() / 2 + 50); // Shifted up
+    endText->setZValue(13);
+
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black
     activeGameState = false;
     qDebug() << "Game Over";
 }
+
 
 void GraphicsDialog::drawScoreDisplay()
 {
