@@ -22,7 +22,7 @@ class GraphicsDialog : public QDialog {
 public:
     explicit GraphicsDialog(QWidget *parent = nullptr, QUdpSocket *socket = nullptr);
     void closeEvent(QCloseEvent *event) override;
-    ~GraphicsDialog();
+    ~GraphicsDialog() override;
     void addActivePlayer(int clientId, QString username, const QColor &color);
     void addPlayer(int clientId, QString username, const QColor &color);
     void removePlayer(int clientId);
@@ -30,7 +30,7 @@ public:
     void updatePlayerPositions(QJsonArray &playersArray);
     void setPlayerState(QJsonObject clientData);
     void handleLevelOver();
-    void handleGameOver();
+    void handleGameOver(QJsonArray resultsArray);
     int score = 0;
     QGraphicsTextItem *header,*display, *endText;
     QGraphicsPixmapItem *endScreen;
@@ -55,10 +55,6 @@ private:
     void sendScoreToServer();
     void createObstacle(Obstacle::ObstacleType type, int x, int y, int speed, bool facingLeft = false);
     void drawScoreDisplay();
-    void reachGoalScreen();
-    void handleWaterDeath();
-    void showWaterDeathScreen();
-    void showEndScreen();
     void handlePlayerDeath();
     void startNextLevel();
 

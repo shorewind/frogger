@@ -60,7 +60,7 @@ Dialog::Dialog(QWidget *parent) :
        }
 
        QTabBar::tab:hover {
-           background-color: #00FFFF; /* Neon blue */
+           background-color: #00FF80; /* lighter Neon green */
        }
 
        QTabWidget::tab-bar {
@@ -145,6 +145,13 @@ Dialog::Dialog(QWidget *parent) :
         }
     )");
 
+    // styling for ready checkbox
+    ui->checkBox->setStyleSheet(R"(
+        QCheckBox {
+            color: white;
+        }
+    )");
+
     setLocalIpAddress();
     ui->portEdit->setText(QString::number(DEFAULT_PORT));  // Default port
 
@@ -159,6 +166,8 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->blueButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->yellowButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
     connect(ui->redButton, &QPushButton::clicked, this, &Dialog::onColorButtonClick);
+
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, &Dialog::setPlayerReady);
 
     historyModel = new QStandardItemModel();
     leaderboardModel = new QStandardItemModel();
@@ -175,6 +184,7 @@ void Dialog::setGameData(QJsonObject &data)
 {
     qDebug() << "setting game data";
     QJsonArray gamesArray = data["games"].toArray();
+    QJsonArray leaderboardArray = data["leaderboard"].toArray();
     QJsonArray sessionsArray = data["sessions"].toArray();
 
     historyModel->removeRows(0, historyModel->rowCount());
@@ -200,10 +210,8 @@ void Dialog::setGameData(QJsonObject &data)
     leaderboardModel->removeRows(0, leaderboardModel->rowCount());
 
     // populate leaderboard
-    int leaderboardCount = 0;
-    for (const QJsonValue &value : sessionsArray)
+    for (const QJsonValue &value : leaderboardArray)
     {
-        if (leaderboardCount >= 10) break;
         QJsonObject sessionObject = value.toObject();
         QString playerUsername = sessionObject["player_username"].toString();
         int score = sessionObject["score"].toInt();
@@ -219,7 +227,6 @@ void Dialog::setGameData(QJsonObject &data)
         row.append(new QStandardItem(QString::number(gameId)));
 
         leaderboardModel->appendRow(row);
-        leaderboardCount++;
     }
 
     userHistoryModel->removeRows(0, userHistoryModel->rowCount());
@@ -281,6 +288,26 @@ void Dialog::connectToServer()
 
     if (!ipHasText || !portHasText) { return; }
 
+    if (validConnection)
+    {
+        validConnection = false;
+        leaveGame();
+        disconnectFromServer();
+        ui->textBrowser->clear();
+//        ui->connectButton->setEnabled(true);
+        ui->sendButton->setEnabled(false);
+        ui->submitButton->setEnabled(false);
+        ui->greenButton->setEnabled(false);
+        ui->blueButton->setEnabled(false);
+        ui->yellowButton->setEnabled(false);
+        ui->redButton->setEnabled(false);
+        ui->greenButton->setStyleSheet("");
+        ui->blueButton->setStyleSheet("");
+        ui->yellowButton->setStyleSheet("");
+        ui->redButton->setStyleSheet("");
+        ui->currentUserButton->setEnabled(false);
+    }
+
     socket = new QUdpSocket(this);
 
     ip = ui->ipEdit->text();
@@ -301,6 +328,7 @@ void Dialog::connectToServer()
 
 void Dialog::closeEvent(QCloseEvent *event)
 {
+    qDebug() << "close event";
     if (validConnection)
     {
         leaveGame();
@@ -316,8 +344,29 @@ void Dialog::disconnectFromServer()
     disconnectMessage["type"] = "DISCONNECT";
     sendJson(disconnectMessage);
 
+    clientColors.clear();
     socket->disconnectFromHost();
     delete socket;
+}
+
+void Dialog::setPlayerReady()
+{
+    if (ui->checkBox->isChecked())
+    {
+        QJsonObject readyMsg;
+        readyMsg["type"] = "READY";
+        readyMsg["status"] = true;
+        readyMsg["message"] = QString("%1 ready!").arg(playerUsername);
+        sendJson(readyMsg);
+    }
+    else
+    {
+        QJsonObject readyMsg;
+        readyMsg["type"] = "READY";
+        readyMsg["status"] = false;
+        readyMsg["message"] = QString("%1 not ready!").arg(playerUsername);
+        sendJson(readyMsg);
+    }
 }
 
 void Dialog::leaveGame()
@@ -335,6 +384,7 @@ void Dialog::leaveGame()
         graphicsDialog = nullptr;
     }
     ui->submitButton->setEnabled(true);
+    ui->connectButton->setEnabled(true);
 }
 
 void Dialog::onSubmitButtonClick()
@@ -389,12 +439,13 @@ void Dialog::processMsg()
         {
             validConnection = true;
             ui->textBrowser->setText("Connected to Server: " + ip + ":" + QString::number(port));
+            clientColors.clear();
             ui->ipEdit->clear();
             ui->portEdit->clear();
             activeClientId = parseClientIdFromMsg(message);
             ui->textBrowser->append("Server: " + message);
             ui->sendButton->setEnabled(true);
-            ui->connectButton->setEnabled(false);
+//            ui->connectButton->setEnabled(false);
             ui->submitButton->setEnabled(true);
             ui->greenButton->setEnabled(true);
             ui->blueButton->setEnabled(true);
@@ -429,9 +480,11 @@ void Dialog::processMsg()
                 graphicsDialog->addActivePlayer(activeClientId, playerUsername, color);
             }
             ui->submitButton->setEnabled(false);
+            ui->connectButton->setEnabled(false);
+            ui->checkBox->setChecked(false);
             ui->textBrowser->append(message);
         }
-        else if (type == "DISCONNECT_ALL")
+        else if (type == "DISCONNECT_ALL" || type == "KICKED")
         {
             validConnection = false;
             leaveGame();
@@ -485,7 +538,7 @@ void Dialog::processMsg()
                 }
 
                 // track taken colors
-                if (clientId != activeClientId && !colorString.isEmpty())
+                if (clientId != -1 && clientId != activeClientId && !colorString.isEmpty())
                 {
                     clientColors[clientId] = colorString;
                 }
@@ -509,6 +562,29 @@ void Dialog::processMsg()
                 }
 
             }
+
+            // check for players that are no longer active
+            for (int clientId : activeClients)
+            {
+                if (graphicsDialog)
+                {
+                    if (!newActiveClients.contains(clientId))
+                    {
+                        graphicsDialog->removePlayer(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        clientColors.remove(clientId);
+                    }
+                    else if (!isPlayerAlive(clientId))
+                    {
+                        graphicsDialog->removePlayerFromScene(clientId);
+                        graphicsDialog->setPlayerState(clientData);
+                        clientColors.remove(clientId);
+                    }
+                }
+            }
+
+            activeClients = newActiveClients;
+
             // enable/disable color buttons based on whether the color is taken
             for (const QString &color : colorButtonMap.keys())
             {
@@ -534,26 +610,6 @@ void Dialog::processMsg()
                    colorButtonMap[color]->setStyleSheet("background-color: " + color);
                }
             }
-
-            // check for players that are no longer active
-            for (int clientId : activeClients)
-            {
-                if (graphicsDialog)
-                {
-                    if (!newActiveClients.contains(clientId))
-                    {
-                        graphicsDialog->removePlayer(clientId);
-                        graphicsDialog->setPlayerState(clientData);
-                    }
-                    else if (!isPlayerAlive(clientId))
-                    {
-                        graphicsDialog->removePlayerFromScene(clientId);
-                        graphicsDialog->setPlayerState(clientData);
-                    }
-                }
-            }
-
-            activeClients = newActiveClients;
 //            ui->textBrowser->append("Server: Active clients updated.");
         }
         else if (type == "POSITION")
@@ -574,18 +630,19 @@ void Dialog::processMsg()
         }
         else if (type == "GAME_OVER")
         {
+            QJsonArray resultsArray = jsonObj["results"].toArray();
+
             if (graphicsDialog)
             {
-                graphicsDialog->handleGameOver();
+                graphicsDialog->handleGameOver(resultsArray);
             }
             ui->textBrowser->append(message);
 
-            QJsonArray resultsArray = jsonObj["results"].toArray();
             for (const QJsonValue &value : resultsArray)
             {
                 QJsonObject playerResult = value.toObject();
 
-                if (playerResult["client_id"].toInt() == activeClientId)
+                if (playerResult["username"].toString() == playerUsername)
                 {
                     QString playerDetails = QString("Placement: %1, Score: %2, Levels Played: %3")
                                                .arg(QString::number(playerResult["placement"].toInt()))
@@ -611,7 +668,7 @@ void Dialog::processMsg()
             }
             ui->textBrowser->append(message);
         }
-        else
+        else if (!message.isNull())
         {
             ui->textBrowser->append(message);
         }
@@ -691,6 +748,12 @@ void Dialog::submitUsername()
         return;
     }
 
+    if (isUsernameTaken(playerUsername))
+    {
+        ui->textBrowser->append("The username '" + playerUsername + "' is already taken. Please choose another.");
+        return;
+    }
+
     QJsonObject usernameMessage;
     usernameMessage["type"] = "USERNAME";
     usernameMessage["clientId"] = activeClientId;
@@ -700,7 +763,20 @@ void Dialog::submitUsername()
     ui->textBrowser->append("You submitted the username: " + playerUsername);
 }
 
-void Dialog::sendPlayerPosition(int clientId, int x, int y)
+bool Dialog::isUsernameTaken(QString username)
+{
+    for (const QJsonValue &value : clientDataArray)
+    {
+        QJsonObject clientData = value.toObject();
+        if (clientData["username"].toString() == username)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Dialog::sendPlayerPosition(int clientId, int x, int y, int angle)
 {
     QJsonObject message;
     message["type"] = "POSITION";
@@ -710,6 +786,7 @@ void Dialog::sendPlayerPosition(int clientId, int x, int y)
     playerPosData["clientId"] = clientId;
     playerPosData["x"] = x;
     playerPosData["y"] = y;
+    playerPosData["angle"] = angle;
     playerPosArray.append(playerPosData);
     message["players"] = playerPosArray;
 

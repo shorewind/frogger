@@ -19,6 +19,7 @@ public:
     bool inGame;
     QColor color;
     int x, y;
+    int angle;
     int textWidth;
     int textHeight;
 

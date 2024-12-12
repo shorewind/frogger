@@ -15,6 +15,7 @@
 #include <QJsonArray>
 #include <QTableView>
 #include <QStandardItemModel>
+#include <QCheckBox>
 
 class GraphicsDialog;
 
@@ -33,7 +34,7 @@ public:
 
 public slots:
     void sendJson(QJsonObject data);
-    void sendPlayerPosition(int clientId, int x, int y);
+    void sendPlayerPosition(int clientId, int x, int y, int angle);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -64,6 +65,7 @@ private:
     void setPlayerColor(QString &color);
     int parseClientIdFromMsg(const QString &msg);
     bool isPlayerAlive(int clientId);
+    bool isUsernameTaken(QString username);
 
 private slots:
     void connectToServer();
@@ -75,6 +77,7 @@ private slots:
     void onSubmitButtonClick();
     void onSendButtonClick();
     void submitUsername();
+    void setPlayerReady();
 };
 
 #endif // DIALOG_H

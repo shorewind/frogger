@@ -208,7 +208,7 @@ void GraphicsDialog::checkCollisions()
     {
         if (!activePlayer->onLog) {
             qDebug() << "water death";
-            handleWaterDeath();
+            handlePlayerDeath();
         }
     }
 
@@ -219,6 +219,7 @@ void GraphicsDialog::checkCollisions()
         qDebug() << "Player Finished";
         activeGameState = false;
         sendScoreToServer();
+        overlay->setBrush(QColor(0, 0, 0, 0));
         overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         endText->setPlainText("YOU FINISHED!");
     }
@@ -240,31 +241,9 @@ void GraphicsDialog::handlePlayerDeath()
         activePlayer->resetPlayerPos();
         activeGameState=false;
         sendScoreToServer();
-//        showEndScreen();
+        overlay->setBrush(QColor(0, 0, 0, 0));
         overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
         endText->setPlainText("YOU DIED");
-    }
-}
-
-void GraphicsDialog::handleWaterDeath()
-{
-    if (numLives > 0)
-    {
-        numLives--;
-        removeHeart();
-        activePlayer->resetPlayerPos();
-    }
-
-    // check if game over after removing the heart
-    if (numLives == 0 && hearts.isEmpty())
-    {
-        activePlayer->dead = true;
-        activePlayer->resetPlayerPos();
-        activeGameState=false;
-        sendScoreToServer();
-        showWaterDeathScreen();
-        //overlay->setBrush(QColor(0, 0, 0, 50));  // Semi-transparent black (adjust alpha as needed)
-        //endText->setPlainText("YOU DIED");
     }
 }
 
@@ -275,22 +254,19 @@ GraphicsDialog::~GraphicsDialog()
 
 void GraphicsDialog::startNextLevel()
 {
-    qDebug() << "Start next round called";
-    for(auto &player : clientPlayers.values())
-    {
-        if (!player->dead)
+//    qDebug() << "Start next round called";
+//    for(auto &player : clientPlayers.values())
+//    {
+        if (!activePlayer->dead)
         {
             qDebug() << "Player not dead";
-            player->finished = false;
+            activePlayer->finished = false;
             activeGameState = true;
-//            roundOver = false;
-//            endScreen->hide();
-//            scene->removeItem(endScreen);
             overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
             endText->setPlainText("");
-            player->resetPlayerPos();
+            activePlayer->resetPlayerPos();
         }
-    }
+//    }
 }
 
 // top is -211 and bottom is 245
@@ -334,6 +310,7 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         int clientId = playerData["clientId"].toInt();
         int x = playerData["x"].toInt();
         int y = playerData["y"].toInt();
+        int angle = playerData["angle"].toInt();
 
         if (clientId == activePlayer->clientId)
         {
@@ -344,105 +321,9 @@ void GraphicsDialog::updatePlayerPositions(QJsonArray &playersArray)
         if (clientPlayers.contains(clientId))
         {
             clientPlayers[clientId]->setPos(x, y);
+            clientPlayers[clientId]->angle = angle;
         }
     }
-}
-
-void GraphicsDialog::showEndScreen()
-{
-    QString OverIm;
-
-    OverIm = ":/images/GameOver.jpg";
-    QPixmap im(OverIm);
-
-    im = im.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    endScreen = new QGraphicsPixmapItem();
-    endScreen->setPixmap(im);
-    endScreen->setPos( -120, -120);  // Position the image at the center
-    endScreen->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
-    scene->addItem(endScreen);    // Create a semi-transparent overlay using QGraphicsRectItem
-
-    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
-    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
-    overlay->setZValue(10);  // Ensure the overlay is above game items
-
-    // Add the overlay to the scene
-    scene->addItem(overlay);
-
-    // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
-    endText->setDefaultTextColor(Qt::red);
-    endText->setFont(QFont("Georgia", 36, QFont::Bold));
-    endText->setPos(-150, 20);  // Adjust position as necessary
-    endText->setZValue(11);  // Ensure text is above the overlay
-    scene->addItem(endText);
-}
-
-void GraphicsDialog::showWaterDeathScreen()
-{
-    QString OvIm;
-
-    OvIm = ":/images/WaterDeath.png";
-    QPixmap ima(OvIm);
-
-    ima = ima.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(ima);
-    backgroundItem->setPos( -120, -120);  // Position the image at the center
-    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
-    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
-
-
-    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
-    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
-    overlay->setZValue(10);  // Ensure the overlay is above game items
-
-    // Add the overlay to the scene
-    scene->addItem(overlay);
-
-    // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("GAME OVER!!");
-    endText->setDefaultTextColor(Qt::blue);
-    endText->setFont(QFont("Georgia", 36, QFont::Bold));
-    endText->setPos(-150, 20);  // Adjust position as necessary
-    endText->setZValue(11);  // Ensure text is above the overlay
-    scene->addItem(endText);
-
-    // Optionally, add a button or other interaction elements
-}
-
-void GraphicsDialog::reachGoalScreen()
-{
-    QString OveIm;
-
-    OveIm = ":/images/ReachGoal.png";
-    QPixmap imag(OveIm);
-
-    imag = imag.scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    QGraphicsPixmapItem *backgroundItem = new QGraphicsPixmapItem(imag);
-    backgroundItem->setPos( -135, -120);  // Position the image at the center
-    backgroundItem->setZValue(-1);  // Set Z-value lower than the overlay and text, so it stays in the background
-    scene->addItem(backgroundItem);    // Create a semi-transparent overlay using QGraphicsRectItem
-
-
-    QGraphicsRectItem *overlay = new QGraphicsRectItem(-SCENE_WIDTH / 2, -SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT);
-    overlay->setBrush(QColor(0, 0, 0, 0));  // Semi-transparent black (adjust alpha as needed)
-    overlay->setZValue(10);  // Ensure the overlay is above game items
-
-    // Add the overlay to the scene
-    scene->addItem(overlay);
-
-    // Add a text label (you can customize the message as needed)
-    QGraphicsTextItem *endText = new QGraphicsTextItem("Welcome To The Family!!");
-    endText->setDefaultTextColor(Qt::magenta);
-    endText->setFont(QFont("Georgia", 30, QFont::Bold));
-    endText->setPos(-320, 20);  // Adjust position as necessary
-    endText->setZValue(11);  // Ensure text is above the overlay
-    scene->addItem(endText);
-
-    // Optionally, add a button or other interaction elements
 }
 
 void GraphicsDialog::sendScoreToServer()
@@ -471,14 +352,36 @@ void GraphicsDialog::handleLevelOver()
     qDebug() << "Level Over";
     QString lvlMsg = QString("LEVEL %1 OVER").arg(level);
     level++;
+    for (auto& obstacle : obstacles.values())
+    {
+        obstacle->speed *= 1.1;
+    }
     endText->setPlainText(lvlMsg);
-    QTimer::singleShot(10000, this, &GraphicsDialog::startNextLevel);
+    QTimer::singleShot(3000, this, &GraphicsDialog::startNextLevel);
 }
 
-void GraphicsDialog::handleGameOver()
+void GraphicsDialog::handleGameOver(QJsonArray resultsArray)
 {
 //    showEndScreen();
-    endText->setPlainText("Game OVER");
+    int y = -100;
+    for (const QJsonValue &value : resultsArray)
+    {
+        QJsonObject playerResult = value.toObject();
+        QString text = QString("%1\t%2\t%3\n")
+                       .arg(QString::number(playerResult["placement"].toInt()))
+                       .arg(playerResult["username"].toString())
+                       .arg(QString::number(playerResult["score"].toInt()));
+        QGraphicsTextItem *textItem = new QGraphicsTextItem(text);
+        textItem->setFont(QFont("Georgia", 36, QFont::Bold));
+        textItem->setDefaultTextColor(Qt::red);
+        textItem->setZValue(11);
+        textItem->setPos(-200, y);
+        scene->addItem(textItem);
+        y += 50;
+    }
+    overlay->setBrush(QColor(0, 0, 0, 0));
+    overlay->setBrush(QColor(0, 0, 0, 80));  // Semi-transparent black (adjust alpha as needed)
+    endText->setPlainText("GAME OVER!!");
     activeGameState = false;
     qDebug() << "Game Over";
 }
@@ -514,7 +417,7 @@ void GraphicsDialog::drawScoreDisplay()
     endText->setDefaultTextColor(Qt::white);
     endText->setFont(QFont("Georgia", 36, QFont::Bold));
     endText->setDefaultTextColor(Qt::red);
-    endText->setPos(-150, 0);
+    endText->setPos(-170, -170);
     endText->setZValue(11);
     scene->addItem(endText);
 }
@@ -551,7 +454,7 @@ void GraphicsDialog::addActivePlayer(int clientId, QString username, const QColo
         Dialog *parentDialog = qobject_cast<Dialog*>(parent());
         if (parentDialog)
         {
-            parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y);
+            parentDialog->sendPlayerPosition(activePlayer->clientId, activePlayer->x, activePlayer->y, activePlayer->angle);
         }
     });
 }
